@@ -1,0 +1,45 @@
+# Publishes JS-only changes over the air to the installed TestFlight app.
+# Native changes (modules/, app.json plugins, new native packages) need a new "iOS Build" instead;
+# the fingerprint runtime version keeps an update from reaching an incompatible binary.
+name: OTA Update
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths-ignore: ['docs/**', '**/*.md']
+  workflow_dispatch:
+
+concurrency:
+  group: ota-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      EAS: npx --yes eas-cli@24.12.1
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Skip until Expo is connected
+        if: env.EXPO_TOKEN == ''
+        run: echo "EXPO_TOKEN secret not set — skipping OTA update (see docs/IPHONE_SETUP.md)."
+      - uses: actions/checkout@v4
+        if: env.EXPO_TOKEN != ''
+      - uses: actions/setup-node@v4
+        if: env.EXPO_TOKEN != ''
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.EXPO_TOKEN != ''
+        run: npm ci
+      - if: env.EXPO_TOKEN != ''
+        run: npm run typecheck && npm test
+      - name: Publish update
+        if: env.EXPO_TOKEN != ''
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || 'manual update' }}
+        run: |
+          $EAS init --non-interactive --force
+          $EAS update:configure --platform ios --non-interactive
+          $EAS update --channel production --platform ios --non-interactive \
+            --message "$(printf '%s' "$COMMIT_MESSAGE" | head -n 1 | cut -c1-100)"

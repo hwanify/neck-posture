@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "바로목",
+    "slug": "baromok",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "ios": {
+      "bundleIdentifier": "com.hwanify.baromok",
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSMotionUsageDescription": "에어팟의 움직임 센서로 고개가 좌우로 기울어졌는지 감지하기 위해 사용해요.",
+        "UIBackgroundModes": ["audio"]
+      }
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {}
+    }
+  }
+}
