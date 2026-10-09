@@ -1,4 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { type } from '../ui/fonts';
+import { Text } from '../ui/Text';
 
 import { monitor, useMonitor } from '../state/monitor';
 import { Button } from '../ui/components';
@@ -88,21 +91,19 @@ export function CalibrationScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.card, paddingHorizontal: 24 },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 44 },
-  cancel: { fontSize: 17, color: colors.tint, width: 40 },
-  step: { fontSize: 15, color: colors.subtext, fontVariant: ['tabular-nums'] },
+  cancel: { ...type.bodyStrong, color: colors.tint, width: 40 },
+  step: { ...type.label, fontSize: 13, color: colors.subtext, fontVariant: ['tabular-nums'] },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    ...type.title,
     color: colors.text,
     textAlign: 'center',
     marginTop: 32,
-    letterSpacing: 0.36,
   },
-  body: { fontSize: 17, lineHeight: 24, color: colors.subtext, textAlign: 'center', marginTop: 12, letterSpacing: -0.4 },
+  body: { ...type.body, lineHeight: 24, color: colors.subtext, textAlign: 'center', marginTop: 12 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   progressBox: { alignSelf: 'stretch', paddingHorizontal: 16 },
   progressTrack: { height: 4, borderRadius: 2, backgroundColor: colors.fill, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: colors.tint },
-  hint: { fontSize: 15, color: colors.subtext, textAlign: 'center', marginTop: 16, fontVariant: ['tabular-nums'] },
+  hint: { ...type.callout, color: colors.subtext, textAlign: 'center', marginTop: 16, fontVariant: ['tabular-nums'] },
   actions: { gap: 4, paddingBottom: 8 },
 });

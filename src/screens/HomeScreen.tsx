@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+
+import { type } from '../ui/fonts';
+import { Text } from '../ui/Text';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
@@ -178,19 +181,19 @@ const styles = StyleSheet.create({
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 },
   container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  meta: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
+  meta: { ...type.label, fontSize: 13, color: colors.subtext },
   status: { flexDirection: 'row', alignItems: 'center' },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  notice: { fontSize: 14, color: colors.danger, marginTop: 12, textAlign: 'center' },
+  notice: { ...type.caption, color: colors.danger, marginTop: 12, textAlign: 'center' },
   center: { flex: 1, minHeight: 360, alignItems: 'center', justifyContent: 'center' },
-  level: { width: 220, height: 2, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 40 },
-  levelDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.text, marginTop: -5 },
-  angle: { fontSize: 96, fontWeight: '800', color: colors.text, letterSpacing: -4, fontVariant: ['tabular-nums'] },
-  message: { fontSize: 17, fontWeight: '700', marginTop: 4, textAlign: 'center' },
+  level: { width: 220, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 40 },
+  levelDot: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: colors.text, marginTop: -3.75 },
+  angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 116 },
+  message: { ...type.callout, marginTop: 6, textAlign: 'center' },
   stats: { flexDirection: 'row', marginBottom: 28 },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.8, fontVariant: ['tabular-nums'] },
-  statLabel: { fontSize: 13, fontWeight: '600', color: colors.subtext, marginTop: 2 },
+  statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
+  statLabel: { ...type.label, color: colors.subtext, marginTop: 4 },
   button: { height: 60, borderRadius: 30, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  buttonText: { ...type.button, color: '#FFFFFF' },
 });

@@ -5,11 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   View,
   type ViewStyle,
 } from 'react-native';
 
+import { type } from './fonts';
+import { Text } from './Text';
 import { colors } from './theme';
 
 /** iOS metrics (points). */
@@ -194,7 +195,7 @@ export function Segmented<T extends string>({
             disabled={disabled}
             onPress={() => onChange(o.value)}
             style={[styles.segment, selected && styles.segmentSelected]}>
-            <Text style={[styles.segmentText, selected && { fontWeight: '600' }]}>{o.label}</Text>
+            <Text style={[styles.segmentText, selected && { fontFamily: type.callout.fontFamily }]}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -216,9 +217,7 @@ export function Banner({ tone, children }: { tone: 'warning' | 'danger' | 'info'
 const styles = StyleSheet.create({
   screen: { paddingBottom: 40 },
   largeTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    letterSpacing: -1,
+    ...type.title,
     color: colors.text,
     marginHorizontal: INSET + 4,
     marginTop: 8,
@@ -226,19 +225,18 @@ const styles = StyleSheet.create({
   },
   section: { marginTop: 22, marginHorizontal: INSET },
   sectionHeader: {
-    fontSize: 13,
-    fontWeight: '600',
+    ...type.label,
     color: colors.subtext,
     marginLeft: INSET,
     marginBottom: 7,
   },
-  sectionFooter: { fontSize: 13, lineHeight: 18, color: colors.subtext, marginHorizontal: INSET, marginTop: 7 },
+  sectionFooter: { ...type.caption, lineHeight: 18, color: colors.subtext, marginHorizontal: INSET, marginTop: 7 },
   group: { backgroundColor: colors.card, borderRadius: RADIUS, overflow: 'hidden' },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator, marginLeft: INSET },
   row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: INSET, paddingVertical: 11 },
-  rowTitle: { fontSize: 17, color: colors.text, letterSpacing: -0.4 },
-  rowSubtitle: { fontSize: 13, color: colors.subtext, marginTop: 2 },
-  rowValue: { fontSize: 17, color: colors.subtext, letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+  rowTitle: { ...type.body, color: colors.text },
+  rowSubtitle: { ...type.caption, color: colors.subtext, marginTop: 2 },
+  rowValue: { ...type.body, color: colors.subtext, fontVariant: ['tabular-nums'] },
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -248,10 +246,10 @@ const styles = StyleSheet.create({
     height: 32,
   },
   stepperHalf: { width: 46, height: 32, alignItems: 'center', justifyContent: 'center' },
-  stepperSymbol: { fontSize: 20, color: colors.text, marginTop: -2 },
+  stepperSymbol: { ...type.body, fontSize: 18, color: colors.text },
   stepperDivider: { width: StyleSheet.hairlineWidth, height: 18, backgroundColor: colors.separator },
   button: { height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { fontSize: 17, fontWeight: '700', letterSpacing: -0.2 },
+  buttonText: { ...type.button },
   segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
   segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
   segmentSelected: {
@@ -261,8 +259,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
   },
-  segmentText: { fontSize: 13, color: colors.text },
+  segmentText: { ...type.caption, color: colors.text },
   banner: { flexDirection: 'row', alignItems: 'center', padding: INSET, marginTop: 12, marginHorizontal: INSET },
   bannerDot: { width: 8, height: 8, borderRadius: 4, marginRight: 12 },
-  bannerText: { flex: 1, fontSize: 15, lineHeight: 20, color: colors.text },
+  bannerText: { ...type.caption, flex: 1, fontSize: 14, lineHeight: 20, color: colors.text },
 });

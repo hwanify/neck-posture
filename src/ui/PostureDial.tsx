@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import type { PostureState } from '../engine';
+import { type } from './fonts';
+import { Text } from './Text';
 import { colors, useSvgPalette } from './theme';
 
 const SIZE = 300;
@@ -75,13 +77,13 @@ export function PostureDial({ angle, enterDeg, state, caption, size = 260 }: Pro
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
-  side: { fontSize: 15, color: colors.subtext, fontWeight: '500' },
+  side: { ...type.label, fontSize: 13, color: colors.subtext },
   value: {
+    ...type.display,
     fontSize: 64,
-    fontWeight: '600',
+    letterSpacing: -2.5,
     color: colors.text,
     fontVariant: ['tabular-nums'],
-    letterSpacing: -1,
   },
-  caption: { fontSize: 15, fontWeight: '600' },
+  caption: { ...type.callout },
 });

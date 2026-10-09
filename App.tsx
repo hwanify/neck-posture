@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalibrationScreen } from './src/screens/CalibrationScreen';
@@ -9,7 +9,9 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { monitor, useMonitor } from './src/state/monitor';
+import { type, useAppFonts } from './src/ui/fonts';
 import { TabIcon } from './src/ui/TabIcon';
+import { Text } from './src/ui/Text';
 import { colors, useSvgPalette } from './src/ui/theme';
 
 const TABS = [
@@ -31,13 +33,14 @@ export default function App() {
 function Root() {
   const s = useMonitor();
   const palette = useSvgPalette();
+  const fontsReady = useAppFonts();
   const [tab, setTab] = useState<TabKey>('home');
 
   useEffect(() => {
     void monitor.init();
   }, []);
 
-  if (!s.loaded) {
+  if (!s.loaded || !fontsReady) {
     return (
       <View style={[styles.fill, styles.center]}>
         <ActivityIndicator />
@@ -89,6 +92,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.barBg,
   },
   tab: { flex: 1, alignItems: 'center', paddingTop: 10, paddingBottom: 4 },
-  tabLabel: { fontSize: 10, fontWeight: '500', color: colors.muted, marginTop: 1 },
+  tabLabel: { ...type.label, fontSize: 10, color: colors.muted, marginTop: 2 },
   tabLabelActive: { color: colors.tint },
 });

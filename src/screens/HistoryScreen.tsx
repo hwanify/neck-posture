@@ -1,4 +1,7 @@
-import { Alert, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, StyleSheet, View, useWindowDimensions } from 'react-native';
+
+import { type } from '../ui/fonts';
+import { Text } from '../ui/Text';
 
 import type { SessionSummary } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
@@ -115,8 +118,8 @@ function formatDate(ts: number) {
 const styles = StyleSheet.create({
   biasBox: { paddingHorizontal: 16, paddingVertical: 12 },
   biasLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  biasText: { fontSize: 13, color: colors.subtext, fontVariant: ['tabular-nums'] },
-  biasCaption: { fontSize: 13, color: colors.tertiary },
+  biasText: { ...type.caption, color: colors.subtext, fontVariant: ['tabular-nums'] },
+  biasCaption: { ...type.caption, color: colors.tertiary },
   biasTrack: { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden' },
   chart: { paddingHorizontal: 16, paddingBottom: 12 },
 });

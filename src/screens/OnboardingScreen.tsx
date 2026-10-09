@@ -1,4 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
+import { type } from '../ui/fonts';
+import { Text } from '../ui/Text';
 
 import { monitor } from '../state/monitor';
 import { Button } from '../ui/components';
@@ -55,17 +58,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.card },
   content: { paddingHorizontal: 40, paddingTop: 64, paddingBottom: 24 },
   title: {
-    fontSize: 34,
-    fontWeight: '700',
-    letterSpacing: 0.37,
+    ...type.title,
+    fontSize: 30,
+    lineHeight: 38,
     color: colors.text,
     textAlign: 'center',
     marginBottom: 44,
   },
   feature: { flexDirection: 'row', alignItems: 'center', marginBottom: 28 },
   icon: { width: 52, alignItems: 'center', marginRight: 14 },
-  featureTitle: { fontSize: 17, fontWeight: '600', color: colors.text, letterSpacing: -0.4 },
-  featureBody: { fontSize: 15, lineHeight: 20, color: colors.subtext, marginTop: 2 },
+  featureTitle: { ...type.bodyStrong, color: colors.text },
+  featureBody: { ...type.caption, fontSize: 14, lineHeight: 20, color: colors.subtext, marginTop: 3 },
   footer: { paddingHorizontal: 24, paddingBottom: 16 },
-  note: { fontSize: 13, lineHeight: 18, color: colors.subtext, textAlign: 'center', marginBottom: 16 },
+  note: { ...type.caption, fontSize: 12, lineHeight: 18, color: colors.subtext, textAlign: 'center', marginBottom: 16 },
 });

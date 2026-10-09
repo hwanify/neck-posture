@@ -1,5 +1,8 @@
 import Constants from 'expo-constants';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
+
+import { type } from '../ui/fonts';
+import { Text } from '../ui/Text';
 
 import type { PostureSettings } from '../engine';
 import { playTestCue } from '../services/feedback';
@@ -154,7 +157,7 @@ const LOCATION_LABEL = { default: '기본', left: '왼쪽 이어폰', right: '�
 
 const styles = StyleSheet.create({
   segmentBox: { padding: 12 },
-  link: { fontSize: 17, color: colors.tint, letterSpacing: -0.4 },
-  chevron: { fontSize: 22, color: colors.tertiary, marginTop: -2 },
-  disclaimer: { fontSize: 13, lineHeight: 18, color: colors.subtext, marginHorizontal: 32, marginTop: 24 },
+  link: { ...type.bodyStrong, color: colors.tint },
+  chevron: { ...type.body, fontSize: 22, color: colors.tertiary, marginTop: -2 },
+  disclaimer: { ...type.caption, lineHeight: 18, color: colors.subtext, marginHorizontal: 32, marginTop: 24 },
 });
