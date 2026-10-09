@@ -14,7 +14,7 @@ jobs:
       EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       EXPO_APPLE_TEAM_TYPE: ${{ vars.APPLE_TEAM_TYPE || 'INDIVIDUAL' }}
-      ASC_APP_ID: ${{ vars.ASC_APP_ID }}
+      ASC_APP_ID: ${{ vars.ASC_APP_ID || '6820913429' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
