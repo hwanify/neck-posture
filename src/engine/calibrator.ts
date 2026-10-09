@@ -1,4 +1,4 @@
-import type { Calibration } from './tilt';
+import { type Calibration, pitchDeg, rollDeg } from './tilt';
 import type { MotionSample } from './types';
 import {
   type Vector3,
@@ -15,7 +15,10 @@ import {
   vec,
 } from './vector';
 
-export type CalibratorPhase = 'neutral' | 'tiltRight' | 'nodForward' | 'done';
+export type CalibratorPhase = 'neutral' | 'tiltLeft' | 'tiltRight' | 'nodForward' | 'nodBack' | 'done';
+
+/** Why the current pose isn't being accepted yet. */
+export type CalibratorHint = 'none' | 'wrongSide' | 'stillSideways' | 'retry';
 
 export type CalibratorStatus = {
   phase: CalibratorPhase;
@@ -25,8 +28,7 @@ export type CalibratorStatus = {
   tooMuchMotion: boolean;
   /** Current angle away from neutral in the active direction (deg, unsigned). */
   tiltDeg: number;
-  /** Nod phase: the head is still tilted sideways; straighten it before nodding. */
-  stillSideways: boolean;
+  hint: CalibratorHint;
   result?: Calibration;
 };
 
@@ -34,28 +36,39 @@ export type CalibratorOptions = {
   neutralSec: number;
   maxRotationRate: number;
   minTiltDeg: number;
-  tiltHoldSec: number;
-  /** Max sideways tilt (deg) still accepted while nodding. */
+  holdSec: number;
+  /** Sideways tilt (deg) still accepted while nodding: max(this, nod × sidewaysRatio). */
   maxSidewaysDuringNodDeg: number;
+  sidewaysRatio: number;
+  /** Left/right and front/back directions closer than this (deg) mean a sloppy run → redo. */
+  minAxisSeparationDeg: number;
+  /** Clamp for the per-degree nod leak correction. */
+  maxLeak: number;
 };
 
 const DEFAULTS: CalibratorOptions = {
   neutralSec: 3,
   maxRotationRate: 0.5,
-  minTiltDeg: 12,
-  tiltHoldSec: 0.6,
-  maxSidewaysDuringNodDeg: 8,
+  minTiltDeg: 14,
+  holdSec: 1,
+  maxSidewaysDuringNodDeg: 6,
+  sidewaysRatio: 0.35,
+  minAxisSeparationDeg: 70,
+  maxLeak: 0.5,
 };
 
 const asinDeg = (x: number) => Math.asin(Math.max(-1, Math.min(1, x))) * RAD_TO_DEG;
+const clamp = (x: number, limit: number) => Math.max(-limit, Math.min(limit, x));
 
 /**
- * Three-step calibration fed with live samples:
- * 1. sit straight and still → average gravity is the neutral reference
- * 2. tilt the head to the right → the direction gravity moves defines left/right and its sign
- * 3. nod forward → the direction gravity moves defines front/back
- * Step 3 lets the side-tilt axis be made exactly perpendicular to nodding, so looking down or up
- * no longer reads as a sideways tilt even when step 2 mixed in some nodding.
+ * Five-step calibration fed with live samples:
+ * 1. sit straight and still → average gravity is the neutral reference N
+ * 2–3. tilt left, then right → side direction = R − L (any nodding common to both cancels out)
+ * 4–5. nod forward, then back → front/back direction = F − B
+ *
+ * Lateral tilt is measured around the front/back direction, so nodding contributes nothing by
+ * construction. Whatever sideways drift remains in the user's own nod (necks don't move in a perfect
+ * plane) is stored as per-degree leak coefficients and subtracted at runtime.
  */
 export class Calibrator {
   private readonly options: CalibratorOptions;
@@ -63,10 +76,12 @@ export class Calibrator {
   private gravitySum: Vector3 = vec(0, 0, 0);
   private phaseStart: number | null = null;
   private neutral: Vector3 | null = null;
-  /** Unit direction gravity moves (in the plane ⟂ neutral) when tilting right. */
-  private sideDir: Vector3 | null = null;
+  private poses: Partial<Record<'tiltLeft' | 'tiltRight' | 'nodForward' | 'nodBack', Vector3>> = {};
+  /** Clean side direction (⟂ N), known after tiltRight. */
+  private side: Vector3 | null = null;
   private holdSum: Vector3 = vec(0, 0, 0);
   private holdStart: number | null = null;
+  private retried = false;
   private result: Calibration | undefined;
 
   constructor(options: Partial<CalibratorOptions> = {}) {
@@ -88,52 +103,87 @@ export class Calibrator {
       const progress = Math.min(1, (t - this.phaseStart!) / this.options.neutralSec);
       if (progress >= 1) {
         this.neutral = normalize(this.gravitySum);
-        this.phase = 'tiltRight';
+        this.phase = 'tiltLeft';
         return this.status(0, false, 0);
       }
       return this.status(progress, false, 0);
     }
 
+    if (this.phase === 'done') return this.status(1, false, 0);
+
     const neutral = this.neutral!;
+    const offset = projectOntoPlane(g, neutral);
+    const angle = angleBetweenDeg(neutral, g);
+    const { minTiltDeg } = this.options;
 
-    if (this.phase === 'tiltRight') {
-      const tiltDeg = angleBetweenDeg(neutral, g);
-      const held = this.hold(t, g, tiltDeg >= this.options.minTiltDeg);
-      if (held >= 1) {
-        this.sideDir = normalize(projectOntoPlane(normalize(this.holdSum), neutral));
-        this.resetHold();
-        this.phase = 'nodForward';
-        return this.status(0, false, 0);
+    switch (this.phase) {
+      case 'tiltLeft':
+        return this.step(sample, angle, angle >= minTiltDeg, 'none', 'tiltRight');
+
+      case 'tiltRight': {
+        // Must be on the other side of neutral from the left pose.
+        const left = projectOntoPlane(this.poses.tiltLeft!, neutral);
+        const opposite = dot(offset, left) < 0;
+        const hint = angle >= minTiltDeg && !opposite ? 'wrongSide' : 'none';
+        return this.step(sample, angle, angle >= minTiltDeg && opposite, hint, 'nodForward');
       }
-      return this.status(this.holdProgress(tiltDeg, held), false, tiltDeg);
-    }
 
-    if (this.phase === 'nodForward') {
-      const side = this.sideDir!;
-      const offset = projectOntoPlane(g, neutral);
-      const sidewaysDeg = Math.abs(asinDeg(dot(offset, side)));
-      const nodDeg = asinDeg(length(sub(offset, scale(side, dot(offset, side)))));
-      const stillSideways = sidewaysDeg > this.options.maxSidewaysDuringNodDeg;
-      const held = this.hold(t, g, !stillSideways && nodDeg >= this.options.minTiltDeg);
-      if (held >= 1) {
-        this.finish(normalize(this.holdSum), sample);
-        return this.status(1, false, nodDeg);
+      case 'nodForward':
+      case 'nodBack': {
+        const side = this.side!;
+        const sideways = Math.abs(asinDeg(dot(offset, side)));
+        const nod = asinDeg(length(sub(offset, scale(side, dot(offset, side)))));
+        const stillSideways =
+          sideways > Math.max(this.options.maxSidewaysDuringNodDeg, nod * this.options.sidewaysRatio);
+        let wrongSide = false;
+        if (this.phase === 'nodBack') {
+          const forward = projectOntoPlane(this.poses.nodForward!, neutral);
+          wrongSide = dot(offset, forward) > 0;
+        }
+        const inPose = nod >= minTiltDeg && !stillSideways && !wrongSide;
+        const hint =
+          nod >= minTiltDeg / 2 && stillSideways
+            ? 'stillSideways'
+            : nod >= minTiltDeg && wrongSide
+              ? 'wrongSide'
+              : 'none';
+        return this.step(sample, nod, inPose, hint, this.phase === 'nodForward' ? 'nodBack' : 'done');
       }
-      return this.status(this.holdProgress(nodDeg, held), false, nodDeg, stillSideways);
     }
-
-    return this.status(1, false, 0);
   }
 
-  /** Accumulate samples while `inPose` holds; returns hold progress (≥1 when complete). */
-  private hold(t: number, g: Vector3, inPose: boolean): number {
+  /** Hold `inPose` for holdSec, then store the averaged pose and advance to `next`. */
+  private step(
+    sample: MotionSample,
+    deg: number,
+    inPose: boolean,
+    hint: CalibratorHint,
+    next: CalibratorPhase,
+  ): CalibratorStatus {
+    const t = sample.timestamp;
     if (!inPose) {
       this.resetHold();
-      return 0;
+      const retryHint = this.retried && this.phase === 'tiltLeft' && hint === 'none' ? 'retry' : hint;
+      return this.status(Math.min(0.99, deg / this.options.minTiltDeg) * 0.5, false, deg, retryHint);
     }
     if (this.holdStart === null) this.holdStart = t;
-    this.holdSum = add(this.holdSum, g);
-    return (t - this.holdStart) / this.options.tiltHoldSec;
+    this.holdSum = add(this.holdSum, normalize(sample.gravity));
+    const held = (t - this.holdStart) / this.options.holdSec;
+    if (held < 1) return this.status(0.5 + held * 0.5, false, deg);
+
+    const phase = this.phase as keyof Calibrator['poses'];
+    this.poses[phase] = normalize(this.holdSum);
+    this.resetHold();
+    if (phase === 'tiltRight') {
+      const neutral = this.neutral!;
+      this.side = normalize(projectOntoPlane(sub(this.poses.tiltRight!, this.poses.tiltLeft!), neutral));
+    }
+    if (next === 'done') {
+      this.finish(sample);
+    } else {
+      this.phase = next;
+    }
+    return this.status(this.phase === 'done' ? 1 : 0, false, deg);
   }
 
   private resetHold() {
@@ -141,26 +191,53 @@ export class Calibrator {
     this.holdSum = vec(0, 0, 0);
   }
 
-  private holdProgress(deg: number, held: number): number {
-    return held > 0 ? 0.5 + Math.min(held, 1) * 0.5 : Math.min(0.99, deg / this.options.minTiltDeg) * 0.5;
-  }
-
-  private finish(nodded: Vector3, sample: MotionSample) {
+  private finish(sample: MotionSample) {
     const neutral = this.neutral!;
-    const nodDir = normalize(projectOntoPlane(nodded, neutral));
-    // Remove any nodding mixed into the side-tilt direction.
-    const side = normalize(sub(this.sideDir!, scale(nodDir, dot(this.sideDir!, nodDir))));
+    const { tiltRight, nodForward, nodBack } = this.poses as Required<Calibrator['poses']>;
+    const side = this.side!;
+    const nodRaw = normalize(projectOntoPlane(sub(nodForward, nodBack), neutral));
+
+    if (Math.abs(90 - angleBetweenDeg(side, nodRaw)) > 90 - this.options.minAxisSeparationDeg) {
+      // Side and nod directions far from perpendicular: one of the poses was off. Redo the moves.
+      this.poses = {};
+      this.side = null;
+      this.retried = true;
+      this.phase = 'tiltLeft';
+      return;
+    }
+
+    // Exactly perpendicular to both neutral and the side direction, pointing towards a forward nod.
+    let pitchAxis = normalize(cross(neutral, side));
+    if (dot(pitchAxis, nodRaw) < 0) pitchAxis = scale(pitchAxis, -1);
+
+    // Tilt is measured around the front/back axis; orient it so a right tilt is positive.
+    let forwardAxis = pitchAxis;
+    if (rollDeg(tiltRight, neutral, forwardAxis) < 0) forwardAxis = scale(forwardAxis, -1);
+
+    const leak = (pose: Vector3) => {
+      const pitch = pitchDeg(pose, neutral, pitchAxis);
+      return Math.abs(pitch) < 1 ? 0 : clamp(rollDeg(pose, neutral, forwardAxis) / pitch, this.options.maxLeak);
+    };
+
     this.result = {
       neutralGravity: neutral,
-      forwardAxis: normalize(cross(neutral, side)),
+      forwardAxis,
+      pitchAxis,
+      leakForward: leak(nodForward),
+      leakBack: leak(nodBack),
       sensorLocation: sample.sensorLocation,
       createdAt: Date.now(),
     };
     this.phase = 'done';
   }
 
-  private status(progress: number, tooMuchMotion: boolean, tiltDeg: number, stillSideways = false): CalibratorStatus {
-    return { phase: this.phase, progress, tooMuchMotion, tiltDeg, stillSideways, result: this.result };
+  private status(
+    progress: number,
+    tooMuchMotion: boolean,
+    tiltDeg: number,
+    hint: CalibratorHint = 'none',
+  ): CalibratorStatus {
+    return { phase: this.phase, progress, tooMuchMotion, tiltDeg, hint, result: this.result };
   }
 }
 

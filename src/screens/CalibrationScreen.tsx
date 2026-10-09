@@ -8,7 +8,7 @@ import { Button } from '../ui/components';
 import { PostureDial } from '../ui/PostureDial';
 import { colors } from '../ui/theme';
 
-/** Full-screen sheet guiding the three calibration steps. */
+/** Full-screen sheet guiding the five calibration steps. */
 export function CalibrationScreen() {
   const s = useMonitor();
   const status = s.calibrating;
@@ -20,33 +20,47 @@ export function CalibrationScreen() {
 
   const title = {
     neutral: phone ? 'iPhone을 똑바로 세워 주세요' : '정면을 바라봐 주세요',
+    tiltLeft: phone ? 'iPhone을 왼쪽으로 기울이세요' : '고개를 왼쪽으로 기울이세요',
     tiltRight: phone ? 'iPhone을 오른쪽으로 기울이세요' : '고개를 오른쪽으로 기울이세요',
     nodForward: phone ? 'iPhone을 앞으로 숙이세요' : '고개를 앞으로 숙이세요',
-    done: '등록 완료',
+    nodBack: phone ? 'iPhone을 뒤로 젖히세요' : '고개를 뒤로 젖히세요',
+    done: '앞뒤로 숙여 확인하세요',
   }[status.phase];
 
   const body = {
     neutral: phone
       ? 'iPhone을 세로로 세운 채 3초간 움직이지 마세요. 이 iPhone이 머리 역할을 합니다.'
       : '허리를 펴고 고개를 똑바로 세운 채 3초간 움직이지 마세요.',
+    tiltLeft: phone
+      ? 'iPhone 윗부분을 왼쪽으로 15° 이상 기울이고 1초간 멈추세요.'
+      : '왼쪽 귀를 왼쪽 어깨 쪽으로 천천히 기울이고 1초간 멈추세요.',
     tiltRight: phone
-      ? 'iPhone 윗부분을 오른쪽으로 15° 정도 천천히 기울이고 잠시 멈추세요.'
-      : '오른쪽 귀를 오른쪽 어깨 쪽으로 천천히 기울이고 잠시 멈추세요. 좌우 방향을 파악하는 단계입니다.',
+      ? '이번엔 오른쪽으로 15° 이상 기울이고 1초간 멈추세요.'
+      : '이번엔 오른쪽 귀를 오른쪽 어깨 쪽으로 기울이고 1초간 멈추세요.',
     nodForward: phone
-      ? '정면으로 돌아온 뒤 iPhone 윗부분을 앞쪽으로 15° 정도 기울이고 잠시 멈추세요.'
-      : '정면으로 돌아온 뒤 턱을 당기듯 고개를 앞으로 숙이고 잠시 멈추세요. 앞뒤 움직임이 각도에 섞이지 않게 하는 단계입니다.',
-    done: `${phone ? 'iPhone을' : '고개를'} 기울여 방향이 맞게 표시되는지 확인하세요.`,
+      ? '정면으로 돌아온 뒤 iPhone 윗부분을 앞쪽으로 15° 이상 기울이고 1초간 멈추세요.'
+      : '정면으로 돌아온 뒤 턱을 당기듯 앞으로 숙이고 1초간 멈추세요.',
+    nodBack: phone
+      ? '이번엔 iPhone 윗부분을 뒤쪽으로 15° 이상 기울이고 1초간 멈추세요.'
+      : '이번엔 천장을 보듯 뒤로 젖히고 1초간 멈추세요.',
+    done: `${phone ? 'iPhone을' : '고개를'} 앞뒤로 숙여도 각도가 0° 근처에 머물면 정상입니다. 3° 넘게 움직이면 다시 등록하세요.`,
   }[status.phase];
 
   const hint = waiting
     ? 'AirPods 신호를 기다리는 중입니다. 양쪽 이어폰을 착용하세요.'
     : status.tooMuchMotion
       ? '움직임이 감지되었습니다. 잠시 멈춰 주세요.'
-      : status.phase === 'nodForward' && status.stillSideways
-        ? '좌우로는 기울이지 말고 정면에서 숙여 주세요.'
-        : status.phase === 'tiltRight' || status.phase === 'nodForward'
-          ? `현재 ${Math.round(status.tiltDeg)}°`
-          : ' ';
+      : status.hint === 'retry'
+        ? '측정이 고르지 않아 다시 진행합니다. 천천히 기울여 주세요.'
+        : status.hint === 'stillSideways'
+          ? '좌우로는 기울이지 말고 정면에서 숙여 주세요.'
+          : status.hint === 'wrongSide'
+            ? '반대 방향으로 기울여 주세요.'
+            : status.phase === 'neutral'
+              ? ' '
+              : `현재 ${Math.round(status.tiltDeg)}°`;
+
+  const warn = waiting || status.tooMuchMotion || status.hint !== 'none';
 
   return (
     <View style={styles.container}>
@@ -58,7 +72,7 @@ export function CalibrationScreen() {
         ) : (
           <View />
         )}
-        <Text style={styles.step}>{done ? '' : `${STEP[status.phase]} / 3`}</Text>
+        <Text style={styles.step}>{done ? '' : `${STEP[status.phase]} / 5`}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -71,7 +85,7 @@ export function CalibrationScreen() {
             angle={s.snapshot?.angle ?? 0}
             enterDeg={s.settings.posture.enterDeg}
             state="good"
-            caption="기준 자세"
+            caption="좌우 각도"
             size={240}
           />
         ) : (
@@ -79,7 +93,7 @@ export function CalibrationScreen() {
             <View style={styles.progressTrack}>
               <View style={[styles.progressFill, { width: `${Math.round(status.progress * 100)}%` }]} />
             </View>
-            <Text style={[styles.hint, (waiting || status.tooMuchMotion) && { color: colors.warning }]}>{hint}</Text>
+            <Text style={[styles.hint, warn && { color: colors.warning }]}>{hint}</Text>
           </View>
         )}
       </View>
@@ -94,7 +108,7 @@ export function CalibrationScreen() {
   );
 }
 
-const STEP = { neutral: 1, tiltRight: 2, nodForward: 3, done: 3 } as const;
+const STEP = { neutral: 1, tiltLeft: 2, tiltRight: 3, nodForward: 4, nodBack: 5, done: 5 } as const;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.card, paddingHorizontal: 24 },

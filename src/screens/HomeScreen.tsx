@@ -18,7 +18,6 @@ export function HomeScreen() {
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 
-
   const notice =
     s.authorization === 'denied'
       ? '동작 및 피트니스 접근을 허용해 주세요'
@@ -45,16 +44,17 @@ export function HomeScreen() {
         </View>
 
         {notice && (
-          <Text
-            style={styles.notice}
-            onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
+          <Text style={styles.notice} onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
             {notice}
           </Text>
         )}
 
         <View style={styles.center}>
-          <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
-            <View style={styles.levelDot} />
+          <View style={styles.levelBox}>
+            <View style={styles.horizon} />
+            <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
+              <View style={styles.levelDot} />
+            </View>
           </View>
           <Text style={styles.angle}>{live ? `${abs}°` : '0°'}</Text>
         </View>
@@ -75,7 +75,9 @@ export function HomeScreen() {
                 : void monitor.startSession()
           }
           style={({ pressed }) => [styles.button, { opacity: pressed ? 0.8 : 1 }]}>
-          <Text style={styles.buttonText}>{!s.calibration ? '기준 자세 등록' : s.session ? '측정 종료' : '측정 시작'}</Text>
+          <Text style={styles.buttonText}>
+            {!s.calibration ? '기준 자세 등록' : s.session ? '측정 종료' : '측정 시작'}
+          </Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -143,7 +145,9 @@ function formatClock(sec: number) {
   const s = Math.max(0, Math.floor(sec));
   const pad = (n: number) => String(n).padStart(2, '0');
   const h = Math.floor(s / 3600);
-  return h > 0 ? `${h}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}` : `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
+  return h > 0
+    ? `${h}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`
+    : `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
 }
 
 /** Re-renders every second while `active`, for the elapsed-time display. */
@@ -166,13 +170,22 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   notice: { ...type.caption, color: colors.danger, marginTop: 12, textAlign: 'center' },
   center: { flex: 1, minHeight: 360, alignItems: 'center', justifyContent: 'center', paddingTop: 120 },
-  level: { width: 180, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 28 },
+  levelBox: { width: 240, height: 9, alignItems: 'center', justifyContent: 'center', marginBottom: 28 },
+  /** Fixed reference so the direction of the tilted line reads at a glance. */
+  horizon: { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: colors.tertiary, opacity: 0.6 },
+  level: { width: 180, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center' },
   levelDot: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: colors.tint, marginTop: -3.75 },
   angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 44 },
   stats: { flexDirection: 'row', marginBottom: 28 },
   stat: { flex: 1, alignItems: 'center' },
   statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
   statLabel: { ...type.label, fontSize: 11, color: colors.subtext, marginTop: 3 },
-  button: { height: 52, borderRadius: 26, backgroundColor: colors.tint, alignItems: 'center', justifyContent: 'center' },
+  button: {
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   buttonText: { ...type.button, fontSize: 15, color: colors.onText },
 });

@@ -234,7 +234,7 @@ class MonitorController {
 
   startCalibration(): void {
     this.calibrator = new Calibrator();
-    this.set({ calibrating: { phase: 'neutral', progress: 0, tooMuchMotion: false, tiltDeg: 0, stillSideways: false } });
+    this.set({ calibrating: { phase: 'neutral', progress: 0, tooMuchMotion: false, tiltDeg: 0, hint: 'none' } });
     void this.startStreaming();
   }
 

@@ -77,10 +77,11 @@ class DemoMotionSource implements MotionSource {
     this.timer = setInterval(() => {
       const t = Date.now() / 1000 - t0;
       const cycle = t % 40;
-      // 0–14s gentle sway, 14–24s lean right, 24–30s sway with a nod, 30–40s lean left
-      const lean = cycle >= 14 && cycle < 24 ? 14 : cycle >= 30 ? -13 : 0;
-      const tilt = lean + 3 * Math.sin(t * 0.9);
-      const nod = cycle >= 25 && cycle < 29 ? 18 : 0;
+      // 0–8s sway, 8–14s lean left, 14–22s lean right, 22–26s sway, 26–30s nod forward,
+      // 30–34s nod back, 34–40s sway — covers every calibration step in order.
+      const lean = cycle >= 8 && cycle < 14 ? -18 : cycle >= 14 && cycle < 22 ? 18 : 0;
+      const tilt = lean + 2 * Math.sin(t * 0.9);
+      const nod = cycle >= 26 && cycle < 30 ? 20 : cycle >= 30 && cycle < 34 ? -20 : 0;
       listeners.onSample({
         timestamp: t,
         quaternion: { x: 0, y: 0, z: 0, w: 1 },

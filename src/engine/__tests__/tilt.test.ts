@@ -22,47 +22,79 @@ describe('lateralTiltDeg', () => {
 });
 
 describe('Calibrator', () => {
-  /** Neutral → right tilt (with `tiltNod` of accidental nodding) → forward nod. */
-  function calibrate(tiltNod = 0) {
+  type Pose = [tiltDeg: number, nodDeg: number];
+  const hold = (t0: number, [tilt, nod]: Pose) => stream(t0, 1.3, () => tilt, 25, () => nod);
+
+  /** Neutral, then hold each pose of left / right / forward / back in turn. */
+  function calibrate(
+    left: Pose = [-20, 0],
+    right: Pose = [20, 0],
+    forward: Pose = [0, 20],
+    back: Pose = [0, -20],
+  ) {
     const calibrator = new Calibrator();
     let status = calibrator.feed(sample(0, 0));
     for (const s of stream(0.04, 3.2, () => 0)) status = calibrator.feed(s);
-    expect(status.phase).toBe('tiltRight');
-
-    for (const s of stream(3.3, 0.5, (t) => (t - 3.3) * 40, 25, () => tiltNod)) status = calibrator.feed(s);
-    for (const s of stream(3.8, 1, () => 20, 25, () => tiltNod)) status = calibrator.feed(s);
-    expect(status.phase).toBe('nodForward');
-
-    for (const s of stream(4.8, 1, () => 0)) status = calibrator.feed(s);
-    expect(status.phase).toBe('nodForward');
-    for (const s of stream(5.8, 1, () => 0, 25, () => 20)) status = calibrator.feed(s);
+    const phases = ['tiltLeft', 'tiltRight', 'nodForward', 'nodBack'] as const;
+    [left, right, forward, back].forEach((pose, i) => {
+      expect(status.phase).toBe(phases[i]);
+      for (const s of hold(3.3 + i * 1.5, pose)) status = calibrator.feed(s);
+    });
     expect(status.phase).toBe('done');
     return status.result!;
   }
 
-  it('learns neutral and tilt axis from sitting still, tilting right, then nodding', () => {
+  it('learns neutral and axes from left, right, forward and back', () => {
     const result = calibrate();
     expect(lateralTiltDeg(gravityFor(15), result)).toBeCloseTo(15, 3);
     expect(lateralTiltDeg(gravityFor(-9), result)).toBeCloseTo(-9, 3);
     expect(lateralTiltDeg(gravityFor(0, 25), result)).toBeCloseTo(0, 3);
+    expect(lateralTiltDeg(gravityFor(0, -25), result)).toBeCloseTo(0, 3);
   });
 
-  it('keeps nodding out of the angle when the right tilt was done with a nod', () => {
-    const result = calibrate(8);
-    expect(lateralTiltDeg(gravityFor(0, 25), result)).toBeCloseTo(0, 1);
-    expect(lateralTiltDeg(gravityFor(0, -25), result)).toBeCloseTo(0, 1);
+  it('cancels nodding mixed into the left/right poses', () => {
+    const result = calibrate([-20, 8], [20, 8]);
+    expect(lateralTiltDeg(gravityFor(0, 30), result)).toBeCloseTo(0, 1);
+    expect(lateralTiltDeg(gravityFor(0, -30), result)).toBeCloseTo(0, 1);
     expect(lateralTiltDeg(gravityFor(15), result)).toBeCloseTo(15, 1);
   });
 
-  it('does not accept the nod step while the head is still tilted sideways', () => {
+  it("corrects a neck whose nod drifts sideways differently forward and back", () => {
+    // Nodding forward drifts 3° right, nodding back drifts 2° right.
+    const result = calibrate([-20, 0], [20, 0], [3, 20], [2, -20]);
+    expect(Math.abs(lateralTiltDeg(gravityFor(3, 20), result))).toBeLessThan(0.3);
+    expect(Math.abs(lateralTiltDeg(gravityFor(2, -20), result))).toBeLessThan(0.3);
+    expect(Math.abs(lateralTiltDeg(gravityFor(4.5, 30), result))).toBeLessThan(0.8);
+    expect(lateralTiltDeg(gravityFor(15), result)).toBeCloseTo(15, 0);
+  });
+
+  it('keeps left/right correct after flipping', () => {
+    const result = flipCalibration(calibrate([-20, 0], [20, 0], [3, 20], [2, -20]));
+    expect(lateralTiltDeg(gravityFor(15), result)).toBeCloseTo(-15, 0);
+    expect(Math.abs(lateralTiltDeg(gravityFor(3, 20), result))).toBeLessThan(0.3);
+  });
+
+  it('asks for the other side when tilting left again in the right step', () => {
     const calibrator = new Calibrator();
     for (const s of stream(0, 3.3, () => 0)) calibrator.feed(s);
-    for (const s of stream(3.3, 1.5, () => 20)) calibrator.feed(s);
-    let status = calibrator.feed(sample(4.8, 0));
+    for (const s of hold(3.3, [-20, 0])) calibrator.feed(s);
+    let status = calibrator.feed(sample(4.7, -20));
+    expect(status.phase).toBe('tiltRight');
+    for (const s of hold(4.8, [-20, 0])) status = calibrator.feed(s);
+    expect(status.phase).toBe('tiltRight');
+    expect(status.hint).toBe('wrongSide');
+  });
+
+  it('does not accept a nod while the head is still tilted sideways', () => {
+    const calibrator = new Calibrator();
+    for (const s of stream(0, 3.3, () => 0)) calibrator.feed(s);
+    for (const s of hold(3.3, [-20, 0])) calibrator.feed(s);
+    let status = calibrator.feed(sample(4.7, 0));
+    for (const s of hold(4.8, [20, 0])) status = calibrator.feed(s);
     expect(status.phase).toBe('nodForward');
-    for (const s of stream(4.9, 1.5, () => 15, 25, () => 20)) status = calibrator.feed(s);
+    for (const s of hold(6.2, [15, 20])) status = calibrator.feed(s);
     expect(status.phase).toBe('nodForward');
-    expect(status.stillSideways).toBe(true);
+    expect(status.hint).toBe('stillSideways');
   });
 
   it('restarts the neutral phase when the head moves', () => {
