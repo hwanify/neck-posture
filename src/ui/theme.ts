@@ -1,22 +1,22 @@
 import type { PauseReason, PostureState } from '../engine';
 
-/** Deep teal palette: teal surfaces, mint-tinted type, apricot accent. No pure black or white. */
+/** Monochrome: black surfaces, white type, grays for everything else — no hues anywhere. */
 export const colors = {
-  bg: '#0F3B36',
-  card: '#154842',
-  barBg: '#0F3B36',
-  fill: '#1D5750',
-  text: '#E3F1EB',
-  /** Text/icons drawn on an accent-colored surface, e.g. the primary button. */
-  onText: '#0F3B36',
-  subtext: '#93BBB0',
-  tertiary: '#4F7F76',
-  separator: '#215650',
-  tint: '#F4B183',
-  good: '#9FE0C1',
-  warning: '#F4B183',
-  danger: '#FF8D7E',
-  muted: '#6E978E',
+  bg: '#000000',
+  card: '#141414',
+  barBg: '#000000',
+  fill: '#242424',
+  text: '#F2F2F2',
+  /** Text/icons drawn on a light (tint) surface, e.g. the primary button. */
+  onText: '#000000',
+  subtext: '#8E8E8E',
+  tertiary: '#4A4A4A',
+  separator: '#262626',
+  tint: '#F2F2F2',
+  good: '#F2F2F2',
+  warning: '#B0B0B0',
+  danger: '#FFFFFF',
+  muted: '#6B6B6B',
 };
 
 export const stateColor: Record<PostureState, string> = {

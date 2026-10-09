@@ -127,7 +127,7 @@ export function ToggleRow(props: {
         value={props.value}
         onValueChange={props.onChange}
         trackColor={{ true: colors.tint, false: colors.fill }}
-        thumbColor={colors.text}
+        thumbColor={props.value ? colors.bg : colors.text}
         ios_backgroundColor={colors.fill}
       />
     </Row>
