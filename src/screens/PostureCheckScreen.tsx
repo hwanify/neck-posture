@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { POSTURE_CHECK_SEC } from '../engine';
+import { t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
@@ -23,27 +24,27 @@ export function PostureCheckScreen() {
   const seconds = Math.max(0, Math.ceil(POSTURE_CHECK_SEC * (1 - check.progress)));
 
   const label = starting
-    ? '측정을 시작합니다'
+    ? t('check.starting')
     : largeShift
-      ? '등록할 때와 많이 달라요'
+      ? t('check.largeShift')
       : check.resumed
-        ? '에어팟이 다시 연결됐어요'
-        : '정면을 바라보고 멈춰 주세요';
+        ? t('check.reconnected')
+        : t('check.lookAhead');
   const hint = starting
-    ? '바른 자세를 기준으로 맞췄어요'
+    ? t('check.startingHint')
     : largeShift
-      ? '기준 자세를 다시 등록하는 걸 추천해요'
+      ? t('check.largeShiftHint')
       : waiting
-        ? 'AirPods 신호를 기다리는 중'
+        ? t('check.waiting')
         : check.tooMuchMotion
-          ? '움직임이 감지되어 다시 셉니다'
-          : `바른 자세로 ${POSTURE_CHECK_SEC}초간 확인합니다`;
+          ? t('check.motion')
+          : t('check.holdHint', { sec: POSTURE_CHECK_SEC });
 
   return (
     <View style={styles.container}>
       <View style={styles.top}>
         <Pressable onPress={() => void monitor.cancelCheck()} hitSlop={10}>
-          <Text style={styles.meta}>{check.resumed ? '측정 종료' : '취소'}</Text>
+          <Text style={styles.meta}>{check.resumed ? t('check.stop') : t('common.cancel')}</Text>
         </Pressable>
       </View>
 
@@ -54,7 +55,7 @@ export function PostureCheckScreen() {
           <View style={styles.levelDot} />
         </View>
         <Text style={styles.number}>
-          {starting ? '시작' : largeShift ? `${Math.round(check.largeShiftDeg!)}°` : seconds}
+          {starting ? t('check.start') : largeShift ? `${Math.round(check.largeShiftDeg!)}°` : seconds}
         </Text>
         <Text style={styles.label}>{label}</Text>
         <Text style={[styles.hint, (waiting || check.tooMuchMotion) && { color: colors.text }]}>{hint}</Text>
@@ -66,10 +67,10 @@ export function PostureCheckScreen() {
             accessibilityRole="button"
             onPress={() => monitor.startCalibration()}
             style={({ pressed }) => [styles.button, { opacity: pressed ? 0.8 : 1 }]}>
-            <Text style={styles.buttonText}>다시 등록</Text>
+            <Text style={styles.buttonText}>{t('check.recalibrate')}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => void monitor.confirmCheck()} hitSlop={8}>
-            <Text style={styles.secondary}>그대로 시작</Text>
+            <Text style={styles.secondary}>{t('check.startAnyway')}</Text>
           </Pressable>
         </View>
       )}

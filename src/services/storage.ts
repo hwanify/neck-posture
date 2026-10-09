@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { type Calibration, DEFAULT_POSTURE_SETTINGS, type PostureSettings, type SessionSummary } from '../engine';
+import { LANGUAGES, type LanguageSetting } from '../i18n';
 import { type MotionSourceKind, selectableSourceKinds } from './motionSource';
 
 export type FeedbackSettings = {
@@ -23,6 +24,8 @@ export type AppSettings = {
   feedback: FeedbackSettings;
   /** Preferred sensor when several are available (Expo Go: phone or demo). */
   source: MotionSourceKind;
+  /** UI language; 'system' follows the iPhone (English when unsupported). */
+  language: LanguageSetting;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -38,6 +41,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     cueSide: 'tilted',
   },
   source: selectableSourceKinds[0],
+  language: 'system',
 };
 
 const KEYS = {
@@ -65,8 +69,11 @@ export async function loadSettings(): Promise<AppSettings> {
   return {
     posture: { ...DEFAULT_SETTINGS.posture, ...saved?.posture },
     feedback: { ...DEFAULT_SETTINGS.feedback, ...saved?.feedback },
-    source:
-      saved?.source && selectableSourceKinds.includes(saved.source) ? saved.source : DEFAULT_SETTINGS.source,
+    source: saved?.source && selectableSourceKinds.includes(saved.source) ? saved.source : DEFAULT_SETTINGS.source,
+    language:
+      saved?.language === 'system' || LANGUAGES.some((l) => l.code === saved?.language)
+        ? saved!.language!
+        : DEFAULT_SETTINGS.language,
   };
 }
 

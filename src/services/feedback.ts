@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 
 import HeadphoneMotion from '../../modules/headphone-motion';
 import type { PostureEvent } from '../engine';
+import { t } from '../i18n';
 import type { FeedbackSettings } from './storage';
 
 Notifications.setNotificationHandler({
@@ -23,8 +24,6 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return result.granted;
 }
 
-const directionLabel = { left: '왼쪽', right: '오른쪽' } as const;
-
 /** Sound, haptic and notification feedback for posture events. */
 export async function deliverFeedback(event: PostureEvent, settings: FeedbackSettings): Promise<void> {
   const tasks: Promise<unknown>[] = [];
@@ -43,8 +42,8 @@ export async function deliverFeedback(event: PostureEvent, settings: FeedbackSet
       tasks.push(
         Notifications.scheduleNotificationAsync({
           content: {
-            title: `고개가 ${directionLabel[event.direction]}으로 기울었어요`,
-            body: `${Math.round(Math.abs(event.angle))}° 기울어진 상태예요. 고개를 바로 세워주세요.`,
+            title: t(event.direction === 'left' ? 'notification.titleLeft' : 'notification.titleRight'),
+            body: t('notification.body', { deg: Math.round(Math.abs(event.angle)) }),
             sound: !settings.sound,
           },
           trigger: null,

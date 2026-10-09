@@ -5,6 +5,7 @@ import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
 
 import type { PostureState } from '../engine';
+import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { colors } from '../ui/theme';
 
@@ -20,11 +21,11 @@ export function HomeScreen() {
 
   const notice =
     s.authorization === 'denied'
-      ? '동작 및 피트니스 접근을 허용해 주세요'
+      ? t('home.allowMotion')
       : s.error
         ? s.error
         : s.calibrationMismatch
-          ? '다른 쪽 이어폰 센서 사용 중 · 다시 등록 권장'
+          ? t('home.otherEarbud')
           : null;
 
   const ratio = s.session ? s.session.goodRatio : today.judgedSec > 0 ? today.goodRatio : null;
@@ -60,9 +61,9 @@ export function HomeScreen() {
         </View>
 
         <View style={styles.stats}>
-          <Stat value={ratio === null ? '–' : `${Math.round(ratio * 100)}%`} label="바른 자세" />
-          <Stat value={`${alerts}`} label="알림" />
-          <Stat value={time} label={s.session ? '경과' : '오늘 측정'} />
+          <Stat value={ratio === null ? '–' : `${Math.round(ratio * 100)}%`} label={t('home.good')} />
+          <Stat value={`${alerts}`} label={t('home.alerts')} />
+          <Stat value={time} label={s.session ? t('home.elapsed') : t('home.today')} />
         </View>
 
         <Pressable
@@ -76,7 +77,7 @@ export function HomeScreen() {
           }
           style={({ pressed }) => [styles.button, { opacity: pressed ? 0.8 : 1 }]}>
           <Text style={styles.buttonText}>
-            {!s.calibration ? '기준 자세 등록' : s.session ? '측정 종료' : '측정 시작'}
+            {!s.calibration ? t('home.calibrate') : s.session ? t('home.stop') : t('home.start')}
           </Text>
         </Pressable>
       </View>
@@ -97,14 +98,14 @@ function ConnectionStatus() {
   const s = useMonitor();
   const [text, tone] =
     s.sourceKind === 'demo'
-      ? ['데모', colors.warning]
+      ? [t('status.demo'), colors.warning]
       : s.sourceKind === 'phone'
-        ? [s.connected ? 'iPhone 센서' : '대기 중', s.connected ? colors.good : colors.muted]
+        ? [s.connected ? t('status.phone') : t('status.waiting'), s.connected ? colors.good : colors.muted]
         : !s.available
-          ? ['지원 안 됨', colors.danger]
+          ? [t('status.unsupported'), colors.danger]
           : s.connected
             ? ['AirPods', colors.good]
-            : ['연결 안 됨', colors.muted];
+            : [t('status.disconnected'), colors.muted];
   return (
     <View style={styles.status}>
       <View style={[styles.statusDot, { backgroundColor: tone }]} />
@@ -132,13 +133,12 @@ function useTodaySummary() {
 
 function formatToday() {
   const d = new Date();
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
+  return d.toLocaleDateString(localeTag(), { month: 'long', day: 'numeric', weekday: 'long' });
 }
 
 function formatShort(sec: number) {
   const m = Math.round(sec / 60);
-  return m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`;
+  return m >= 60 ? t('duration.hm', { h: Math.floor(m / 60), m: m % 60 }) : t('duration.m', { m });
 }
 
 function formatClock(sec: number) {

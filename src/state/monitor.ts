@@ -17,6 +17,7 @@ import {
   type SessionSummary,
   type TiltDirection,
 } from '../engine';
+import { setLanguage, t } from '../i18n';
 import { deliverFeedback, requestNotificationPermission, setBackgroundKeepAlive } from '../services/feedback';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
 import * as storage from '../services/storage';
@@ -129,6 +130,7 @@ class MonitorController {
       storage.loadSessions(),
       storage.loadOnboarded(),
     ]);
+    setLanguage(settings.language);
     this.source = createMotionSource(settings.source);
     const calibration = await storage.loadCalibration(this.source.kind);
     this.engine = new PostureEngine(calibration, settings.posture);
@@ -158,7 +160,7 @@ class MonitorController {
   async startStreaming(): Promise<void> {
     if (this.state.streaming) return;
     if (!this.source.isAvailable()) {
-      this.set({ available: false, error: '이 기기에서는 헤드폰 모션을 사용할 수 없어요.' });
+      this.set({ available: false, error: t('error.noHeadphoneMotion') });
       return;
     }
     try {
@@ -445,6 +447,7 @@ class MonitorController {
 
   async updateSettings(update: (settings: AppSettings) => AppSettings): Promise<void> {
     const settings = update(this.state.settings);
+    setLanguage(settings.language);
     this.engine.setSettings(settings.posture);
     this.set({ settings });
     if (this.state.session) {

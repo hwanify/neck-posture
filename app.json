@@ -16,7 +16,7 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSMotionUsageDescription": "에어팟의 움직임 센서로 고개가 좌우로 기울어졌는지 감지하기 위해 사용해요.",
+        "NSMotionUsageDescription": "Baromok uses your AirPods’ motion sensor to detect when your head tilts to one side.",
         "UIBackgroundModes": [
           "audio"
         ]
@@ -27,6 +27,18 @@
     ],
     "extra": {
       "eas": {}
+    },
+    "locales": {
+      "ko": "./locales/ko.json",
+      "en": "./locales/en.json",
+      "zh-Hans": "./locales/zh-Hans.json",
+      "ja": "./locales/ja.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json",
+      "de": "./locales/de.json",
+      "pt": "./locales/pt.json",
+      "ru": "./locales/ru.json",
+      "hi": "./locales/hi.json"
     }
   }
 }

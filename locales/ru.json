@@ -1,0 +1,4 @@
+{
+  "CFBundleDisplayName": "Baromok",
+  "NSMotionUsageDescription": "Baromok использует датчик движения AirPods, чтобы определять наклон головы в сторону."
+}

@@ -1,19 +1,19 @@
 import Constants from 'expo-constants';
+import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
 import { playTestCue } from '../services/feedback';
 import { type MotionSourceKind, selectableSourceKinds } from '../services/motionSource';
 import type { AppSettings, FeedbackSettings } from '../services/storage';
+import { getLanguage, LANGUAGES, type LanguageSetting, languageName, localeTag, systemLanguage, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Row, Screen, Section, Segmented, StepperRow, ToggleRow } from '../ui/components';
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
 import { colors } from '../ui/theme';
 
-const SOURCE_LABEL: Record<MotionSourceKind, string> = { airpods: 'AirPods', phone: 'iPhone 센서', demo: '데모' };
-const AUTH_LABEL = { notDetermined: '확인 전', restricted: '제한됨', denied: '거부됨', authorized: '허용됨' } as const;
-const LOCATION_LABEL = { default: '기본 센서', left: '왼쪽 이어폰', right: '오른쪽 이어폰' } as const;
+const sourceLabel = (kind: MotionSourceKind) => t(`settings.source.${kind}`);
 
 /** Recovery threshold sits a few degrees under the alert threshold (hysteresis). */
 const HYSTERESIS_DEG = 3;
@@ -33,32 +33,36 @@ export function SettingsScreen() {
 
   const testCue = async (pan: number) => {
     const ok = await playTestCue('alert', pan, feedback.volume).catch(() => false);
-    if (!ok) Alert.alert('알림음', 'AirPods 알림음은 TestFlight 빌드에서만 재생됩니다.');
+    if (!ok) Alert.alert(t('settings.cueUnavailableTitle'), t('settings.cueUnavailable'));
   };
 
   const calibration = s.calibration;
 
   return (
-    <Screen title="설정">
+    <Screen title={t('settings.title')}>
       <View style={styles.hero}>
-        <Text style={styles.heroLabel}>기준 자세</Text>
-        <Text style={styles.heroTitle}>{calibration ? '등록됨' : '등록이 필요해요'}</Text>
+        <Text style={styles.heroLabel}>{t('settings.calibration')}</Text>
+        <Text style={styles.heroTitle}>{calibration ? t('settings.registered') : t('settings.notRegistered')}</Text>
         <Text style={styles.heroMeta}>
           {calibration
-            ? `${formatDate(calibration.createdAt)} · ${LOCATION_LABEL[calibration.sensorLocation]}`
-            : '바른 자세를 한 번 등록하면 그 기준으로 측정합니다'}
+            ? `${formatDate(calibration.createdAt)} · ${t(`settings.location.${calibration.sensorLocation}`)}`
+            : t('settings.notRegisteredHint')}
         </Text>
         <View style={styles.heroActions}>
-          <Pill title={calibration ? '다시 등록' : '등록하기'} primary onPress={() => monitor.startCalibration()} />
-          {calibration ? <Pill title="좌우 바꾸기" onPress={() => void monitor.swapLeftRight()} /> : null}
+          <Pill
+            title={calibration ? t('settings.recalibrate') : t('settings.register')}
+            primary
+            onPress={() => monitor.startCalibration()}
+          />
+          {calibration ? <Pill title={t('settings.swap')} onPress={() => void monitor.swapLeftRight()} /> : null}
         </View>
       </View>
 
       {selectableSourceKinds.length > 1 && (
-        <Section header="센서" footer="Expo Go에서는 AirPods 대신 iPhone 센서나 데모 데이터로 테스트합니다.">
+        <Section header={t('settings.sensorSection')} footer={t('settings.sensorFooter')}>
           <View style={styles.segmentBox}>
             <Segmented
-              options={selectableSourceKinds.map((k) => ({ value: k, label: SOURCE_LABEL[k] }))}
+              options={selectableSourceKinds.map((k) => ({ value: k, label: sourceLabel(k) }))}
               value={s.sourceKind}
               disabled={s.session !== null}
               onChange={(kind) => void monitor.setSourceKind(kind)}
@@ -68,14 +72,15 @@ export function SettingsScreen() {
       )}
 
       <Section
-        header="감지"
+        header={t('settings.detection')}
         iconInset
-        footer={`${posture.exitDeg}° 안으로 돌아오면 바른 자세로 봅니다. 계속 기울어져 있으면 알림 간격마다 다시 알립니다.${
-          posture.measureWhileWalking ? '' : ' 걷는 동안에는 측정을 쉽니다.'
-        }`}>
+        footer={
+          t('settings.detectionFooter', { deg: posture.exitDeg }) +
+          (posture.measureWhileWalking ? '' : ` ${t('settings.walkingPaused')}`)
+        }>
         <StepperRow
           icon="angle"
-          title="알림 각도"
+          title={t('settings.alertAngle')}
           value={posture.enterDeg}
           step={1}
           min={5}
@@ -85,62 +90,63 @@ export function SettingsScreen() {
         />
         <StepperRow
           icon="timer"
-          title="유지 시간"
+          title={t('settings.holdTime')}
           value={posture.holdSec}
           step={1}
           min={2}
           max={60}
-          format={(v) => `${v}초`}
+          format={(n) => t('common.seconds', { n })}
           onChange={(holdSec) => setPosture({ holdSec })}
         />
         <StepperRow
           icon="repeat"
-          title="알림 간격"
+          title={t('settings.alertInterval')}
           value={posture.cooldownSec}
           step={5}
           min={5}
           max={300}
-          format={(v) => `${v}초`}
+          format={(n) => t('common.seconds', { n })}
           onChange={(cooldownSec) => setPosture({ cooldownSec })}
         />
         <ToggleRow
           icon="walk"
-          title="걷는 중에도 측정"
+          title={t('settings.measureWhileWalking')}
           value={posture.measureWhileWalking}
           onChange={(measureWhileWalking) => setPosture({ measureWhileWalking })}
         />
       </Section>
 
       <Section
-        header="알림"
+        header={t('settings.alerts')}
         iconInset
-        footer={
-          feedback.cueSide === 'tilted'
-            ? '알림음은 고개가 기운 쪽 귀에서 재생됩니다.'
-            : '알림음은 기운 반대쪽 귀에서 재생되어 돌아갈 방향을 알려줍니다.'
-        }>
+        footer={feedback.cueSide === 'tilted' ? t('settings.cueTiltedFooter') : t('settings.cueOppositeFooter')}>
         <ToggleRow
           icon="speaker"
-          title="AirPods 알림음"
+          title={t('settings.airpodsCue')}
           value={feedback.sound}
           onChange={(sound) => setFeedback({ sound })}
         />
         <ToggleRow
           icon="chime"
-          title="회복 효과음"
+          title={t('settings.recoveryChime')}
           value={feedback.recoveryChime}
           onChange={(recoveryChime) => setFeedback({ recoveryChime })}
         />
-        <ToggleRow icon="haptic" title="햅틱" value={feedback.haptic} onChange={(haptic) => setFeedback({ haptic })} />
+        <ToggleRow
+          icon="haptic"
+          title={t('settings.haptic')}
+          value={feedback.haptic}
+          onChange={(haptic) => setFeedback({ haptic })}
+        />
         <ToggleRow
           icon="bell"
-          title="백그라운드 알림"
+          title={t('settings.bgNotification')}
           value={feedback.notification}
           onChange={(notification) => setFeedback({ notification })}
         />
         <StepperRow
           icon="volume"
-          title="소리 크기"
+          title={t('settings.volume')}
           value={feedback.volume}
           step={0.1}
           min={0.1}
@@ -148,50 +154,50 @@ export function SettingsScreen() {
           format={(v) => `${Math.round(v * 100)}%`}
           onChange={(volume) => setFeedback({ volume })}
         />
-        <Row icon="ear" title="알림 방향">
+        <Row icon="ear" title={t('settings.cueSide')}>
           <Segmented
             options={[
-              { value: 'tilted', label: '기운 쪽' },
-              { value: 'opposite', label: '반대쪽' },
+              { value: 'tilted', label: t('settings.cueSide.tilted') },
+              { value: 'opposite', label: t('settings.cueSide.opposite') },
             ]}
             value={feedback.cueSide}
             onChange={(cueSide) => setFeedback({ cueSide })}
           />
         </Row>
-        <Row icon="ear" title="방향 테스트">
+        <Row icon="ear" title={t('settings.directionTest')}>
           <View style={styles.inlinePills}>
-            <Pill title="왼쪽" small onPress={() => void testCue(-1)} />
-            <Pill title="오른쪽" small onPress={() => void testCue(1)} />
+            <Pill title={t('common.left')} small onPress={() => void testCue(-1)} />
+            <Pill title={t('common.right')} small onPress={() => void testCue(1)} />
           </View>
         </Row>
       </Section>
 
-      <Section
-        header="측정"
-        iconInset
-        footer="백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.">
+      <Section header={t('settings.measurement')} iconInset footer={t('settings.measurementFooter')}>
         <ToggleRow
           icon="moon"
-          title="백그라운드 측정"
+          title={t('settings.backgroundMode')}
           value={feedback.backgroundMode}
           onChange={(backgroundMode) => setFeedback({ backgroundMode })}
         />
         <ToggleRow
           icon="sun"
-          title="화면 켜두기"
+          title={t('settings.keepAwake')}
           value={feedback.keepAwake}
           onChange={(keepAwake) => setFeedback({ keepAwake })}
         />
       </Section>
 
-      <Section header="정보" iconInset>
-        <Row icon="sensor" title="센서" value={`${SOURCE_LABEL[s.sourceKind]} · ${s.sampleRateHz}Hz`} />
-        <Row icon="info" title="동작 권한" value={AUTH_LABEL[s.authorization]} />
+      <LanguageSection value={s.settings.language} />
+
+      <Section header={t('settings.info')} iconInset>
+        <Row icon="sensor" title={t('settings.sensor')} value={`${sourceLabel(s.sourceKind)} · ${s.sampleRateHz}Hz`} />
+        <Row icon="info" title={t('settings.motionPermission')} value={t(`settings.auth.${s.authorization}`)} />
       </Section>
 
       <Text style={styles.footer}>
-        바로목 {Constants.expoConfig?.version ?? ''}
-        {'\n'}의료기기가 아니며, 모든 데이터는 이 iPhone에만 저장됩니다.
+        {t('settings.appName', { version: Constants.expoConfig?.version ?? '' })}
+        {'\n'}
+        {t('settings.disclaimer')}
       </Text>
     </Screen>
   );
@@ -221,9 +227,43 @@ function Pill({
   );
 }
 
+/** Language picker: the current choice, expanding into the list (system + every language). */
+function LanguageSection({ value }: { value: LanguageSetting }) {
+  const [open, setOpen] = useState(false);
+  const options: { value: LanguageSetting; label: string }[] = [
+    { value: 'system', label: t('settings.languageSystem', { name: languageName(systemLanguage()) }) },
+    ...LANGUAGES.map((l) => ({ value: l.code, label: l.name })),
+  ];
+  const choose = (language: LanguageSetting) => {
+    setOpen(false);
+    void monitor.updateSettings((prev) => ({ ...prev, language }));
+  };
+  return (
+    <Section header={t('settings.language')} iconInset>
+      <Row
+        icon="globe"
+        title={t('settings.language')}
+        value={value === 'system' ? languageName(getLanguage()) : languageName(value)}
+        onPress={() => setOpen((o) => !o)}
+      />
+      {open
+        ? options.map((o) => (
+            <Row
+              key={o.value}
+              title={o.label}
+              value={o.value === value ? '✓' : undefined}
+              valueColor={colors.text}
+              onPress={() => choose(o.value)}
+            />
+          ))
+        : null}
+    </Section>
+  );
+}
+
 function formatDate(ts: number) {
-  const d = new Date(ts);
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 등록`;
+  const date = new Date(ts).toLocaleDateString(localeTag(), { month: 'long', day: 'numeric' });
+  return t('settings.registeredOn', { date });
 }
 
 const styles = StyleSheet.create({

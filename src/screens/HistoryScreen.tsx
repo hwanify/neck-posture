@@ -4,6 +4,7 @@ import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
 
 import type { SessionSummary } from '../engine';
+import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Row, Screen, Section } from '../ui/components';
 import { Sparkline } from '../ui/Sparkline';
@@ -15,14 +16,14 @@ export function HistoryScreen() {
   const today = summarizeDay(sessions, new Date());
 
   return (
-    <Screen title="기록">
-      <Section header="오늘">
+    <Screen title={t('history.title')}>
+      <Section header={t('history.today')}>
         <Row
-          title="바른 자세"
+          title={t('history.good')}
           value={today.judgedSec > 0 ? `${Math.round((today.goodSec / today.judgedSec) * 100)}%` : '–'}
         />
-        <Row title="측정 시간" value={today.judgedSec > 0 ? formatDuration(today.judgedSec) : '–'} />
-        <Row title="알림" value={`${today.alerts}회`} />
+        <Row title={t('history.measured')} value={today.judgedSec > 0 ? formatDuration(today.judgedSec) : '–'} />
+        <Row title={t('history.alerts')} value={`${today.alerts}`} />
         {today.tiltSec > 0 ? (
           <View style={styles.biasBox}>
             <BiasBar left={today.leftSec} right={today.rightSec} />
@@ -31,22 +32,30 @@ export function HistoryScreen() {
       </Section>
 
       <Section
-        header="세션"
-        footer={sessions.length > 0 ? '세션을 길게 눌러 삭제할 수 있습니다.' : '측정을 시작하면 여기에 기록이 쌓입니다.'}>
+        header={t('history.sessions')}
+        footer={sessions.length > 0 ? t('history.footer') : t('history.footerEmpty')}>
         {sessions.length === 0 ? (
-          <Row title="기록 없음" />
+          <Row title={t('history.empty')} />
         ) : (
           sessions.map((session) => (
             <View key={session.id}>
               <Row
                 title={formatDate(session.startedAt)}
-                subtitle={`${formatDuration(session.goodSec + session.tiltSec)} · 알림 ${session.alertCount}회 · 평균 ${session.avgAbsAngle}°`}
+                subtitle={t('history.sessionSummary', {
+                  duration: formatDuration(session.goodSec + session.tiltSec),
+                  n: session.alertCount,
+                  deg: session.avgAbsAngle,
+                })}
                 value={`${Math.round(goodRatio(session) * 100)}%`}
                 valueColor={colors.text}
                 onLongPress={() =>
-                  Alert.alert('세션 삭제', '이 세션 기록을 삭제하시겠습니까?', [
-                    { text: '취소', style: 'cancel' },
-                    { text: '삭제', style: 'destructive', onPress: () => void monitor.removeSession(session.id) },
+                  Alert.alert(t('history.deleteTitle'), t('history.deleteMessage'), [
+                    { text: t('common.cancel'), style: 'cancel' },
+                    {
+                      text: t('common.delete'),
+                      style: 'destructive',
+                      onPress: () => void monitor.removeSession(session.id),
+                    },
                   ])
                 }
               />
@@ -74,9 +83,9 @@ function BiasBar({ left, right }: { left: number; right: number }) {
   return (
     <View>
       <View style={styles.biasLabels}>
-        <Text style={styles.biasText}>왼쪽 {leftPct}%</Text>
-        <Text style={styles.biasCaption}>기울어진 방향</Text>
-        <Text style={styles.biasText}>오른쪽 {100 - leftPct}%</Text>
+        <Text style={styles.biasText}>{t('history.biasLeft', { pct: leftPct })}</Text>
+        <Text style={styles.biasCaption}>{t('history.biasCaption')}</Text>
+        <Text style={styles.biasText}>{t('history.biasRight', { pct: 100 - leftPct })}</Text>
       </View>
       <View style={styles.biasTrack}>
         <View style={{ flex: Math.max(leftPct, 1), backgroundColor: colors.tint }} />
@@ -110,9 +119,12 @@ function summarizeDay(sessions: SessionSummary[], day: Date) {
 }
 
 function formatDate(ts: number) {
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return new Date(ts).toLocaleString(localeTag(), {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 const styles = StyleSheet.create({

@@ -17,7 +17,8 @@ export type RowIconName =
   | 'sensor'
   | 'ear'
   | 'info'
-  | 'walk';
+  | 'walk'
+  | 'globe';
 
 /** Small leading glyph for list rows. */
 export function RowIcon({ name }: { name: RowIconName }) {
@@ -37,6 +38,12 @@ export function RowIcon({ name }: { name: RowIconName }) {
             <Path d="M3 15 L15 15" {...s} />
             <Path d="M3 15 L13 5" {...s} />
             <Path d="M8 15 A5 5 0 0 0 6.5 11.5" {...s} />
+          </>
+        )}
+        {name === 'globe' && (
+          <>
+            <Circle cx={9} cy={9} r={6.5} {...s} />
+            <Path d="M2.5 9 L15.5 9 M9 2.5 C6.5 5 6.5 13 9 15.5 M9 2.5 C11.5 5 11.5 13 9 15.5" {...s} />
           </>
         )}
         {name === 'walk' && (

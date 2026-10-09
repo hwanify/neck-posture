@@ -5,6 +5,7 @@ import type { PostureState } from '../engine';
 import { type } from './fonts';
 import { Text } from './Text';
 import { colors, useSvgPalette } from './theme';
+import { t } from '../i18n';
 
 const SIZE = 300;
 const C = SIZE / 2;
@@ -39,7 +40,7 @@ export function PostureDial({ angle, enterDeg, state, caption, size = 260 }: Pro
   const start = point(0, R);
   const end = point(display, R);
   const abs = angle === null ? null : Math.round(Math.abs(angle));
-  const side = abs === null ? ' ' : abs === 0 ? '정면' : angle! < 0 ? '왼쪽' : '오른쪽';
+  const side = abs === null ? ' ' : abs === 0 ? t('common.center') : angle! < 0 ? t('common.left') : t('common.right');
 
   const threshold = (deg: number) => {
     const a = point(deg, R - STROKE / 2 - 4);

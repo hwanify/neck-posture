@@ -1,0 +1,4 @@
+{
+  "CFBundleDisplayName": "Baromok",
+  "NSMotionUsageDescription": "AirPodsのモーションセンサーを使って、頭が左右に傾いているかを検出します。"
+}

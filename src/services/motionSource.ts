@@ -6,6 +6,7 @@ import HeadphoneMotion, {
   type MotionSample,
 } from '../../modules/headphone-motion';
 import { demoGravity } from '../engine';
+import { t } from '../i18n';
 
 export type MotionSourceListeners = {
   onSample: (sample: MotionSample) => void;
@@ -120,8 +121,8 @@ class PhoneMotionSource implements MotionSource {
     await this.stop();
     const permission = await DeviceMotion.requestPermissionsAsync();
     this.authorization = permission.granted ? 'authorized' : 'denied';
-    if (!permission.granted) throw new Error('동작 및 피트니스 권한이 필요해요.');
-    if (!(await DeviceMotion.isAvailableAsync())) throw new Error('이 기기에서는 모션 센서를 사용할 수 없어요.');
+    if (!permission.granted) throw new Error(t('error.motionPermission'));
+    if (!(await DeviceMotion.isAvailableAsync())) throw new Error(t('error.noMotionSensor'));
 
     DeviceMotion.setUpdateInterval(40);
     // "Connected" follows from samples arriving (see MonitorController.handleSample).

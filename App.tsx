@@ -9,18 +9,15 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { PostureCheckScreen } from './src/screens/PostureCheckScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { t } from './src/i18n';
 import { monitor, useMonitor } from './src/state/monitor';
 import { type, useAppFonts } from './src/ui/fonts';
 import { TabIcon } from './src/ui/TabIcon';
 import { Text } from './src/ui/Text';
 import { colors, useSvgPalette } from './src/ui/theme';
 
-const TABS = [
-  { key: 'home', label: '자세' },
-  { key: 'history', label: '기록' },
-  { key: 'settings', label: '설정' },
-] as const;
-type TabKey = (typeof TABS)[number]['key'];
+const TABS = ['home', 'history', 'settings'] as const;
+type TabKey = (typeof TABS)[number];
 
 export default function App() {
   return (
@@ -82,10 +79,10 @@ function Root() {
           {tab === 'settings' && <SettingsScreen />}
         </View>
         <SafeAreaView edges={['bottom']} style={styles.tabBar}>
-          {TABS.map((t) => (
-            <Pressable key={t.key} style={styles.tab} onPress={() => setTab(t.key)} accessibilityRole="tab">
-              <TabIcon name={t.key} color={tab === t.key ? palette.tint : palette.subtext} active={tab === t.key} />
-              <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
+          {TABS.map((key) => (
+            <Pressable key={key} style={styles.tab} onPress={() => setTab(key)} accessibilityRole="tab">
+              <TabIcon name={key} color={tab === key ? palette.tint : palette.subtext} active={tab === key} />
+              <Text style={[styles.tabLabel, tab === key && styles.tabLabelActive]}>{t(`tab.${key}`)}</Text>
             </Pressable>
           ))}
         </SafeAreaView>
