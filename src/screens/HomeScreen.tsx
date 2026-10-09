@@ -4,7 +4,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
 import { GradientCard } from '../ui/GradientCard';
-import { colors, pastel, pauseLabel, stateGradient } from '../ui/theme';
+import { colors, pauseLabel, stateGradient } from '../ui/theme';
 
 const HEADLINE: Record<PostureState, string> = {
   good: '바른 자세\n유지 중',
@@ -41,68 +41,50 @@ export function HomeScreen() {
           ? '다른 쪽 이어폰 센서 사용 중 · 다시 등록 권장'
           : null;
 
+  const ratio = s.session ? s.session.goodRatio : today.judgedSec > 0 ? today.goodRatio : null;
+  const alerts = s.session ? s.session.alertCount : today.alerts;
+  const time = s.session
+    ? formatClock((now - s.session.startedAt) / 1000)
+    : today.judgedSec > 0
+      ? formatShort(today.judgedSec)
+      : '–';
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.top}>
-        <Text style={styles.date}>{formatToday()}</Text>
-        <ConnectionStatus />
-      </View>
+    <View style={styles.screen}>
+      <GradientCard
+        vertical
+        colors={[colors.bg, stateGradient[state][0], stateGradient[state][1], colors.bg]}
+        style={styles.backdrop}
+      />
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.top}>
+          <Text style={styles.meta}>{formatToday()}</Text>
+          <ConnectionStatus />
+        </View>
 
-      <Text style={styles.headline}>{headline}</Text>
+        <Text style={styles.headline}>{headline}</Text>
+        {notice && (
+          <Text
+            style={styles.notice}
+            onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
+            {notice}
+          </Text>
+        )}
 
-      {notice && (
-        <Text
-          style={styles.notice}
-          onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
-          {notice}
-        </Text>
-      )}
-
-      <GradientCard colors={stateGradient[state]} style={styles.hero}>
-        <View style={styles.levelBox}>
+        <View style={styles.center}>
           <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
             <View style={styles.levelDot} />
           </View>
+          <Text style={styles.angle}>{live ? `${abs}°` : '–'}</Text>
+          <Text style={styles.angleLabel}>{sub}</Text>
         </View>
-        <View style={styles.heroBottom}>
-          <Text style={styles.heroValue}>{live ? `${abs}°` : '–'}</Text>
-          <Text style={styles.heroLabel}>{sub}</Text>
-        </View>
-      </GradientCard>
 
-      <View style={styles.tiles}>
-        <GradientCard colors={pastel.peach} style={styles.tile}>
-          <Text style={styles.tileLabel}>{s.session ? '이번 측정' : '오늘'}</Text>
-          <View>
-            <Text style={styles.tileValue}>
-              {s.session
-                ? `${Math.round(s.session.goodRatio * 100)}%`
-                : today.judgedSec > 0
-                  ? `${Math.round(today.goodRatio * 100)}%`
-                  : '–'}
-            </Text>
-            <Text style={styles.tileCaption}>바른 자세</Text>
-          </View>
-        </GradientCard>
-        <GradientCard colors={pastel.sage} style={styles.tile}>
-          <Text style={styles.tileLabel}>{s.session ? '이번 측정' : '오늘'}</Text>
-          <View>
-            <Text style={styles.tileValue}>{s.session ? s.session.alertCount : today.alerts}</Text>
-            <Text style={styles.tileCaption}>알림</Text>
-          </View>
-        </GradientCard>
-      </View>
-
-      <View style={styles.actions}>
-        <View style={[styles.pill, styles.pillSoft]}>
-          <Text style={styles.pillSoftText}>
-            {s.session
-              ? formatClock((now - s.session.startedAt) / 1000)
-              : today.judgedSec > 0
-                ? formatShort(today.judgedSec)
-                : `±${s.settings.posture.enterDeg}°`}
-          </Text>
+        <View style={styles.stats}>
+          <Stat value={ratio === null ? '–' : `${Math.round(ratio * 100)}%`} label="바른 자세" />
+          <Stat value={`${alerts}`} label="알림" />
+          <Stat value={time} label={s.session ? '경과' : '오늘 측정'} />
         </View>
+
         <Pressable
           accessibilityRole="button"
           onPress={() =>
@@ -112,11 +94,20 @@ export function HomeScreen() {
                 ? void monitor.endSession()
                 : void monitor.startSession()
           }
-          style={({ pressed }) => [styles.pill, styles.pillDark, { opacity: pressed ? 0.8 : 1 }]}>
-          <Text style={styles.pillDarkText}>{!s.calibration ? '등록하기' : s.session ? '종료' : '측정 시작'}</Text>
+          style={({ pressed }) => [styles.button, { opacity: pressed ? 0.8 : 1 }]}>
+          <Text style={styles.buttonText}>{!s.calibration ? '기준 자세 등록' : s.session ? '측정 종료' : '측정 시작'}</Text>
         </Pressable>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -135,7 +126,7 @@ function ConnectionStatus() {
   return (
     <View style={styles.status}>
       <View style={[styles.statusDot, { backgroundColor: tone }]} />
-      <Text style={styles.date}>{text}</Text>
+      <Text style={styles.meta}>{text}</Text>
     </View>
   );
 }
@@ -187,10 +178,11 @@ function useNow(active: boolean) {
 }
 
 const styles = StyleSheet.create({
-  screen: { backgroundColor: colors.bg },
-  container: { paddingHorizontal: 22, paddingTop: 12, paddingBottom: 28 },
+  screen: { flex: 1, backgroundColor: colors.bg },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 },
+  container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  date: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
+  meta: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
   status: { flexDirection: 'row', alignItems: 'center' },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   headline: {
@@ -200,25 +192,17 @@ const styles = StyleSheet.create({
     color: colors.text,
     letterSpacing: -1.2,
     marginTop: 22,
-    marginBottom: 22,
   },
-  notice: { fontSize: 14, color: colors.danger, marginTop: -10, marginBottom: 16 },
-  hero: { height: 240, padding: 24, justifyContent: 'space-between' },
-  levelBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  level: { width: 150, height: 2, borderRadius: 1, backgroundColor: 'rgba(20,20,20,0.75)', alignItems: 'center' },
-  levelDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.text, marginTop: -4 },
-  heroBottom: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  heroValue: { fontSize: 56, fontWeight: '800', color: colors.text, letterSpacing: -2, fontVariant: ['tabular-nums'] },
-  heroLabel: { fontSize: 15, fontWeight: '600', color: 'rgba(20,20,20,0.6)' },
-  tiles: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  tile: { flex: 1, height: 150, padding: 20, justifyContent: 'space-between' },
-  tileLabel: { fontSize: 13, fontWeight: '600', color: 'rgba(20,20,20,0.5)' },
-  tileValue: { fontSize: 34, fontWeight: '800', color: colors.text, letterSpacing: -1, fontVariant: ['tabular-nums'] },
-  tileCaption: { fontSize: 15, fontWeight: '700', color: colors.text, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
-  pill: { flex: 1, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
-  pillSoft: { backgroundColor: colors.fill },
-  pillSoftText: { fontSize: 18, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'], letterSpacing: 0.5 },
-  pillDark: { backgroundColor: colors.text },
-  pillDarkText: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  notice: { fontSize: 14, color: colors.danger, marginTop: 8 },
+  center: { flex: 1, minHeight: 280, alignItems: 'center', justifyContent: 'center' },
+  level: { width: 220, height: 2, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 40 },
+  levelDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.text, marginTop: -5 },
+  angle: { fontSize: 88, fontWeight: '800', color: colors.text, letterSpacing: -4, fontVariant: ['tabular-nums'] },
+  angleLabel: { fontSize: 16, fontWeight: '600', color: colors.subtext, marginTop: -4 },
+  stats: { flexDirection: 'row', marginBottom: 28 },
+  stat: { flex: 1 },
+  statValue: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.8, fontVariant: ['tabular-nums'] },
+  statLabel: { fontSize: 13, fontWeight: '600', color: colors.subtext, marginTop: 2 },
+  button: { height: 60, borderRadius: 30, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
+  buttonText: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
 });

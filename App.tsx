@@ -87,8 +87,6 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     backgroundColor: colors.barBg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
   },
   tab: { flex: 1, alignItems: 'center', paddingTop: 7, paddingBottom: 2 },
   tabLabel: { fontSize: 10, fontWeight: '500', color: colors.muted, marginTop: 1 },
