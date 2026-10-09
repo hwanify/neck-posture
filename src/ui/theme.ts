@@ -1,10 +1,10 @@
 import type { PauseReason, PostureState } from '../engine';
 
-/** Warm, soft palette: off-white paper, ink type, state-tinted backgrounds. */
+/** Clean palette: white screens, ink type, soft warm-gray groups, color only for posture state. */
 export const colors = {
-  bg: '#FAF7F2',
-  card: '#FFFFFF',
-  barBg: '#FAF7F2',
+  bg: '#FFFFFF',
+  card: '#F7F6F3',
+  barBg: '#FFFFFF',
   fill: '#EFEAE2',
   text: '#141414',
   subtext: '#8C867D',
@@ -22,14 +22,6 @@ export const stateColor: Record<PostureState, string> = {
   tilting: colors.warning,
   alerted: colors.danger,
   paused: colors.muted,
-};
-
-/** Very light full-screen backgrounds per posture state (the screen tints instead of using boxes). */
-export const stateBackground: Record<PostureState, string> = {
-  good: '#FAF7F2',
-  tilting: '#FBEEDF',
-  alerted: '#FBE3DF',
-  paused: '#F6F3EE',
 };
 
 const SVG_PALETTE = {

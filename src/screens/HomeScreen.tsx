@@ -6,7 +6,7 @@ import { Text } from '../ui/Text';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { colors, pauseLabel, stateColor } from '../ui/theme';
+import { colors, stateColor } from '../ui/theme';
 
 export function HomeScreen() {
   const s = useMonitor();
@@ -18,18 +18,8 @@ export function HomeScreen() {
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 
-  // One short line under the angle: what is happening, or what to do about it.
-  const side = angle < 0 ? '왼쪽' : '오른쪽';
-  const back = angle < 0 ? '오른쪽' : '왼쪽';
-  const message = !s.calibration
-    ? '바른 자세를 먼저 등록해 주세요'
-    : !live
-      ? pauseLabel[snapshot?.pauseReason ?? 'disconnected']
-      : state === 'alerted'
-        ? `고개를 ${back}으로 세워주세요`
-        : state === 'tilting'
-          ? `${side}으로 기울고 있어요`
-          : '바른 자세예요';
+  // No caption: the level line and dot carry the state color; gray while idle.
+  const tone = live && state !== 'good' ? stateColor[state] : live ? colors.text : colors.tertiary;
 
   const notice =
     s.authorization === 'denied'
@@ -65,11 +55,10 @@ export function HomeScreen() {
         )}
 
         <View style={styles.center}>
-          <View style={[styles.level, !live && { backgroundColor: colors.tertiary }, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
-            <View style={[styles.levelDot, !live && { backgroundColor: colors.tertiary }]} />
+          <View style={[styles.level, { backgroundColor: tone }, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
+            <View style={[styles.levelDot, { backgroundColor: tone }]} />
           </View>
           <Text style={[styles.angle, !live && { color: colors.tertiary }]}>{live ? `${abs}°` : '0°'}</Text>
-          <Text style={[styles.message, { color: live ? stateColor[state] : colors.subtext }]}>{message}</Text>
         </View>
 
         <View style={styles.stats}>
@@ -182,7 +171,6 @@ const styles = StyleSheet.create({
   level: { width: 220, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 28 },
   levelDot: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: colors.text, marginTop: -3.75 },
   angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 58 },
-  message: { ...type.callout, marginTop: 6, textAlign: 'center' },
   stats: { flexDirection: 'row', marginBottom: 28 },
   stat: { flex: 1, alignItems: 'center' },
   statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },

@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalibrationScreen } from './src/screens/CalibrationScreen';
@@ -12,7 +12,6 @@ import { monitor, useMonitor } from './src/state/monitor';
 import { type, useAppFonts } from './src/ui/fonts';
 import { TabIcon } from './src/ui/TabIcon';
 import { Text } from './src/ui/Text';
-import { useStateBackground } from './src/ui/useStateBackground';
 import { colors, useSvgPalette } from './src/ui/theme';
 
 const TABS = [
@@ -36,8 +35,6 @@ function Root() {
   const palette = useSvgPalette();
   const fontsReady = useAppFonts();
   const [tab, setTab] = useState<TabKey>('home');
-  const postureState = s.calibration ? (s.snapshot?.state ?? 'paused') : 'paused';
-  const homeBackground = useStateBackground(postureState);
 
   useEffect(() => {
     void monitor.init();
@@ -68,7 +65,7 @@ function Root() {
   }
 
   return (
-    <Animated.View style={[styles.fill, tab === 'home' && { backgroundColor: homeBackground }]}>
+    <View style={styles.fill}>
       <SafeAreaView style={styles.transparent} edges={['top', 'left', 'right']}>
         <View style={styles.transparent}>
           {tab === 'home' && <HomeScreen />}
@@ -84,7 +81,7 @@ function Root() {
           ))}
         </SafeAreaView>
       </SafeAreaView>
-    </Animated.View>
+    </View>
   );
 }
 

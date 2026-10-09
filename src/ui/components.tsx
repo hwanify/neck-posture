@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
   segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
   segmentSelected: {
-    backgroundColor: colors.card,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOpacity: 0.12,
     shadowRadius: 4,
