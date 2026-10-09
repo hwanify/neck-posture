@@ -64,7 +64,11 @@ jobs:
       # credentials on later runs.
       - name: Set up signing credentials
         run: |
-          yes '' | env -u CI script -qefc "$EAS credentials:configure-build --platform ios --profile production" /dev/null
+          # A bounded number of Enter presses (an endless `yes` floods the log and the runner kills the job).
+          (for i in $(seq 1 15); do sleep 2; echo; done) \
+            | timeout 600 env -u CI script -qefc "$EAS credentials:configure-build --platform ios --profile production" /dev/null \
+            > "$RUNNER_TEMP/credentials.log" 2>&1 || { tail -n 60 "$RUNNER_TEMP/credentials.log"; exit 1; }
+          grep -E "credentials are ready|Distribution Certificate|Provisioning Profile" "$RUNNER_TEMP/credentials.log" || true
 
       - name: Build
         run: |
