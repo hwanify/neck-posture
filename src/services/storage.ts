@@ -16,8 +16,6 @@ export type FeedbackSettings = {
   keepAwake: boolean;
   /** Which ear plays the alert: the side the head tilts to, or the opposite side. */
   cueSide: 'tilted' | 'opposite';
-  /** Show the session on the Lock Screen / Dynamic Island. */
-  liveActivity: boolean;
 };
 
 export type AppSettings = {
@@ -38,7 +36,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     backgroundMode: true,
     keepAwake: false,
     cueSide: 'tilted',
-    liveActivity: true,
   },
   source: selectableSourceKinds[0],
 };

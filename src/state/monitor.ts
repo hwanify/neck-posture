@@ -18,7 +18,6 @@ import {
   type TiltDirection,
 } from '../engine';
 import { deliverFeedback, requestNotificationPermission, setBackgroundKeepAlive } from '../services/feedback';
-import { liveActivity } from '../services/liveActivity';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
@@ -144,8 +143,6 @@ class MonitorController {
       authorization: this.source.getAuthorizationStatus(),
     });
 
-    // A Live Activity left behind by a previous run that was killed mid-session.
-    void liveActivity.end();
     AppState.addEventListener('change', this.handleAppState);
     if (onboarded) await this.startStreaming();
   }
@@ -191,11 +188,6 @@ class MonitorController {
     if (!this.state.onboarded) return;
     if (status === 'active') {
       this.set({ authorization: this.source.getAuthorizationStatus() });
-      // Live Activities can only be started in the foreground.
-      const session = this.state.session;
-      if (session && this.state.settings.feedback.liveActivity && liveActivity.needsRestart()) {
-        void liveActivity.start(session.startedAt, this.state.snapshot?.angle ?? 0, 'good', session.goodRatio);
-      }
       void this.startStreaming();
     } else if (status === 'background') {
       // Without a session (or background mode) there is nothing to watch for — save battery.
@@ -272,7 +264,6 @@ class MonitorController {
       for (const event of snapshot.events) {
         void deliverFeedback(event, this.state.settings.feedback);
       }
-      liveActivity.update(snapshot.angle, snapshot.state, session.goodRatio);
     }
     this.set({ ...patch, snapshot, session });
   }
@@ -341,9 +332,6 @@ class MonitorController {
     this.pendingCheck = null;
     this.check = new PostureCheck(this.state.calibration);
     this.set({ checking: { progress: 0, tooMuchMotion: false, resumed, largeShiftDeg: null, starting: false } });
-    if (resumed && this.state.session) {
-      liveActivity.update(this.state.snapshot?.angle ?? 0, 'paused', this.state.session.goodRatio);
-    }
   }
 
   private handleCheckSample(sample: MotionSample, common: Partial<MonitorState>) {
@@ -424,9 +412,6 @@ class MonitorController {
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
     this.set({ session: { id, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
-    if (this.state.settings.feedback.liveActivity) {
-      void liveActivity.start(startedAt, this.state.snapshot?.angle ?? 0, 'good', 1);
-    }
   }
 
   async endSession(): Promise<SessionSummary | null> {
@@ -437,7 +422,6 @@ class MonitorController {
     this.pendingCheck = null;
     this.needsRecheck = false;
     this.set({ session: null, checking: null });
-    await liveActivity.end();
     await this.releaseSessionResources();
 
     // Very short sessions aren't worth keeping.
@@ -460,20 +444,11 @@ class MonitorController {
   // MARK: - Settings
 
   async updateSettings(update: (settings: AppSettings) => AppSettings): Promise<void> {
-    const previous = this.state.settings;
-    const settings = update(previous);
+    const settings = update(this.state.settings);
     this.engine.setSettings(settings.posture);
     this.set({ settings });
-    const session = this.state.session;
-    if (session) {
+    if (this.state.session) {
       await setBackgroundKeepAlive(settings.feedback.backgroundMode).catch(() => {});
-      if (settings.feedback.liveActivity !== previous.feedback.liveActivity) {
-        if (settings.feedback.liveActivity) {
-          await liveActivity.start(session.startedAt, this.state.snapshot?.angle ?? 0, 'good', session.goodRatio);
-        } else {
-          await liveActivity.end();
-        }
-      }
     }
     await storage.saveSettings(settings);
   }

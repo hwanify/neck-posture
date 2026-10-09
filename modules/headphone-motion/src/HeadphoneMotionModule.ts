@@ -1,12 +1,6 @@
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
-import type {
-  AuthorizationStatus,
-  CueKind,
-  HeadphoneMotionEvents,
-  LiveActivityInfo,
-  LiveActivityStatus,
-} from './HeadphoneMotion.types';
+import type { AuthorizationStatus, CueKind, HeadphoneMotionEvents } from './HeadphoneMotion.types';
 
 declare class HeadphoneMotionModule extends NativeModule<HeadphoneMotionEvents> {
   isAvailable(): boolean;
@@ -17,16 +11,6 @@ declare class HeadphoneMotionModule extends NativeModule<HeadphoneMotionEvents> 
   setBackgroundKeepAlive(enabled: boolean): Promise<void>;
   /** pan: -1 (left ear) ... 1 (right ear), volume: 0...1 */
   playCue(kind: CueKind, pan: number, volume: number): Promise<void>;
-  /** Lock Screen / Dynamic Island. Resolves false when Live Activities are turned off for the app. */
-  startLiveActivity(
-    startedAtMs: number,
-    angle: number,
-    status: LiveActivityStatus,
-    goodPercent: number,
-  ): Promise<boolean>;
-  updateLiveActivity(angle: number, status: LiveActivityStatus, goodPercent: number): Promise<void>;
-  endLiveActivity(): Promise<void>;
-  getLiveActivityInfo(): LiveActivityInfo;
 }
 
 /** `null` when the native module isn't in the binary (Expo Go, Android, web, tests). */
