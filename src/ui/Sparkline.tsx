@@ -38,7 +38,7 @@ export function Sparkline({
       <Line x1={0} x2={width} y1={y(-limitDeg)} y2={y(-limitDeg)} stroke={colors.warningSoft} strokeWidth={1} />
       <Line x1={0} x2={width} y1={mid} y2={mid} stroke={colors.border} strokeWidth={1} />
       {segments.map((points, i) => (
-        <Polyline key={i} points={points} stroke={colors.primary} strokeWidth={2} fill="none" />
+        <Polyline key={i} points={points} stroke={colors.primary} strokeWidth={1.5} fill="none" />
       ))}
     </Svg>
   );

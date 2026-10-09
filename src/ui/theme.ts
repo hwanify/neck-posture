@@ -1,25 +1,22 @@
 import type { PauseReason, PostureState } from '../engine';
 
-// Warm flat-illustration palette: coral brand, navy ink, distinct status colors.
+// Quiet, mature palette: warm neutral surfaces, ink text, desaturated status colors.
 export const colors = {
-  bg: '#FFF6F3',
+  bg: '#F4F3EF',
   card: '#FFFFFF',
-  text: '#1F2A44',
-  subtext: '#6B7489',
-  border: '#F0E4E0',
-  primary: '#FF6B5B',
-  primarySoft: '#FFE3DE',
-  navy: '#26335C',
-  mustard: '#F7B538',
-  skin: '#F6C9A8',
-  good: '#22A06B',
-  goodSoft: '#DDF4E8',
-  warning: '#E99A16',
-  warningSoft: '#FFF0D4',
-  danger: '#EF4E4A',
-  dangerSoft: '#FFE1DF',
-  muted: '#A3ABBD',
-  mutedSoft: '#F1EEF0',
+  text: '#16171A',
+  subtext: '#86868B',
+  border: '#E6E4DE',
+  primary: '#16171A',
+  primarySoft: '#ECEAE4',
+  good: '#4F7A63',
+  goodSoft: '#E7EFE9',
+  warning: '#B98326',
+  warningSoft: '#F5EDDD',
+  danger: '#B5483F',
+  dangerSoft: '#F6E5E2',
+  muted: '#A7A6A1',
+  mutedSoft: '#EDEBE6',
 };
 
 export const stateColor: Record<PostureState, string> = {
@@ -38,8 +35,8 @@ export const stateSoftColor: Record<PostureState, string> = {
 
 export const stateLabel: Record<PostureState, string> = {
   good: '바른 자세',
-  tilting: '기울어짐 감지 중',
-  alerted: '고개를 바로 세워주세요',
+  tilting: '기울어짐 감지',
+  alerted: '자세를 바로 해주세요',
   paused: '일시정지',
 };
 

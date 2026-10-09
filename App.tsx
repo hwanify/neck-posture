@@ -9,12 +9,13 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { monitor, useMonitor } from './src/state/monitor';
+import { TabIcon } from './src/ui/TabIcon';
 import { colors } from './src/ui/theme';
 
 const TABS = [
-  { key: 'home', label: '홈', icon: '🧍' },
-  { key: 'history', label: '기록', icon: '📊' },
-  { key: 'settings', label: '설정', icon: '⚙️' },
+  { key: 'home', label: '자세' },
+  { key: 'history', label: '기록' },
+  { key: 'settings', label: '설정' },
 ] as const;
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -69,7 +70,7 @@ function Root() {
       <SafeAreaView edges={['bottom']} style={styles.tabBar}>
         {TABS.map((t) => (
           <Pressable key={t.key} style={styles.tab} onPress={() => setTab(t.key)} accessibilityRole="tab">
-            <Text style={styles.tabIcon}>{t.icon}</Text>
+            <TabIcon name={t.key} color={tab === t.key ? colors.text : colors.muted} />
             <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
           </Pressable>
         ))}
@@ -86,9 +87,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
+    paddingTop: 4,
   },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 8 },
-  tabIcon: { fontSize: 20 },
-  tabLabel: { fontSize: 11, color: colors.subtext, marginTop: 2 },
-  tabLabelActive: { color: colors.primary, fontWeight: '700' },
+  tabLabel: { fontSize: 10, color: colors.muted, marginTop: 3, letterSpacing: 0.3 },
+  tabLabelActive: { color: colors.text, fontWeight: '600' },
 });

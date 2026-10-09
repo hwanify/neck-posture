@@ -2,8 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { monitor, useMonitor } from '../state/monitor';
 import { Button, Card } from '../ui/components';
-import { PersonVisual } from '../ui/PersonVisual';
-import { colors, formatAngle } from '../ui/theme';
+import { PostureDial } from '../ui/PostureDial';
+import { colors } from '../ui/theme';
 
 export function CalibrationScreen() {
   const s = useMonitor();
@@ -53,8 +53,13 @@ export function CalibrationScreen() {
       <Card style={{ alignItems: 'center', marginTop: 24 }}>
         {status.phase === 'done' ? (
           <>
-            <PersonVisual angle={s.snapshot?.angle ?? 0} state="good" size={200} />
-            <Text style={styles.big}>{formatAngle(s.snapshot?.angle ?? 0)}</Text>
+            <PostureDial
+              angle={s.snapshot?.angle ?? 0}
+              enterDeg={s.settings.posture.enterDeg}
+              color={colors.good}
+              caption="기준 자세 등록됨"
+              size={240}
+            />
           </>
         ) : (
           <>
@@ -88,18 +93,18 @@ export function CalibrationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24 },
-  step: { fontSize: 14, color: colors.primary, fontWeight: '700', marginTop: 12 },
-  title: { fontSize: 24, fontWeight: '800', color: colors.text, marginTop: 8 },
+  step: { fontSize: 13, color: colors.subtext, fontWeight: '600', marginTop: 12, letterSpacing: 1 },
+  title: { fontSize: 26, fontWeight: '700', color: colors.text, marginTop: 8, letterSpacing: -0.4 },
   body: { fontSize: 16, color: colors.subtext, marginTop: 10, lineHeight: 23 },
   progressTrack: {
     width: '100%',
-    height: 12,
-    borderRadius: 6,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: colors.mutedSoft,
     overflow: 'hidden',
     marginVertical: 16,
   },
   progressFill: { height: '100%', backgroundColor: colors.primary },
   warn: { fontSize: 15, color: colors.warning, textAlign: 'center' },
-  big: { fontSize: 36, fontWeight: '800', color: colors.text, marginTop: 8 },
+  big: { fontSize: 48, fontWeight: '200', color: colors.text, marginTop: 8 },
 });
