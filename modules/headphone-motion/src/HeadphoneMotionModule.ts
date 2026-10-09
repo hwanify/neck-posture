@@ -1,6 +1,12 @@
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
-import type { AuthorizationStatus, CueKind, HeadphoneMotionEvents, LiveActivityStatus } from './HeadphoneMotion.types';
+import type {
+  AuthorizationStatus,
+  CueKind,
+  HeadphoneMotionEvents,
+  LiveActivityInfo,
+  LiveActivityStatus,
+} from './HeadphoneMotion.types';
 
 declare class HeadphoneMotionModule extends NativeModule<HeadphoneMotionEvents> {
   isAvailable(): boolean;
@@ -20,6 +26,7 @@ declare class HeadphoneMotionModule extends NativeModule<HeadphoneMotionEvents> 
   ): Promise<boolean>;
   updateLiveActivity(angle: number, status: LiveActivityStatus, goodPercent: number): Promise<void>;
   endLiveActivity(): Promise<void>;
+  getLiveActivityInfo(): LiveActivityInfo;
 }
 
 /** `null` when the native module isn't in the binary (Expo Go, Android, web, tests). */

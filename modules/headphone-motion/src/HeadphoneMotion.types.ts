@@ -27,3 +27,14 @@ export type HeadphoneMotionEvents = {
 };
 
 export type LiveActivityStatus = 'good' | 'tilting' | 'alerted' | 'paused';
+
+export type LiveActivityInfo = {
+  /** Live Activities allowed for the app in iOS Settings. */
+  enabled: boolean;
+  state: 'none' | 'active' | 'ended' | 'dismissed' | 'stale' | 'unknown';
+  /** Updates sent to ActivityKit / confirmed applied since the activity started. */
+  requested: number;
+  applied: number;
+  /** -1 when nothing was applied yet. */
+  secondsSinceApplied: number;
+};

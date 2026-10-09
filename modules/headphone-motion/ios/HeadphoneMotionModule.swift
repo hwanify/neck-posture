@@ -101,6 +101,10 @@ public class HeadphoneMotionModule: Module {
     AsyncFunction("endLiveActivity") {
       self.liveActivity.endAll()
     }
+
+    Function("getLiveActivityInfo") { () -> [String: Any] in
+      return self.liveActivity.info()
+    }
   }
 
   private static func serialize(_ motion: CMDeviceMotion) -> [String: Any?] {

@@ -1,8 +1,10 @@
 import Constants from 'expo-constants';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
 import { playTestCue } from '../services/feedback';
+import { liveActivity } from '../services/liveActivity';
 import { type MotionSourceKind, selectableSourceKinds } from '../services/motionSource';
 import type { AppSettings, FeedbackSettings } from '../services/storage';
 import { monitor, useMonitor } from '../state/monitor';
@@ -182,6 +184,7 @@ export function SettingsScreen() {
           value={feedback.liveActivity}
           onChange={(liveActivity) => setFeedback({ liveActivity })}
         />
+        {feedback.liveActivity && s.session ? <LiveActivityStatusRow /> : null}
         <ToggleRow
           icon="sun"
           title="화면 켜두기"
@@ -201,6 +204,33 @@ export function SettingsScreen() {
       </Text>
     </Screen>
   );
+}
+
+const ACTIVITY_STATE_LABEL = {
+  none: '시작 안 됨',
+  active: '표시 중',
+  ended: '종료됨',
+  dismissed: '사용자가 닫음',
+  stale: '오래됨',
+  unknown: '알 수 없음',
+} as const;
+
+/** Live diagnostics while a session runs: did the Live Activity start, and are updates landing? */
+function LiveActivityStatusRow() {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const { startError, native } = liveActivity.diagnostics();
+  const text = startError
+    ? startError
+    : native
+      ? `${ACTIVITY_STATE_LABEL[native.state]} · 전송 ${native.requested} · 반영 ${native.applied}${
+          native.secondsSinceApplied >= 0 ? ` · ${Math.round(native.secondsSinceApplied)}초 전` : ''
+        }`
+      : '이 빌드에서는 지원되지 않아요';
+  return <Row icon="info" title="잠금화면 상태" value={text} />;
 }
 
 function Pill({

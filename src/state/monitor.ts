@@ -191,6 +191,11 @@ class MonitorController {
     if (!this.state.onboarded) return;
     if (status === 'active') {
       this.set({ authorization: this.source.getAuthorizationStatus() });
+      // Live Activities can only be started in the foreground.
+      const session = this.state.session;
+      if (session && this.state.settings.feedback.liveActivity && liveActivity.needsRestart()) {
+        void liveActivity.start(session.startedAt, this.state.snapshot?.angle ?? 0, 'good', session.goodRatio);
+      }
       void this.startStreaming();
     } else if (status === 'background') {
       // Without a session (or background mode) there is nothing to watch for — save battery.

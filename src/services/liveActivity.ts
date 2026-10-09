@@ -1,4 +1,4 @@
-import HeadphoneMotion, { type LiveActivityStatus } from '../../modules/headphone-motion';
+import HeadphoneMotion, { type LiveActivityInfo, type LiveActivityStatus } from '../../modules/headphone-motion';
 
 /** Push at most this often, and only when the shown values change. */
 const MIN_INTERVAL_MS = 1000;
@@ -17,16 +17,19 @@ class LiveActivityService {
   private lastSentAt = 0;
   private pending: ReturnType<typeof setTimeout> | null = null;
   private latest: Shown | null = null;
+  private startError: string | null = null;
 
   async start(startedAt: number, angle: number, status: LiveActivityStatus, goodRatio: number): Promise<void> {
     if (!HeadphoneMotion) return;
     const shown = toShown(angle, status, goodRatio);
-    this.active = await HeadphoneMotion.startLiveActivity(
-      startedAt,
-      shown.angle,
-      shown.status,
-      shown.goodPercent,
-    ).catch(() => false);
+    this.startError = null;
+    try {
+      this.active = await HeadphoneMotion.startLiveActivity(startedAt, shown.angle, shown.status, shown.goodPercent);
+      if (!this.active) this.startError = 'iPhone 설정에서 실시간 현황이 꺼져 있어요';
+    } catch (e) {
+      this.active = false;
+      this.startError = e instanceof Error ? e.message : String(e);
+    }
     this.lastSent = shown;
     this.lastSentAt = Date.now();
   }
@@ -51,6 +54,23 @@ class LiveActivityService {
     this.active = false;
     this.lastSent = null;
     await HeadphoneMotion?.endLiveActivity().catch(() => {});
+  }
+
+  /** The activity isn't showing (failed to start, ended or swiped away) and can be started again. */
+  needsRestart(): boolean {
+    const state = this.diagnostics().native?.state;
+    return !this.active || state === 'none' || state === 'ended' || state === 'dismissed';
+  }
+
+  /** For the settings screen: what the app sent vs. what iOS applied. */
+  diagnostics(): { startError: string | null; native: LiveActivityInfo | null } {
+    let native: LiveActivityInfo | null = null;
+    try {
+      native = HeadphoneMotion?.getLiveActivityInfo?.() ?? null;
+    } catch {
+      native = null;
+    }
+    return { startError: this.startError, native };
   }
 
   private flush() {
