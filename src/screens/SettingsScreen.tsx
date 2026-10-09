@@ -70,7 +70,9 @@ export function SettingsScreen() {
       <Section
         header="감지"
         iconInset
-        footer={`${posture.exitDeg}° 안으로 돌아오면 바른 자세로 봅니다. 계속 기울어져 있으면 알림 간격이 길어집니다.`}>
+        footer={`${posture.exitDeg}° 안으로 돌아오면 바른 자세로 봅니다. 계속 기울어져 있으면 알림 간격이 길어집니다.${
+          posture.measureWhileWalking ? '' : ' 걷는 동안에는 측정을 쉽니다.'
+        }`}>
         <StepperRow
           icon="angle"
           title="알림 각도"
@@ -101,6 +103,12 @@ export function SettingsScreen() {
           format={(v) => `${v}초`}
           onChange={(cooldownSec) => setPosture({ cooldownSec })}
         />
+        <ToggleRow
+          icon="walk"
+          title="걷는 중에도 측정"
+          value={posture.measureWhileWalking}
+          onChange={(measureWhileWalking) => setPosture({ measureWhileWalking })}
+        />
       </Section>
 
       <Section
@@ -111,7 +119,12 @@ export function SettingsScreen() {
             ? '알림음은 고개가 기운 쪽 귀에서 재생됩니다.'
             : '알림음은 기운 반대쪽 귀에서 재생되어 돌아갈 방향을 알려줍니다.'
         }>
-        <ToggleRow icon="speaker" title="AirPods 알림음" value={feedback.sound} onChange={(sound) => setFeedback({ sound })} />
+        <ToggleRow
+          icon="speaker"
+          title="AirPods 알림음"
+          value={feedback.sound}
+          onChange={(sound) => setFeedback({ sound })}
+        />
         <ToggleRow
           icon="chime"
           title="회복 효과음"
@@ -153,7 +166,10 @@ export function SettingsScreen() {
         </Row>
       </Section>
 
-      <Section header="측정" iconInset footer="백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.">
+      <Section
+        header="측정"
+        iconInset
+        footer="백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.">
         <ToggleRow
           icon="moon"
           title="백그라운드 측정"

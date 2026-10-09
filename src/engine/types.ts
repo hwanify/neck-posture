@@ -21,6 +21,8 @@ export type PostureSettings = {
   motionGateRadPerSec: number;
   /** Smoothed user acceleration (g) above which the user counts as walking. */
   walkingAccelG: number;
+  /** Keep judging posture while walking instead of pausing. */
+  measureWhileWalking: boolean;
 };
 
 export const DEFAULT_POSTURE_SETTINGS: PostureSettings = {
@@ -31,6 +33,7 @@ export const DEFAULT_POSTURE_SETTINGS: PostureSettings = {
   smoothingSec: 0.3,
   motionGateRadPerSec: 1.2,
   walkingAccelG: 0.15,
+  measureWhileWalking: true,
 };
 
 export type PostureEvent =

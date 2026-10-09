@@ -55,7 +55,7 @@ export class PostureEngine {
     let pauseReason: PauseReason | null = null;
     if (!this.calibration) pauseReason = 'notCalibrated';
     else if (t < this.movingUntil) pauseReason = 'moving';
-    else if (accel > this.settings.walkingAccelG) pauseReason = 'walking';
+    else if (!this.settings.measureWhileWalking && accel > this.settings.walkingAccelG) pauseReason = 'walking';
 
     return this.judge(t, angle, rawAngle, pauseReason);
   }

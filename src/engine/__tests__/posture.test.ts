@@ -80,7 +80,7 @@ describe('PostureEngine', () => {
   });
 
   it('pauses while the head moves fast or the user walks', () => {
-    const engine = new PostureEngine(calibration, settings);
+    const engine = new PostureEngine(calibration, { ...settings, measureWhileWalking: false });
     expect(engine.process(sample(0, 20, { rotationRate: { x: 0, y: 2, z: 0 } })).pauseReason).toBe('moving');
     expect(engine.process(sample(0.5, 20)).pauseReason).toBe('moving');
     expect(engine.process(sample(1, 0)).pauseReason).toBeNull();
@@ -90,6 +90,15 @@ describe('PostureEngine', () => {
       snap = engine.process(sample(t, 0, { userAcceleration: { x: 0.3, y: 0, z: 0 } }));
     }
     expect(snap!.pauseReason).toBe('walking');
+  });
+
+  it('keeps measuring while walking by default', () => {
+    const engine = new PostureEngine(calibration, settings);
+    let snap;
+    for (let t = 0; t < 4; t += 0.04) {
+      snap = engine.process(sample(t, 0, { userAcceleration: { x: 0.3, y: 0, z: 0 } }));
+    }
+    expect(snap!.pauseReason).toBeNull();
   });
 
   it('stays paused without calibration', () => {
