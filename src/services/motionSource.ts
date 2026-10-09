@@ -77,13 +77,14 @@ class DemoMotionSource implements MotionSource {
     this.timer = setInterval(() => {
       const t = Date.now() / 1000 - t0;
       const cycle = t % 40;
-      // 0–14s gentle sway, 14–24s lean right, 24–30s sway, 30–40s lean left
+      // 0–14s gentle sway, 14–24s lean right, 24–30s sway with a nod, 30–40s lean left
       const lean = cycle >= 14 && cycle < 24 ? 14 : cycle >= 30 ? -13 : 0;
       const tilt = lean + 3 * Math.sin(t * 0.9);
+      const nod = cycle >= 25 && cycle < 29 ? 18 : 0;
       listeners.onSample({
         timestamp: t,
         quaternion: { x: 0, y: 0, z: 0, w: 1 },
-        gravity: demoGravity(tilt),
+        gravity: demoGravity(tilt, nod),
         rotationRate: { x: 0, y: 0, z: 0.05 },
         userAcceleration: { x: 0, y: 0, z: 0 },
         sensorLocation: 'default',

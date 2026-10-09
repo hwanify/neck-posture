@@ -8,7 +8,7 @@ import { Button } from '../ui/components';
 import { PostureDial } from '../ui/PostureDial';
 import { colors } from '../ui/theme';
 
-/** Full-screen sheet guiding the two calibration steps. */
+/** Full-screen sheet guiding the three calibration steps. */
 export function CalibrationScreen() {
   const s = useMonitor();
   const status = s.calibrating;
@@ -21,6 +21,7 @@ export function CalibrationScreen() {
   const title = {
     neutral: phone ? 'iPhone을 똑바로 세워 주세요' : '정면을 바라봐 주세요',
     tiltRight: phone ? 'iPhone을 오른쪽으로 기울이세요' : '고개를 오른쪽으로 기울이세요',
+    nodForward: phone ? 'iPhone을 앞으로 숙이세요' : '고개를 앞으로 숙이세요',
     done: '등록 완료',
   }[status.phase];
 
@@ -31,6 +32,9 @@ export function CalibrationScreen() {
     tiltRight: phone
       ? 'iPhone 윗부분을 오른쪽으로 15° 정도 천천히 기울이고 잠시 멈추세요.'
       : '오른쪽 귀를 오른쪽 어깨 쪽으로 천천히 기울이고 잠시 멈추세요. 좌우 방향을 파악하는 단계입니다.',
+    nodForward: phone
+      ? '정면으로 돌아온 뒤 iPhone 윗부분을 앞쪽으로 15° 정도 기울이고 잠시 멈추세요.'
+      : '정면으로 돌아온 뒤 턱을 당기듯 고개를 앞으로 숙이고 잠시 멈추세요. 앞뒤 움직임이 각도에 섞이지 않게 하는 단계입니다.',
     done: `${phone ? 'iPhone을' : '고개를'} 기울여 방향이 맞게 표시되는지 확인하세요.`,
   }[status.phase];
 
@@ -38,9 +42,11 @@ export function CalibrationScreen() {
     ? 'AirPods 신호를 기다리는 중입니다. 양쪽 이어폰을 착용하세요.'
     : status.tooMuchMotion
       ? '움직임이 감지되었습니다. 잠시 멈춰 주세요.'
-      : status.phase === 'tiltRight'
-        ? `현재 ${Math.round(status.tiltDeg)}°`
-        : ' ';
+      : status.phase === 'nodForward' && status.stillSideways
+        ? '좌우로는 기울이지 말고 정면에서 숙여 주세요.'
+        : status.phase === 'tiltRight' || status.phase === 'nodForward'
+          ? `현재 ${Math.round(status.tiltDeg)}°`
+          : ' ';
 
   return (
     <View style={styles.container}>
@@ -52,7 +58,7 @@ export function CalibrationScreen() {
         ) : (
           <View />
         )}
-        <Text style={styles.step}>{done ? '' : `${status.phase === 'neutral' ? 1 : 2} / 2`}</Text>
+        <Text style={styles.step}>{done ? '' : `${STEP[status.phase]} / 3`}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -87,6 +93,8 @@ export function CalibrationScreen() {
     </View>
   );
 }
+
+const STEP = { neutral: 1, tiltRight: 2, nodForward: 3, done: 3 } as const;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.card, paddingHorizontal: 24 },

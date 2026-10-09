@@ -37,12 +37,17 @@ export function sample(t: number, tiltDeg: number, extra: Partial<MotionSample> 
 }
 
 /** Samples at `hz` from t0 for `durationSec`, tilt given by `tiltAt(t)`. */
-export function stream(t0: number, durationSec: number, tiltAt: (t: number) => number, hz = 25): MotionSample[] {
+export function stream(
+  t0: number,
+  durationSec: number,
+  tiltAt: (t: number) => number,
+  hz = 25,
+  nodAt: (t: number) => number = () => 0,
+): MotionSample[] {
   const out: MotionSample[] = [];
   for (let i = 0; i < Math.round(durationSec * hz); i++) {
     const t = t0 + i / hz;
-    out.push(sample(t, tiltAt(t)));
+    out.push(sample(t, tiltAt(t), { gravity: gravityFor(tiltAt(t), nodAt(t)) }));
   }
   return out;
 }
-
