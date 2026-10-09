@@ -22,7 +22,7 @@ type TabKey = (typeof TABS)[number]['key'];
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Root />
     </SafeAreaProvider>
   );
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.card,
+    backgroundColor: colors.bg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
     paddingTop: 4,

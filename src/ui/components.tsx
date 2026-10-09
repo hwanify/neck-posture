@@ -19,7 +19,7 @@ export function Button({
   disabled?: boolean;
 }) {
   const palette = {
-    primary: { bg: colors.primary, fg: '#fff' },
+    primary: { bg: colors.primary, fg: colors.bg },
     secondary: { bg: colors.mutedSoft, fg: colors.text },
     danger: { bg: colors.dangerSoft, fg: colors.danger },
   }[variant];
@@ -69,7 +69,12 @@ export function Row({ label, hint, children }: { label: string; hint?: string; c
 export function ToggleRow(props: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <Row label={props.label} hint={props.hint}>
-      <Switch value={props.value} onValueChange={props.onChange} trackColor={{ true: colors.primary }} />
+      <Switch
+        value={props.value}
+        onValueChange={props.onChange}
+        trackColor={{ true: colors.text, false: colors.border }}
+        thumbColor={props.value ? colors.bg : colors.subtext}
+      />
     </Row>
   );
 }

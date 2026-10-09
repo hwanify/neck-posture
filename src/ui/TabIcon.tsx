@@ -25,8 +25,8 @@ export function TabIcon({ name, color }: { name: TabIconName; color: string }) {
         <>
           <Line x1={4} y1={7} x2={20} y2={7} {...common} />
           <Line x1={4} y1={17} x2={20} y2={17} {...common} />
-          <Circle cx={9} cy={7} r={2.2} {...common} fill="#FFFFFF" />
-          <Circle cx={15} cy={17} r={2.2} {...common} fill="#FFFFFF" />
+          <Circle cx={9} cy={7} r={2.2} {...common} fill="#0A0A0B" />
+          <Circle cx={15} cy={17} r={2.2} {...common} fill="#0A0A0B" />
         </>
       )}
     </Svg>

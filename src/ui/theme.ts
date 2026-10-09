@@ -1,22 +1,22 @@
 import type { PauseReason, PostureState } from '../engine';
 
-// Quiet, mature palette: warm neutral surfaces, ink text, desaturated status colors.
+// Monochrome dark palette: color appears only when posture needs attention.
 export const colors = {
-  bg: '#F4F3EF',
-  card: '#FFFFFF',
-  text: '#16171A',
-  subtext: '#86868B',
-  border: '#E6E4DE',
-  primary: '#16171A',
-  primarySoft: '#ECEAE4',
-  good: '#4F7A63',
-  goodSoft: '#E7EFE9',
-  warning: '#B98326',
-  warningSoft: '#F5EDDD',
-  danger: '#B5483F',
-  dangerSoft: '#F6E5E2',
-  muted: '#A7A6A1',
-  mutedSoft: '#EDEBE6',
+  bg: '#0A0A0B',
+  card: '#151517',
+  text: '#F2F2F2',
+  subtext: '#8A8A8F',
+  border: '#26262A',
+  primary: '#F2F2F2',
+  primarySoft: '#1C1C1F',
+  good: '#F2F2F2',
+  goodSoft: '#1C1C1F',
+  warning: '#D8B26E',
+  warningSoft: '#2A2418',
+  danger: '#E2665A',
+  dangerSoft: '#2C1A18',
+  muted: '#55555A',
+  mutedSoft: '#1C1C1F',
 };
 
 export const stateColor: Record<PostureState, string> = {
