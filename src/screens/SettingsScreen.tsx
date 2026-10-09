@@ -2,11 +2,14 @@ import Constants from 'expo-constants';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { playTestCue } from '../services/feedback';
+import { type MotionSourceKind, selectableSourceKinds } from '../services/motionSource';
 import type { AppSettings, FeedbackSettings } from '../services/storage';
 import type { PostureSettings } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
 import { Button, Card, SectionTitle, StepperRow, ToggleRow } from '../ui/components';
 import { colors, formatAngle } from '../ui/theme';
+
+const SOURCE_LABEL: Record<MotionSourceKind, string> = { airpods: 'AirPods', phone: 'iPhone 센서', demo: '데모' };
 
 /** Recovery threshold sits a few degrees under the alert threshold (hysteresis). */
 const HYSTERESIS_DEG = 3;
@@ -26,11 +29,35 @@ export function SettingsScreen() {
 
   const testCue = async (pan: number) => {
     const ok = await playTestCue('alert', pan, feedback.volume).catch(() => false);
-    if (!ok) Alert.alert('알림음', '실제 앱 빌드(TestFlight)에서만 소리가 나요.');
+    if (!ok) Alert.alert('알림음', 'AirPods 알림음은 실제 앱 빌드(TestFlight)에서만 나요. Expo Go에서는 진동으로 알려줘요.');
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {selectableSourceKinds.length > 1 && (
+        <>
+          <SectionTitle>센서 (Expo Go 테스트)</SectionTitle>
+          <Card>
+            <View style={styles.buttons}>
+              {selectableSourceKinds.map((kind, i) => (
+                <View key={kind} style={{ flex: 1, marginLeft: i > 0 ? 10 : 0 }}>
+                  <Button
+                    title={SOURCE_LABEL[kind]}
+                    variant={s.sourceKind === kind ? 'primary' : 'secondary'}
+                    disabled={s.session !== null}
+                    onPress={() => void monitor.setSourceKind(kind)}
+                  />
+                </View>
+              ))}
+            </View>
+            <Text style={styles.sourceHint}>
+              Expo Go에는 AirPods 센서 모듈이 없어요. iPhone 센서는 iPhone을 머리처럼 기울여 테스트하고, 데모는 가상
+              데이터로 자동 재생해요.
+            </Text>
+          </Card>
+        </>
+      )}
+
       <SectionTitle>감지 기준</SectionTitle>
       <Card>
         <StepperRow
@@ -125,7 +152,7 @@ export function SettingsScreen() {
 
       <SectionTitle>진단 정보</SectionTitle>
       <Card>
-        <Info label="센서 소스" value={s.sourceKind === 'airpods' ? 'AirPods' : '데모'} />
+        <Info label="센서 소스" value={SOURCE_LABEL[s.sourceKind]} />
         <Info label="권한" value={s.authorization} />
         <Info label="수신 빈도" value={`${s.sampleRateHz} Hz`} />
         <Info label="센서 위치" value={s.sensorLocation ?? '-'} />
@@ -153,6 +180,7 @@ function Info({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 40 },
   buttons: { flexDirection: 'row', marginTop: 12 },
+  sourceHint: { fontSize: 12, color: colors.subtext, lineHeight: 18, marginTop: 10 },
   info: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   infoLabel: { fontSize: 14, color: colors.subtext },
   infoValue: { fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { type Calibration, DEFAULT_POSTURE_SETTINGS, type PostureSettings, type SessionSummary } from '../engine';
+import { type MotionSourceKind, selectableSourceKinds } from './motionSource';
 
 export type FeedbackSettings = {
   sound: boolean;
@@ -18,6 +19,8 @@ export type FeedbackSettings = {
 export type AppSettings = {
   posture: PostureSettings;
   feedback: FeedbackSettings;
+  /** Preferred sensor when several are available (Expo Go: phone or demo). */
+  source: MotionSourceKind;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -31,6 +34,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     backgroundMode: true,
     keepAwake: false,
   },
+  source: selectableSourceKinds[0],
 };
 
 const KEYS = {
@@ -58,13 +62,17 @@ export async function loadSettings(): Promise<AppSettings> {
   return {
     posture: { ...DEFAULT_SETTINGS.posture, ...saved?.posture },
     feedback: { ...DEFAULT_SETTINGS.feedback, ...saved?.feedback },
+    source:
+      saved?.source && selectableSourceKinds.includes(saved.source) ? saved.source : DEFAULT_SETTINGS.source,
   };
 }
 
 export const saveSettings = (settings: AppSettings) => writeJson(KEYS.settings, settings);
 
-export const loadCalibration = () => readJson<Calibration>(KEYS.calibration);
-export const saveCalibration = (calibration: Calibration) => writeJson(KEYS.calibration, calibration);
+// Each sensor has its own frame, so calibrations are kept per source.
+export const loadCalibration = (source: MotionSourceKind) => readJson<Calibration>(`${KEYS.calibration}.${source}`);
+export const saveCalibration = (source: MotionSourceKind, calibration: Calibration) =>
+  writeJson(`${KEYS.calibration}.${source}`, calibration);
 
 /** Newest first. */
 export async function loadSessions(): Promise<SessionSummary[]> {

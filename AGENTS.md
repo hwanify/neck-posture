@@ -31,6 +31,9 @@ Run lint and typecheck before declaring any task done.
   JS-only changes ship via the OTA Update workflow.
 - The owner develops from an iPhone only (no Mac): builds go through `.github/workflows/ios-build.yml`
   (EAS Build → TestFlight). See `docs/IPHONE_SETUP.md`.
+- For quick testing the owner uses Expo Go: `.github/workflows/expo-go-preview.yml` publishes every push to the
+  `expo-go` update branch (`docs/EXPO_GO.md`). Without the native module the app falls back to the phone's
+  DeviceMotion (`src/services/motionSource.ts`), so all JS must work when `HeadphoneMotion` is null.
 
 ## Building with EAS
 

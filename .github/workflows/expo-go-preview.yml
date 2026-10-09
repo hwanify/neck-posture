@@ -1,0 +1,48 @@
+# Publishes the app to the `expo-go` update branch so it can be opened in the Expo Go app
+# without a computer. Only needs the EXPO_TOKEN secret. Links are in the run summary.
+# In Expo Go the AirPods module is unavailable; the app uses the iPhone's motion sensor instead.
+name: Expo Go Preview
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths-ignore: ['docs/**', '**/*.md']
+  workflow_dispatch:
+
+concurrency:
+  group: expo-go-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      EAS: npx --yes eas-cli@24.12.1
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Skip until Expo is connected
+        if: env.EXPO_TOKEN == ''
+        run: echo "EXPO_TOKEN secret not set — skipping (see docs/EXPO_GO.md)."
+      - uses: actions/checkout@v4
+        if: env.EXPO_TOKEN != ''
+      - uses: actions/setup-node@v4
+        if: env.EXPO_TOKEN != ''
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.EXPO_TOKEN != ''
+        run: npm ci
+      - if: env.EXPO_TOKEN != ''
+        run: npm run typecheck && npm test
+      - name: Publish to Expo Go
+        if: env.EXPO_TOKEN != ''
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || 'manual preview' }}
+        run: |
+          $EAS init --non-interactive --force
+          $EAS update:configure --platform ios --non-interactive
+          node scripts/ci-expo-go.js prepare
+          $EAS update --branch expo-go --platform ios --non-interactive --json \
+            --message "$(printf '%s' "$COMMIT_MESSAGE" | head -n 1 | cut -c1-100)" > "$RUNNER_TEMP/update.json"
+          ACCOUNT=$($EAS whoami | head -n 1 | tr -d '[:space:]')
+          node scripts/ci-expo-go.js summary "$RUNNER_TEMP/update.json" "$ACCOUNT" | tee -a "$GITHUB_STEP_SUMMARY"

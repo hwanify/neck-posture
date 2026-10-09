@@ -9,7 +9,8 @@ AirPods의 헤드 트래킹 센서로 **목이 좌우로 기울어진 것**을 �
 
 ## 문서
 
-- 📱 [iPhone만으로 빌드·설치하기](docs/IPHONE_SETUP.md) — Mac 없이 TestFlight로 설치하는 단계별 가이드
+- 🧪 [Expo Go로 테스트하기](docs/EXPO_GO.md) — Expo 계정만으로 바로 열어보기 (iPhone 센서로 대체 테스트, 무료)
+- 📱 [iPhone만으로 빌드·설치하기](docs/IPHONE_SETUP.md) — AirPods 센서까지 쓰는 실제 앱을 TestFlight로 설치
 - [제품 기획서 (PRD)](docs/PRD.md) — 문제 정의, 타겟, 기능 명세, 화면 구성, 알림 UX
 - [기술 설계서 (Tech Spec)](docs/TECH_SPEC.md) — 아키텍처, 네이티브 모듈 API, 감지 알고리즘, 백그라운드 전략, 데이터 모델
 
@@ -20,6 +21,7 @@ AirPods의 헤드 트래킹 센서로 **목이 좌우로 기울어진 것**을 �
 - [x] 화면: 온보딩, 홈(실시간 시각화·측정), 자세 보정, 기록(좌우 편향·타임라인), 설정
 - [x] 백그라운드 감지(실험), 로컬 알림, 진동
 - [x] GitHub Actions → EAS Build → TestFlight, push 시 OTA 업데이트
+- [x] Expo Go 미리보기 (push 시 자동 배포, AirPods 대신 iPhone 모션 센서 사용)
 - [ ] 실기기 검증: 센서 수신 빈도, 백그라운드 유지 시간, 기본 임계값 튜닝
 
 ## 로드맵
@@ -36,4 +38,4 @@ AirPods의 헤드 트래킹 센서로 **목이 좌우로 기울어진 것**을 �
 
 - **Mac 불필요** — 빌드는 EAS 클라우드, 설치는 TestFlight ([가이드](docs/IPHONE_SETUP.md))
 - 로컬/CI 검사: `npm ci && npm run typecheck && npm test` (Node 22)
-- 네이티브 모듈이 없는 환경에서는 자동으로 데모 모드(가상 센서 데이터)로 동작
+- 네이티브 모듈이 없는 환경(Expo Go)에서는 iPhone 모션 센서 또는 데모(가상 데이터)로 동작

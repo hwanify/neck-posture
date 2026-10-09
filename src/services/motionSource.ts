@@ -1,3 +1,5 @@
+import { DeviceMotion, type DeviceMotionMeasurement } from 'expo-sensors';
+
 import HeadphoneMotion, {
   type AuthorizationStatus,
   type MotionErrorEvent,
@@ -11,8 +13,10 @@ export type MotionSourceListeners = {
   onError: (error: MotionErrorEvent) => void;
 };
 
+export type MotionSourceKind = 'airpods' | 'phone' | 'demo';
+
 export interface MotionSource {
-  readonly kind: 'airpods' | 'demo';
+  readonly kind: MotionSourceKind;
   isAvailable(): boolean;
   getAuthorizationStatus(): AuthorizationStatus;
   start(listeners: MotionSourceListeners): Promise<void>;
@@ -93,7 +97,66 @@ class DemoMotionSource implements MotionSource {
   }
 }
 
-/** AirPods when the native module is in the binary, otherwise a demo source. */
-export function createMotionSource(): MotionSource {
-  return HeadphoneMotion ? new AirPodsMotionSource() : new DemoMotionSource();
+/**
+ * The iPhone's own motion sensor standing in for the head, so the app can be tried in Expo Go
+ * (which doesn't contain the AirPods module). Tilt the phone like a head; calibration learns the axis.
+ */
+class PhoneMotionSource implements MotionSource {
+  readonly kind = 'phone';
+  private subscription: { remove(): void } | null = null;
+  private authorization: AuthorizationStatus = 'notDetermined';
+
+  isAvailable(): boolean {
+    return true;
+  }
+
+  getAuthorizationStatus(): AuthorizationStatus {
+    return this.authorization;
+  }
+
+  async start(listeners: MotionSourceListeners): Promise<void> {
+    await this.stop();
+    const permission = await DeviceMotion.requestPermissionsAsync();
+    this.authorization = permission.granted ? 'authorized' : 'denied';
+    if (!permission.granted) throw new Error('동작 및 피트니스 권한이 필요해요.');
+    if (!(await DeviceMotion.isAvailableAsync())) throw new Error('이 기기에서는 모션 센서를 사용할 수 없어요.');
+
+    DeviceMotion.setUpdateInterval(40);
+    // "Connected" follows from samples arriving (see MonitorController.handleSample).
+    this.subscription = DeviceMotion.addListener((m) => listeners.onSample(toSample(m)));
+  }
+
+  async stop(): Promise<void> {
+    this.subscription?.remove();
+    this.subscription = null;
+  }
+}
+
+const G = 9.81;
+const DEG_TO_RAD = Math.PI / 180;
+
+function toSample(m: DeviceMotionMeasurement): MotionSample {
+  const total = m.accelerationIncludingGravity;
+  const user = m.acceleration ?? { x: 0, y: 0, z: 0 };
+  const rate = m.rotationRate ?? { alpha: 0, beta: 0, gamma: 0 };
+  return {
+    timestamp: Date.now() / 1000,
+    quaternion: { x: 0, y: 0, z: 0, w: 1 },
+    gravity: { x: (total.x - user.x) / G, y: (total.y - user.y) / G, z: (total.z - user.z) / G },
+    rotationRate: { x: rate.beta * DEG_TO_RAD, y: rate.gamma * DEG_TO_RAD, z: rate.alpha * DEG_TO_RAD },
+    userAcceleration: { x: user.x / G, y: user.y / G, z: user.z / G },
+    sensorLocation: 'default',
+  };
+}
+
+/** Whether the AirPods native module is in this binary (false in Expo Go). */
+export const hasAirPodsModule = HeadphoneMotion !== null;
+
+/** Sources the user can pick from in this binary. */
+export const selectableSourceKinds: MotionSourceKind[] = hasAirPodsModule ? ['airpods'] : ['phone', 'demo'];
+
+export function createMotionSource(kind: MotionSourceKind): MotionSource {
+  if (kind === 'airpods' && hasAirPodsModule) return new AirPodsMotionSource();
+  if (kind === 'demo') return new DemoMotionSource();
+  return hasAirPodsModule ? new AirPodsMotionSource() : new PhoneMotionSource();
 }

@@ -16,7 +16,7 @@ import {
   type TiltDirection,
 } from '../engine';
 import { deliverFeedback, requestNotificationPermission, setBackgroundKeepAlive } from '../services/feedback';
-import { createMotionSource } from '../services/motionSource';
+import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
 
@@ -35,7 +35,7 @@ export type LiveSession = {
 export type MonitorState = {
   loaded: boolean;
   onboarded: boolean;
-  sourceKind: 'airpods' | 'demo';
+  sourceKind: MotionSourceKind;
   available: boolean;
   authorization: AuthorizationStatus;
   streaming: boolean;
@@ -54,7 +54,7 @@ export type MonitorState = {
 };
 
 class MonitorController {
-  private source = createMotionSource();
+  private source = createMotionSource(storage.DEFAULT_SETTINGS.source);
   private engine = new PostureEngine(null, storage.DEFAULT_SETTINGS.posture);
   private calibrator: Calibrator | null = null;
   private stats: SessionStats | null = null;
@@ -100,14 +100,24 @@ class MonitorController {
   async init(): Promise<void> {
     if (this.initialized) return;
     this.initialized = true;
-    const [settings, calibration, sessions, onboarded] = await Promise.all([
+    const [settings, sessions, onboarded] = await Promise.all([
       storage.loadSettings(),
-      storage.loadCalibration(),
       storage.loadSessions(),
       storage.loadOnboarded(),
     ]);
+    this.source = createMotionSource(settings.source);
+    const calibration = await storage.loadCalibration(this.source.kind);
     this.engine = new PostureEngine(calibration, settings.posture);
-    this.set({ loaded: true, settings, calibration, sessions, onboarded });
+    this.set({
+      loaded: true,
+      settings,
+      calibration,
+      sessions,
+      onboarded,
+      sourceKind: this.source.kind,
+      available: this.source.isAvailable(),
+      authorization: this.source.getAuthorizationStatus(),
+    });
 
     AppState.addEventListener('change', this.handleAppState);
     if (onboarded) await this.startStreaming();
@@ -137,7 +147,10 @@ class MonitorController {
       this.set({ streaming: true, error: null, authorization: this.source.getAuthorizationStatus() });
       this.watchdog ??= setInterval(this.checkStale, 1000);
     } catch (e) {
-      this.set({ error: e instanceof Error ? e.message : String(e) });
+      this.set({
+        error: e instanceof Error ? e.message : String(e),
+        authorization: this.source.getAuthorizationStatus(),
+      });
     }
   }
 
@@ -243,7 +256,29 @@ class MonitorController {
   private async applyCalibration(calibration: Calibration) {
     this.engine.setCalibration(calibration);
     this.set({ calibration, calibrationMismatch: false });
-    await storage.saveCalibration(calibration);
+    await storage.saveCalibration(this.source.kind, calibration);
+  }
+
+  /** Switch between the phone sensor and demo data (Expo Go). */
+  async setSourceKind(kind: MotionSourceKind): Promise<void> {
+    if (kind === this.source.kind || this.state.session) return;
+    this.cancelCalibration();
+    await this.stopStreaming();
+    this.source = createMotionSource(kind);
+    const calibration = await storage.loadCalibration(this.source.kind);
+    this.engine.setCalibration(calibration);
+    this.set({
+      sourceKind: this.source.kind,
+      available: this.source.isAvailable(),
+      authorization: this.source.getAuthorizationStatus(),
+      calibration,
+      calibrationMismatch: false,
+      snapshot: null,
+      sensorLocation: null,
+      error: null,
+    });
+    await this.updateSettings((prev) => ({ ...prev, source: this.source.kind }));
+    await this.startStreaming();
   }
 
   // MARK: - Session

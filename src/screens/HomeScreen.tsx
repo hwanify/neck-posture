@@ -23,9 +23,16 @@ export function HomeScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <ConnectionChip />
 
+      {s.sourceKind === 'phone' && (
+        <Banner tone="info">
+          Expo Go에는 AirPods 센서 모듈이 없어서 iPhone 센서로 대신 테스트해요. iPhone을 세워 들고 고개처럼
+          좌우로 기울여보세요.
+        </Banner>
+      )}
       {s.authorization === 'denied' && (
         <Banner tone="danger">
-          동작 및 피트니스 권한이 꺼져 있어요. 설정 앱에서 바로목의 &apos;동작 및 피트니스&apos;를 켜주세요.{' '}
+          동작 및 피트니스 권한이 꺼져 있어요. 설정 앱에서 {s.sourceKind === 'phone' ? 'Expo Go' : '바로목'}의
+          &apos;동작 및 피트니스&apos;를 켜주세요.{' '}
           <Text style={{ fontWeight: '700' }} onPress={() => Linking.openSettings()}>
             설정 열기 ›
           </Text>
@@ -42,7 +49,9 @@ export function HomeScreen() {
         <Card>
           <Text style={styles.title}>먼저 바른 자세를 등록해주세요</Text>
           <Text style={styles.body}>
-            AirPods가 귀에 걸린 각도는 사람마다 달라요. 10초 정도면 끝나요.
+            {s.sourceKind === 'airpods'
+              ? 'AirPods가 귀에 걸린 각도는 사람마다 달라요. 10초 정도면 끝나요.'
+              : '기준 자세와 좌우 방향을 등록해요. 10초 정도면 끝나요.'}
           </Text>
           <View style={{ height: 12 }} />
           <Button title="자세 보정 시작" onPress={() => monitor.startCalibration()} />
@@ -89,6 +98,9 @@ function ConnectionChip() {
   if (s.sourceKind === 'demo') {
     text = '데모 모드 · 가상 센서 데이터';
     tone = colors.warning;
+  } else if (s.sourceKind === 'phone') {
+    text = s.connected ? 'iPhone 센서 모드 · Expo Go 테스트' : 'iPhone 센서 준비 중';
+    tone = s.connected ? colors.primary : colors.muted;
   } else if (!s.available) {
     text = '헤드폰 모션 미지원 기기';
     tone = colors.danger;
