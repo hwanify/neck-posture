@@ -14,6 +14,8 @@ export type FeedbackSettings = {
   backgroundMode: boolean;
   /** Keep the screen awake during a session. */
   keepAwake: boolean;
+  /** Which ear plays the alert: the side the head tilts to, or the opposite side. */
+  cueSide: 'tilted' | 'opposite';
 };
 
 export type AppSettings = {
@@ -33,6 +35,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     volume: 0.6,
     backgroundMode: true,
     keepAwake: false,
+    cueSide: 'tilted',
   },
   source: selectableSourceKinds[0],
 };

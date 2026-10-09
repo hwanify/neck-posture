@@ -31,8 +31,9 @@ export async function deliverFeedback(event: PostureEvent, settings: FeedbackSet
 
   if (event.type === 'alert') {
     if (settings.sound && HeadphoneMotion) {
-      // Cue from the opposite ear: tilted left → sound on the right → move back right.
-      const pan = event.direction === 'left' ? 1 : -1;
+      // Default: sound in the ear the head tilts towards; optionally the opposite ear.
+      const tiltedPan = event.direction === 'left' ? -1 : 1;
+      const pan = settings.cueSide === 'opposite' ? -tiltedPan : tiltedPan;
       tasks.push(HeadphoneMotion.playCue('alert', pan, settings.volume));
     }
     if (settings.haptic && AppState.currentState === 'active') {

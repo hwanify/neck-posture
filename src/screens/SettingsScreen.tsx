@@ -95,15 +95,22 @@ export function SettingsScreen() {
           icon="repeat"
           title="반복 간격"
           value={posture.cooldownSec}
-          step={10}
-          min={10}
+          step={5}
+          min={5}
           max={300}
           format={(v) => `${v}초`}
           onChange={(cooldownSec) => setPosture({ cooldownSec })}
         />
       </Section>
 
-      <Section header="알림" iconInset footer="알림음은 기울어진 반대쪽 귀에서 재생되어 돌아갈 방향을 알려줍니다.">
+      <Section
+        header="알림"
+        iconInset
+        footer={
+          feedback.cueSide === 'tilted'
+            ? '알림음은 고개가 기운 쪽 귀에서 재생됩니다.'
+            : '알림음은 기운 반대쪽 귀에서 재생되어 돌아갈 방향을 알려줍니다.'
+        }>
         <ToggleRow icon="speaker" title="AirPods 알림음" value={feedback.sound} onChange={(sound) => setFeedback({ sound })} />
         <ToggleRow
           icon="chime"
@@ -128,6 +135,16 @@ export function SettingsScreen() {
           format={(v) => `${Math.round(v * 100)}%`}
           onChange={(volume) => setFeedback({ volume })}
         />
+        <Row icon="ear" title="알림 방향">
+          <Segmented
+            options={[
+              { value: 'tilted', label: '기운 쪽' },
+              { value: 'opposite', label: '반대쪽' },
+            ]}
+            value={feedback.cueSide}
+            onChange={(cueSide) => setFeedback({ cueSide })}
+          />
+        </Row>
         <Row icon="ear" title="방향 테스트">
           <View style={styles.inlinePills}>
             <Pill title="왼쪽" small onPress={() => void testCue(-1)} />
