@@ -67,7 +67,7 @@ function Root() {
 
   if (s.checking) {
     return (
-      <SafeAreaView style={styles.sheet}>
+      <SafeAreaView style={styles.fill}>
         <PostureCheckScreen />
       </SafeAreaView>
     );
