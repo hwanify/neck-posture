@@ -13,7 +13,10 @@ export type PostureCheckStatus = {
 
 export type PostureCheckOptions = { durationSec: number; maxRotationRate: number };
 
-const DEFAULTS: PostureCheckOptions = { durationSec: 5, maxRotationRate: 0.5 };
+/** Seconds to hold still before measuring. */
+export const POSTURE_CHECK_SEC = 3;
+
+const DEFAULTS: PostureCheckOptions = { durationSec: POSTURE_CHECK_SEC, maxRotationRate: 0.5 };
 const MAX_GAP_SEC = 0.5;
 
 /**

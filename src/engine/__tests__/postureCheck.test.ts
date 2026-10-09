@@ -14,7 +14,7 @@ describe('PostureCheck', () => {
       const seat = reseat(axis);
       const check = new PostureCheck(CALIBRATION);
       let status = check.feed(sample(0, 0, { gravity: seat(DOWN) }));
-      for (const s of stream(0.04, 5.1, () => 0)) status = check.feed({ ...s, gravity: seat(s.gravity) });
+      for (const s of stream(0.04, 3.1, () => 0)) status = check.feed({ ...s, gravity: seat(s.gravity) });
       expect(status.progress).toBe(1);
       const { calibration, shiftDeg } = status.result!;
       expect(shiftDeg).toBeCloseTo(9, 3);
@@ -26,22 +26,22 @@ describe('PostureCheck', () => {
 
   it('restarts the still period when the head moves and never times out', () => {
     const check = new PostureCheck(CALIBRATION);
-    for (const s of stream(0, 4, () => 0)) check.feed(s);
-    const moved = check.feed(sample(4.04, 0, { rotationRate: { x: 2, y: 0, z: 0 } }));
+    for (const s of stream(0, 2.5, () => 0)) check.feed(s);
+    const moved = check.feed(sample(2.54, 0, { rotationRate: { x: 2, y: 0, z: 0 } }));
     expect(moved).toMatchObject({ progress: 0, tooMuchMotion: true });
     let status = moved;
-    for (const s of stream(4.1, 4.9, () => 0)) status = check.feed(s);
+    for (const s of stream(2.6, 2.9, () => 0)) status = check.feed(s);
     expect(status.result).toBeUndefined();
-    for (const s of stream(9.0, 0.3, () => 0)) status = check.feed(s);
+    for (const s of stream(5.5, 0.3, () => 0)) status = check.feed(s);
     expect(status.result?.shiftDeg).toBeCloseTo(0, 3);
   });
 
   it('restarts when samples stop arriving for a moment', () => {
     const check = new PostureCheck(CALIBRATION);
-    for (const s of stream(0, 3, () => 0)) check.feed(s);
+    for (const s of stream(0, 2, () => 0)) check.feed(s);
     let status = check.feed(sample(10, 0));
     expect(status.progress).toBe(0);
-    for (const s of stream(10.04, 4.5, () => 0)) status = check.feed(s);
+    for (const s of stream(10.04, 2.5, () => 0)) status = check.feed(s);
     expect(status.result).toBeUndefined();
   });
 });

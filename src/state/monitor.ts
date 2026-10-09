@@ -61,7 +61,7 @@ export type MonitorState = {
   /** The sensor now comes from a different earbud than during calibration. */
   calibrationMismatch: boolean;
   calibrating: CalibratorStatus | null;
-  /** Pre-session 5-second posture check. */
+  /** Pre-session posture check (hold still a few seconds). */
   checking: CheckState | null;
   session: LiveSession | null;
   settings: AppSettings;
@@ -376,7 +376,7 @@ class MonitorController {
 
   // MARK: - Session
 
-  /** Starts with the 5-second posture check; the session itself begins once it passes. */
+  /** Starts with the posture check; the session itself begins once it passes. */
   async startSession(): Promise<void> {
     if (this.state.session || this.state.checking || !this.state.calibration) return;
     const { feedback } = this.state.settings;

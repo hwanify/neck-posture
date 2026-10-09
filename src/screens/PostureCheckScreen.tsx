@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { POSTURE_CHECK_SEC } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
@@ -8,7 +9,7 @@ import { colors } from '../ui/theme';
 const LINE_WIDTH = 180;
 
 /**
- * 5-second still check before a session (and after the earbuds are re-seated mid-session).
+ * Short still check before a session (and after the earbuds are re-seated mid-session).
  * Same layout as the home screen: the level line fills in over the faint horizon as time passes.
  */
 export function PostureCheckScreen() {
@@ -18,7 +19,7 @@ export function PostureCheckScreen() {
 
   const waiting = s.sourceKind === 'airpods' && !s.connected;
   const largeShift = check.largeShiftDeg !== null;
-  const seconds = Math.max(0, Math.ceil(5 * (1 - check.progress)));
+  const seconds = Math.max(0, Math.ceil(POSTURE_CHECK_SEC * (1 - check.progress)));
 
   const label = largeShift
     ? '등록할 때와 많이 달라요'
@@ -31,12 +32,11 @@ export function PostureCheckScreen() {
       ? 'AirPods 신호를 기다리는 중'
       : check.tooMuchMotion
         ? '움직임이 감지되어 다시 셉니다'
-        : '바른 자세로 5초간 확인합니다';
+        : `바른 자세로 ${POSTURE_CHECK_SEC}초간 확인합니다`;
 
   return (
     <View style={styles.container}>
       <View style={styles.top}>
-        <Text style={styles.meta}>측정 준비</Text>
         <Pressable onPress={() => void monitor.cancelCheck()} hitSlop={10}>
           <Text style={styles.meta}>{check.resumed ? '측정 종료' : '취소'}</Text>
         </Pressable>
@@ -72,7 +72,7 @@ export function PostureCheckScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
-  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  top: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
   meta: { ...type.label, fontSize: 13, color: colors.subtext },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 120 },
   levelBox: { width: 240, height: 9, alignItems: 'center', justifyContent: 'center', marginBottom: 28 },
