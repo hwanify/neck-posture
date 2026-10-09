@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
   side: { ...type.label, fontSize: 13, color: colors.subtext },
   value: {
     ...type.display,
-    fontSize: 64,
-    letterSpacing: -2.5,
+    fontSize: 48,
+    letterSpacing: -1,
     color: colors.text,
     fontVariant: ['tabular-nums'],
   },

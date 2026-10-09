@@ -20,14 +20,14 @@ export function useAppFonts(): boolean {
 }
 
 /**
- * Type scale. Large numerals are light and tightly tracked; labels are small and medium;
+ * Type scale. Numerals are medium weight with natural tracking; labels are small and medium;
  * semibold is reserved for titles and buttons.
  */
 export const type = {
-  display: { fontFamily: font.light, fontSize: 104, letterSpacing: -5 },
+  display: { fontFamily: font.medium, fontSize: 64, letterSpacing: -1.5 },
   title: { fontFamily: font.semibold, fontSize: 28, letterSpacing: -0.8 },
   heading: { fontFamily: font.semibold, fontSize: 20, letterSpacing: -0.5 },
-  numeral: { fontFamily: font.light, fontSize: 30, letterSpacing: -1 },
+  numeral: { fontFamily: font.medium, fontSize: 22, letterSpacing: -0.4 },
   body: { fontFamily: font.regular, fontSize: 16, letterSpacing: -0.3 },
   bodyStrong: { fontFamily: font.medium, fontSize: 16, letterSpacing: -0.3 },
   callout: { fontFamily: font.medium, fontSize: 15, letterSpacing: -0.2 },
