@@ -1,26 +1,39 @@
 import type { PauseReason, PostureState } from '../engine';
 
+// Warm flat-illustration palette: coral brand, navy ink, distinct status colors.
 export const colors = {
-  bg: '#F4F6F8',
+  bg: '#FFF6F3',
   card: '#FFFFFF',
-  text: '#15202B',
-  subtext: '#5B6875',
-  border: '#E2E7EC',
-  primary: '#1F8A70',
-  primarySoft: '#DDF2EC',
-  warning: '#E89B1C',
-  warningSoft: '#FCF0DA',
-  danger: '#D64545',
-  dangerSoft: '#FBE3E3',
-  muted: '#9AA5B1',
-  mutedSoft: '#ECEFF2',
+  text: '#1F2A44',
+  subtext: '#6B7489',
+  border: '#F0E4E0',
+  primary: '#FF6B5B',
+  primarySoft: '#FFE3DE',
+  navy: '#26335C',
+  mustard: '#F7B538',
+  skin: '#F6C9A8',
+  good: '#22A06B',
+  goodSoft: '#DDF4E8',
+  warning: '#E99A16',
+  warningSoft: '#FFF0D4',
+  danger: '#EF4E4A',
+  dangerSoft: '#FFE1DF',
+  muted: '#A3ABBD',
+  mutedSoft: '#F1EEF0',
 };
 
 export const stateColor: Record<PostureState, string> = {
-  good: colors.primary,
+  good: colors.good,
   tilting: colors.warning,
   alerted: colors.danger,
   paused: colors.muted,
+};
+
+export const stateSoftColor: Record<PostureState, string> = {
+  good: colors.goodSoft,
+  tilting: colors.warningSoft,
+  alerted: colors.dangerSoft,
+  paused: colors.mutedSoft,
 };
 
 export const stateLabel: Record<PostureState, string> = {

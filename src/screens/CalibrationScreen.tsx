@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { monitor, useMonitor } from '../state/monitor';
 import { Button, Card } from '../ui/components';
-import { HeadVisual } from '../ui/HeadVisual';
+import { PersonVisual } from '../ui/PersonVisual';
 import { colors, formatAngle } from '../ui/theme';
 
 export function CalibrationScreen() {
@@ -53,7 +53,7 @@ export function CalibrationScreen() {
       <Card style={{ alignItems: 'center', marginTop: 24 }}>
         {status.phase === 'done' ? (
           <>
-            <HeadVisual angle={s.snapshot?.angle ?? 0} color={colors.primary} enterDeg={s.settings.posture.enterDeg} />
+            <PersonVisual angle={s.snapshot?.angle ?? 0} state="good" size={200} />
             <Text style={styles.big}>{formatAngle(s.snapshot?.angle ?? 0)}</Text>
           </>
         ) : (
