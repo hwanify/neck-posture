@@ -4,14 +4,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
 import { GradientCard } from '../ui/GradientCard';
-import { colors, pauseLabel, stateGradient } from '../ui/theme';
-
-const HEADLINE: Record<PostureState, string> = {
-  good: '바른 자세\n유지 중',
-  tilting: '조금\n기울었어요',
-  alerted: '고개를\n세워주세요',
-  paused: '잠시\n쉬는 중',
-};
+import { colors, pauseLabel, stateColor, stateGradient } from '../ui/theme';
 
 export function HomeScreen() {
   const s = useMonitor();
@@ -23,14 +16,18 @@ export function HomeScreen() {
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 
-  const headline = !s.calibration ? '기준 자세를\n등록하세요' : HEADLINE[state];
-  const sub = !live
-    ? pauseLabel[s.calibration ? (snapshot?.pauseReason ?? 'disconnected') : 'notCalibrated']
-    : abs === 0
-      ? '정면'
-      : angle < 0
-        ? '왼쪽으로 기울어짐'
-        : '오른쪽으로 기울어짐';
+  // One short line under the angle: what is happening, or what to do about it.
+  const side = angle < 0 ? '왼쪽' : '오른쪽';
+  const back = angle < 0 ? '오른쪽' : '왼쪽';
+  const message = !s.calibration
+    ? '바른 자세를 먼저 등록해 주세요'
+    : !live
+      ? pauseLabel[snapshot?.pauseReason ?? 'disconnected']
+      : state === 'alerted'
+        ? `고개를 ${back}으로 세워주세요`
+        : state === 'tilting'
+          ? `${side}으로 기울고 있어요`
+          : '바른 자세예요';
 
   const notice =
     s.authorization === 'denied'
@@ -62,7 +59,6 @@ export function HomeScreen() {
           <ConnectionStatus />
         </View>
 
-        <Text style={styles.headline}>{headline}</Text>
         {notice && (
           <Text
             style={styles.notice}
@@ -72,11 +68,11 @@ export function HomeScreen() {
         )}
 
         <View style={styles.center}>
-          <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
-            <View style={styles.levelDot} />
+          <View style={[styles.level, !live && { backgroundColor: colors.tertiary }, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
+            <View style={[styles.levelDot, !live && { backgroundColor: colors.tertiary }]} />
           </View>
-          <Text style={styles.angle}>{live ? `${abs}°` : '–'}</Text>
-          <Text style={styles.angleLabel}>{sub}</Text>
+          <Text style={[styles.angle, !live && { color: colors.tertiary }]}>{live ? `${abs}°` : '0°'}</Text>
+          <Text style={[styles.message, { color: live ? stateColor[state] : colors.subtext }]}>{message}</Text>
         </View>
 
         <View style={styles.stats}>
@@ -185,22 +181,14 @@ const styles = StyleSheet.create({
   meta: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
   status: { flexDirection: 'row', alignItems: 'center' },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  headline: {
-    fontSize: 40,
-    lineHeight: 46,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: -1.2,
-    marginTop: 22,
-  },
-  notice: { fontSize: 14, color: colors.danger, marginTop: 8 },
-  center: { flex: 1, minHeight: 280, alignItems: 'center', justifyContent: 'center' },
+  notice: { fontSize: 14, color: colors.danger, marginTop: 12, textAlign: 'center' },
+  center: { flex: 1, minHeight: 360, alignItems: 'center', justifyContent: 'center' },
   level: { width: 220, height: 2, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 40 },
   levelDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.text, marginTop: -5 },
-  angle: { fontSize: 88, fontWeight: '800', color: colors.text, letterSpacing: -4, fontVariant: ['tabular-nums'] },
-  angleLabel: { fontSize: 16, fontWeight: '600', color: colors.subtext, marginTop: -4 },
+  angle: { fontSize: 96, fontWeight: '800', color: colors.text, letterSpacing: -4, fontVariant: ['tabular-nums'] },
+  message: { fontSize: 17, fontWeight: '700', marginTop: 4, textAlign: 'center' },
   stats: { flexDirection: 'row', marginBottom: 28 },
-  stat: { flex: 1 },
+  stat: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.8, fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 13, fontWeight: '600', color: colors.subtext, marginTop: 2 },
   button: { height: 60, borderRadius: 30, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
