@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalibrationScreen } from './src/screens/CalibrationScreen';
@@ -12,6 +12,7 @@ import { monitor, useMonitor } from './src/state/monitor';
 import { type, useAppFonts } from './src/ui/fonts';
 import { TabIcon } from './src/ui/TabIcon';
 import { Text } from './src/ui/Text';
+import { useStateBackground } from './src/ui/useStateBackground';
 import { colors, useSvgPalette } from './src/ui/theme';
 
 const TABS = [
@@ -35,6 +36,8 @@ function Root() {
   const palette = useSvgPalette();
   const fontsReady = useAppFonts();
   const [tab, setTab] = useState<TabKey>('home');
+  const postureState = s.calibration ? (s.snapshot?.state ?? 'paused') : 'paused';
+  const homeBackground = useStateBackground(postureState);
 
   useEffect(() => {
     void monitor.init();
@@ -65,31 +68,34 @@ function Root() {
   }
 
   return (
-    <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
-      <View style={styles.fill}>
-        {tab === 'home' && <HomeScreen />}
-        {tab === 'history' && <HistoryScreen />}
-        {tab === 'settings' && <SettingsScreen />}
-      </View>
-      <SafeAreaView edges={['bottom']} style={styles.tabBar}>
-        {TABS.map((t) => (
-          <Pressable key={t.key} style={styles.tab} onPress={() => setTab(t.key)} accessibilityRole="tab">
-            <TabIcon name={t.key} color={tab === t.key ? palette.tint : palette.subtext} active={tab === t.key} />
-            <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
-          </Pressable>
-        ))}
+    <Animated.View style={[styles.fill, tab === 'home' && { backgroundColor: homeBackground }]}>
+      <SafeAreaView style={styles.transparent} edges={['top', 'left', 'right']}>
+        <View style={styles.transparent}>
+          {tab === 'home' && <HomeScreen />}
+          {tab === 'history' && <HistoryScreen />}
+          {tab === 'settings' && <SettingsScreen />}
+        </View>
+        <SafeAreaView edges={['bottom']} style={styles.tabBar}>
+          {TABS.map((t) => (
+            <Pressable key={t.key} style={styles.tab} onPress={() => setTab(t.key)} accessibilityRole="tab">
+              <TabIcon name={t.key} color={tab === t.key ? palette.tint : palette.subtext} active={tab === t.key} />
+              <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
+            </Pressable>
+          ))}
+        </SafeAreaView>
       </SafeAreaView>
-    </SafeAreaView>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.bg },
   sheet: { flex: 1, backgroundColor: colors.card },
+  transparent: { flex: 1, backgroundColor: 'transparent' },
   center: { alignItems: 'center', justifyContent: 'center' },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.barBg,
+    backgroundColor: 'transparent',
   },
   tab: { flex: 1, alignItems: 'center', paddingTop: 10, paddingBottom: 4 },
   tabLabel: { ...type.label, fontSize: 10, color: colors.muted, marginTop: 2 },

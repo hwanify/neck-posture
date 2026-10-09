@@ -1,6 +1,6 @@
 import type { PauseReason, PostureState } from '../engine';
 
-/** Warm, soft palette: off-white paper, ink type, pastel gradient surfaces. */
+/** Warm, soft palette: off-white paper, ink type, state-tinted backgrounds. */
 export const colors = {
   bg: '#FAF7F2',
   card: '#FFFFFF',
@@ -24,18 +24,12 @@ export const stateColor: Record<PostureState, string> = {
   paused: colors.muted,
 };
 
-/** Two-stop pastel gradients for the hero card, shifting with posture state. */
-export const stateGradient: Record<PostureState, [string, string]> = {
-  good: ['#F8D9C4', '#DCD3F6'],
-  tilting: ['#F9DDBE', '#F6EBB8'],
-  alerted: ['#F7C6BE', '#F9DCCB'],
-  paused: ['#EEE8DF', '#E4E0EA'],
-};
-
-export const pastel = {
-  peach: ['#F8D9C4', '#FBEADF'] as [string, string],
-  sage: ['#CFE6D7', '#E4F1E8'] as [string, string],
-  lavender: ['#DCD3F6', '#ECE7FB'] as [string, string],
+/** Very light full-screen backgrounds per posture state (the screen tints instead of using boxes). */
+export const stateBackground: Record<PostureState, string> = {
+  good: '#FAF7F2',
+  tilting: '#FBEEDF',
+  alerted: '#FBE3DF',
+  paused: '#F6F3EE',
 };
 
 const SVG_PALETTE = {

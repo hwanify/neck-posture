@@ -6,8 +6,7 @@ import { Text } from '../ui/Text';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { GradientCard } from '../ui/GradientCard';
-import { colors, pauseLabel, stateColor, stateGradient } from '../ui/theme';
+import { colors, pauseLabel, stateColor } from '../ui/theme';
 
 export function HomeScreen() {
   const s = useMonitor();
@@ -51,11 +50,6 @@ export function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <GradientCard
-        vertical
-        colors={[colors.bg, stateGradient[state][0], stateGradient[state][1], colors.bg]}
-        style={styles.backdrop}
-      />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.top}>
           <Text style={styles.meta}>{formatToday()}</Text>
@@ -177,8 +171,7 @@ function useNow(active: boolean) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 },
+  screen: { flex: 1 },
   container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   meta: { ...type.label, fontSize: 13, color: colors.subtext },
@@ -186,9 +179,9 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   notice: { ...type.caption, color: colors.danger, marginTop: 12, textAlign: 'center' },
   center: { flex: 1, minHeight: 360, alignItems: 'center', justifyContent: 'center' },
-  level: { width: 220, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 32 },
+  level: { width: 220, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center', marginBottom: 28 },
   levelDot: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: colors.text, marginTop: -3.75 },
-  angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 76 },
+  angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 58 },
   message: { ...type.callout, marginTop: 6, textAlign: 'center' },
   stats: { flexDirection: 'row', marginBottom: 28 },
   stat: { flex: 1, alignItems: 'center' },
