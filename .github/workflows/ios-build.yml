@@ -58,6 +58,14 @@ jobs:
           $EAS init --non-interactive --force
           $EAS update:configure --platform ios --non-interactive
 
+      # Non-interactive builds can't create the first distribution certificate / provisioning profile.
+      # Run the (always interactive) credentials setup under a pseudo-terminal, accepting every default;
+      # with the ASC API key in the environment it authenticates with Apple by itself. Reuses existing
+      # credentials on later runs.
+      - name: Set up signing credentials
+        run: |
+          yes '' | env -u CI script -qefc "$EAS credentials:configure-build --platform ios --profile production" /dev/null
+
       - name: Build
         run: |
           FLAGS="--platform ios --profile production --non-interactive --no-wait"
