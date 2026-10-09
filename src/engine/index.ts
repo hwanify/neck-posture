@@ -1,5 +1,6 @@
 export * from './calibrator';
 export * from './filters';
+export * from './postureCheck';
 export * from './postureEngine';
 export * from './postureStateMachine';
 export * from './sessionStats';

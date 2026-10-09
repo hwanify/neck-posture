@@ -8,6 +8,8 @@ import {
   Calibrator,
   type CalibratorStatus,
   flipCalibration,
+  PostureCheck,
+  type PostureCheckStatus,
   PostureEngine,
   type PostureSnapshot,
   type SensorLocation,
@@ -23,6 +25,17 @@ import type { AppSettings } from '../services/storage';
 /** No samples for this long → treat the earbuds as disconnected / removed. */
 const STALE_AFTER_MS = 2000;
 const KEEP_AWAKE_TAG = 'baromok-session';
+/** Neutral moved more than this since calibration → suggest calibrating again before starting. */
+const LARGE_SHIFT_DEG = 25;
+
+export type CheckState = {
+  progress: number;
+  tooMuchMotion: boolean;
+  /** Re-check during a session after the earbuds were removed / swapped. */
+  resumed: boolean;
+  /** Set when the check finished with a large shift and waits for the user's decision. */
+  largeShiftDeg: number | null;
+};
 
 export type LiveSession = {
   id: string;
@@ -48,6 +61,8 @@ export type MonitorState = {
   /** The sensor now comes from a different earbud than during calibration. */
   calibrationMismatch: boolean;
   calibrating: CalibratorStatus | null;
+  /** Pre-session 5-second posture check. */
+  checking: CheckState | null;
   session: LiveSession | null;
   settings: AppSettings;
   sessions: SessionSummary[];
@@ -57,6 +72,10 @@ class MonitorController {
   private source = createMotionSource(storage.DEFAULT_SETTINGS.source);
   private engine = new PostureEngine(null, storage.DEFAULT_SETTINGS.posture);
   private calibrator: Calibrator | null = null;
+  private check: PostureCheck | null = null;
+  private pendingCheck: NonNullable<PostureCheckStatus['result']> | null = null;
+  /** Earbuds went silent or switched during a session → re-check once samples return. */
+  private needsRecheck = false;
   private stats: SessionStats | null = null;
   private listeners = new Set<() => void>();
   private lastSampleWall = 0;
@@ -80,6 +99,7 @@ class MonitorController {
     calibration: null,
     calibrationMismatch: false,
     calibrating: null,
+    checking: null,
     session: null,
     settings: storage.DEFAULT_SETTINGS,
     sessions: [],
@@ -141,8 +161,7 @@ class MonitorController {
       await this.source.start({
         onSample: this.handleSample,
         onConnectionChange: (connected) => this.set({ connected }),
-        onError: (e) =>
-          this.set({ error: e.message, authorization: this.source.getAuthorizationStatus() }),
+        onError: (e) => this.set({ error: e.message, authorization: this.source.getAuthorizationStatus() }),
       });
       this.set({ streaming: true, error: null, authorization: this.source.getAuthorizationStatus() });
       this.watchdog ??= setInterval(this.checkStale, 1000);
@@ -191,6 +210,20 @@ class MonitorController {
         this.state.calibration.sensorLocation !== sample.sensorLocation,
     };
 
+    if (
+      this.state.session &&
+      !this.check &&
+      !this.pendingCheck &&
+      (this.needsRecheck || (this.state.sensorLocation && this.state.sensorLocation !== sample.sensorLocation))
+    ) {
+      this.beginCheck(true);
+    }
+
+    if (this.check) {
+      this.handleCheckSample(sample, common);
+      return;
+    }
+
     if (this.calibrator) {
       const status = this.calibrator.feed(sample);
       if (status.result) {
@@ -209,6 +242,7 @@ class MonitorController {
     const silentMs = Date.now() - this.lastSampleWall;
     if (silentMs < STALE_AFTER_MS) return;
     const t = this.lastSampleT + silentMs / 1000;
+    if (this.state.session) this.needsRecheck = true;
     this.applySnapshot(this.engine.pause(t, 'disconnected'), { connected: false, sampleRateHz: 0 });
   };
 
@@ -233,6 +267,9 @@ class MonitorController {
   // MARK: - Calibration
 
   startCalibration(): void {
+    this.check = null;
+    this.pendingCheck = null;
+    this.set({ checking: null });
     this.calibrator = new Calibrator();
     this.set({ calibrating: { phase: 'neutral', progress: 0, tooMuchMotion: false, tiltDeg: 0, hint: 'none' } });
     void this.startStreaming();
@@ -283,14 +320,74 @@ class MonitorController {
 
   // MARK: - Session
 
+  // MARK: - Posture check
+
+  private beginCheck(resumed: boolean) {
+    if (!this.state.calibration) return;
+    this.needsRecheck = false;
+    this.pendingCheck = null;
+    this.check = new PostureCheck(this.state.calibration);
+    this.set({ checking: { progress: 0, tooMuchMotion: false, resumed, largeShiftDeg: null } });
+  }
+
+  private handleCheckSample(sample: MotionSample, common: Partial<MonitorState>) {
+    const status = this.check!.feed(sample);
+    const resumed = this.state.checking?.resumed ?? false;
+    if (!status.result) {
+      this.set({ ...common, checking: { ...status, resumed, largeShiftDeg: null } });
+      return;
+    }
+    this.check = null;
+    // Mid-session the user may not be looking at the screen: apply it and carry on.
+    if (!resumed && status.result.shiftDeg > LARGE_SHIFT_DEG) {
+      this.pendingCheck = status.result;
+      this.set({
+        ...common,
+        checking: { progress: 1, tooMuchMotion: false, resumed, largeShiftDeg: status.result.shiftDeg },
+      });
+      return;
+    }
+    this.set(common);
+    void this.applyCheck(status.result);
+  }
+
+  /** Start anyway after a large-shift warning. */
+  async confirmCheck(): Promise<void> {
+    if (this.pendingCheck) await this.applyCheck(this.pendingCheck);
+  }
+
+  /** Leave the check screen; ends the session when it was a mid-session re-check. */
+  async cancelCheck(): Promise<void> {
+    const resumed = this.state.checking?.resumed;
+    this.check = null;
+    this.pendingCheck = null;
+    this.set({ checking: null });
+    if (resumed) await this.endSession();
+    else await this.releaseSessionResources();
+  }
+
+  private async applyCheck(result: NonNullable<PostureCheckStatus['result']>) {
+    this.pendingCheck = null;
+    // Today's seating only; the stored calibration stays the reference for the next check.
+    this.engine.setCalibration(result.calibration);
+    this.set({ checking: null });
+    if (!this.state.session) this.beginSession();
+  }
+
+  // MARK: - Session
+
+  /** Starts with the 5-second posture check; the session itself begins once it passes. */
   async startSession(): Promise<void> {
-    if (this.state.session || !this.state.calibration) return;
+    if (this.state.session || this.state.checking || !this.state.calibration) return;
     const { feedback } = this.state.settings;
     if (feedback.notification) await requestNotificationPermission().catch(() => false);
     await this.startStreaming();
     if (feedback.backgroundMode) await setBackgroundKeepAlive(true).catch(() => {});
     if (feedback.keepAwake) await activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
+    this.beginCheck(false);
+  }
 
+  private beginSession() {
     const startedAt = Date.now();
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
@@ -301,16 +398,23 @@ class MonitorController {
     if (!this.state.session || !this.stats) return null;
     const summary = this.stats.summary(Date.now());
     this.stats = null;
-    this.set({ session: null });
-    await setBackgroundKeepAlive(false).catch(() => {});
-    await deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
-    if (AppState.currentState !== 'active') await this.stopStreaming();
+    this.check = null;
+    this.pendingCheck = null;
+    this.needsRecheck = false;
+    this.set({ session: null, checking: null });
+    await this.releaseSessionResources();
 
     // Very short sessions aren't worth keeping.
     if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
     this.set({ sessions });
     return summary;
+  }
+
+  private async releaseSessionResources() {
+    await setBackgroundKeepAlive(false).catch(() => {});
+    await deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
+    if (AppState.currentState !== 'active') await this.stopStreaming();
   }
 
   async removeSession(id: string): Promise<void> {

@@ -70,7 +70,7 @@ export function SettingsScreen() {
       <Section
         header="감지"
         iconInset
-        footer={`${posture.exitDeg}° 안으로 돌아오면 바른 자세로 봅니다. 계속 기울어져 있으면 알림 간격이 길어집니다.${
+        footer={`${posture.exitDeg}° 안으로 돌아오면 바른 자세로 봅니다. 계속 기울어져 있으면 알림 간격마다 다시 알립니다.${
           posture.measureWhileWalking ? '' : ' 걷는 동안에는 측정을 쉽니다.'
         }`}>
         <StepperRow
@@ -95,7 +95,7 @@ export function SettingsScreen() {
         />
         <StepperRow
           icon="repeat"
-          title="반복 간격"
+          title="알림 간격"
           value={posture.cooldownSec}
           step={5}
           min={5}

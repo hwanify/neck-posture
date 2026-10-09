@@ -1,10 +1,8 @@
 import type { PostureEvent, PostureSettings, PostureState, TiltDirection } from './types';
 
-const MAX_COOLDOWN_MULTIPLIER = 4;
-
 /**
  * good ──|θ|≥enter──▶ tilting ──held holdSec──▶ alerted ──|θ|<exit──▶ good
- *   ▲                    │                       │ still tilted after cooldown → alert again (backoff)
+ *   ▲                    │                       │ still tilted after cooldown → alert again
  *   └─────|θ|<exit───────┘
  * Any state ──paused──▶ paused ──resume──▶ good
  */
@@ -61,8 +59,7 @@ export class PostureStateMachine {
           this.repeats = 0;
           return [{ type: 'recovered', at: t, afterAlert: true }];
         }
-        const multiplier = Math.min(2 ** this.repeats, MAX_COOLDOWN_MULTIPLIER);
-        if (t - this.lastAlertAt >= cooldownSec * multiplier) {
+        if (t - this.lastAlertAt >= cooldownSec) {
           this.repeats += 1;
           this.lastAlertAt = t;
           return [{ type: 'alert', at: t, direction, angle, repeat: this.repeats }];

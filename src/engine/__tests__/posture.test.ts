@@ -36,14 +36,13 @@ describe('PostureStateMachine', () => {
     expect(m.state).toBe('good');
   });
 
-  it('backs off repeated alerts while still tilted and resets on recovery', () => {
+  it('repeats alerts at a fixed interval while still tilted and resets on recovery', () => {
     const m = new PostureStateMachine(settings);
     const alerts: number[] = [];
     for (let t = 0; t <= 200; t += 0.5) {
       for (const e of m.update(t, 15, false)) if (e.type === 'alert') alerts.push(e.at);
     }
-    // 5 → +30 → +60 → +120 (capped at 4x)
-    expect(alerts).toEqual([5, 35, 95, 215].filter((t) => t <= 200));
+    expect(alerts).toEqual([5, 35, 65, 95, 125, 155, 185]);
     expect(m.update(201, 0, false)).toEqual([{ type: 'recovered', at: 201, afterAlert: true }]);
   });
 

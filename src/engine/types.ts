@@ -13,7 +13,7 @@ export type PostureSettings = {
   exitDeg: number;
   /** Seconds a tilt must last before alerting. */
   holdSec: number;
-  /** Seconds before re-alerting while still tilted; doubles on each repeat (max 4x). */
+  /** Fixed seconds between alerts while still tilted. */
   cooldownSec: number;
   /** Angle smoothing time constant (s). */
   smoothingSec: number;

@@ -7,6 +7,7 @@ import { CalibrationScreen } from './src/screens/CalibrationScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import { PostureCheckScreen } from './src/screens/PostureCheckScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { monitor, useMonitor } from './src/state/monitor';
 import { type, useAppFonts } from './src/ui/fonts';
@@ -60,6 +61,14 @@ function Root() {
     return (
       <SafeAreaView style={styles.sheet}>
         <CalibrationScreen />
+      </SafeAreaView>
+    );
+  }
+
+  if (s.checking) {
+    return (
+      <SafeAreaView style={styles.sheet}>
+        <PostureCheckScreen />
       </SafeAreaView>
     );
   }
