@@ -1,65 +1,60 @@
-import { Platform, PlatformColor, useColorScheme, type ColorValue } from 'react-native';
-
 import type { PauseReason, PostureState } from '../engine';
 
-/** iOS semantic system colors (adapt to light/dark automatically); light-mode values elsewhere. */
-const sys = (name: string, fallback: string): ColorValue => (Platform.OS === 'ios' ? PlatformColor(name) : fallback);
-
+/** Warm, soft palette: off-white paper, ink type, pastel gradient surfaces. */
 export const colors = {
-  bg: sys('systemGroupedBackground', '#F2F2F7'),
-  card: sys('secondarySystemGroupedBackground', '#FFFFFF'),
-  barBg: sys('systemBackground', '#F9F9F9'),
-  fill: sys('tertiarySystemFill', '#7676801F'),
-  text: sys('label', '#000000'),
-  subtext: sys('secondaryLabel', '#3C3C4399'),
-  tertiary: sys('tertiaryLabel', '#3C3C434D'),
-  separator: sys('separator', '#3C3C434A'),
-  tint: sys('systemBlue', '#007AFF'),
-  good: sys('systemGreen', '#34C759'),
-  warning: sys('systemOrange', '#FF9500'),
-  danger: sys('systemRed', '#FF3B30'),
-  muted: sys('systemGray', '#8E8E93'),
+  bg: '#FAF7F2',
+  card: '#FFFFFF',
+  barBg: '#FAF7F2',
+  fill: '#EFEAE2',
+  text: '#141414',
+  subtext: '#8C867D',
+  tertiary: '#BDB6AC',
+  separator: '#ECE6DC',
+  tint: '#141414',
+  good: '#5E9C7A',
+  warning: '#D08A3E',
+  danger: '#D2584A',
+  muted: '#A8A198',
 };
 
-export const stateColor: Record<PostureState, ColorValue> = {
+export const stateColor: Record<PostureState, string> = {
   good: colors.good,
   tilting: colors.warning,
   alerted: colors.danger,
   paused: colors.muted,
 };
 
-/** Plain hex values for SVG drawings, matching the iOS system palette. */
-const SVG_PALETTE = {
-  light: {
-    text: '#000000',
-    subtext: '#8E8E93',
-    track: '#E5E5EA',
-    separator: '#C6C6C8',
-    tint: '#007AFF',
-    good: '#34C759',
-    tilting: '#FF9500',
-    alerted: '#FF3B30',
-    paused: '#AEAEB2',
-    surface: '#FFFFFF',
-  },
-  dark: {
-    text: '#FFFFFF',
-    subtext: '#8E8E93',
-    track: '#2C2C2E',
-    separator: '#38383A',
-    tint: '#0A84FF',
-    good: '#30D158',
-    tilting: '#FF9F0A',
-    alerted: '#FF453A',
-    paused: '#636366',
-    surface: '#1C1C1E',
-  },
+/** Two-stop pastel gradients for the hero card, shifting with posture state. */
+export const stateGradient: Record<PostureState, [string, string]> = {
+  good: ['#F8D9C4', '#DCD3F6'],
+  tilting: ['#F9DDBE', '#F6EBB8'],
+  alerted: ['#F7C6BE', '#F9DCCB'],
+  paused: ['#EEE8DF', '#E4E0EA'],
 };
 
-export type SvgPalette = (typeof SVG_PALETTE)['light'];
+export const pastel = {
+  peach: ['#F8D9C4', '#FBEADF'] as [string, string],
+  sage: ['#CFE6D7', '#E4F1E8'] as [string, string],
+  lavender: ['#DCD3F6', '#ECE7FB'] as [string, string],
+};
+
+const SVG_PALETTE = {
+  text: colors.text,
+  subtext: colors.subtext,
+  track: colors.fill,
+  separator: colors.separator,
+  tint: colors.tint,
+  good: colors.good,
+  tilting: colors.warning,
+  alerted: colors.danger,
+  paused: colors.muted,
+  surface: colors.card,
+};
+
+export type SvgPalette = typeof SVG_PALETTE;
 
 export function useSvgPalette(): SvgPalette {
-  return useColorScheme() === 'dark' ? SVG_PALETTE.dark : SVG_PALETTE.light;
+  return SVG_PALETTE;
 }
 
 export const stateLabel: Record<PostureState, string> = {

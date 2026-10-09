@@ -1,109 +1,141 @@
 import { useEffect, useState } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { Banner, Button, Row, Screen, Section } from '../ui/components';
-import { PostureDial } from '../ui/PostureDial';
-import { colors, formatDuration, pauseLabel, stateLabel } from '../ui/theme';
+import { GradientCard } from '../ui/GradientCard';
+import { colors, pastel, pauseLabel, stateGradient } from '../ui/theme';
+
+const HEADLINE: Record<PostureState, string> = {
+  good: '바른 자세\n유지 중',
+  tilting: '조금\n기울었어요',
+  alerted: '고개를\n세워주세요',
+  paused: '잠시\n쉬는 중',
+};
 
 export function HomeScreen() {
   const s = useMonitor();
   const snapshot = s.snapshot;
   const state: PostureState = s.calibration ? (snapshot?.state ?? 'paused') : 'paused';
+  const live = s.calibration && snapshot && state !== 'paused';
+  const angle = live ? snapshot.angle : 0;
+  const abs = Math.round(Math.abs(angle));
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
-  const { enterDeg, holdSec } = s.settings.posture;
 
-  const caption =
-    state === 'paused'
-      ? pauseLabel[s.calibration ? (snapshot?.pauseReason ?? 'disconnected') : 'notCalibrated']
-      : stateLabel[state];
+  const headline = !s.calibration ? '기준 자세를\n등록하세요' : HEADLINE[state];
+  const sub = !live
+    ? pauseLabel[s.calibration ? (snapshot?.pauseReason ?? 'disconnected') : 'notCalibrated']
+    : abs === 0
+      ? '정면'
+      : angle < 0
+        ? '왼쪽으로 기울어짐'
+        : '오른쪽으로 기울어짐';
+
+  const notice =
+    s.authorization === 'denied'
+      ? '동작 및 피트니스 접근을 허용해 주세요'
+      : s.error
+        ? s.error
+        : s.calibrationMismatch
+          ? '다른 쪽 이어폰 센서 사용 중 · 다시 등록 권장'
+          : null;
 
   return (
-    <Screen title="자세">
-      {s.sourceKind === 'phone' && <Banner tone="info">Expo Go 테스트 모드 · iPhone 모션 센서 사용 중</Banner>}
-      {s.authorization === 'denied' && (
-        <Banner tone="danger">
-          동작 및 피트니스 접근이 꺼져 있습니다.{' '}
-          <Text style={{ color: colors.tint }} onPress={() => Linking.openSettings()}>
-            설정 열기
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <View style={styles.top}>
+        <Text style={styles.date}>{formatToday()}</Text>
+        <ConnectionStatus />
+      </View>
+
+      <Text style={styles.headline}>{headline}</Text>
+
+      {notice && (
+        <Text
+          style={styles.notice}
+          onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
+          {notice}
+        </Text>
+      )}
+
+      <GradientCard colors={stateGradient[state]} style={styles.hero}>
+        <View style={styles.levelBox}>
+          <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
+            <View style={styles.levelDot} />
+          </View>
+        </View>
+        <View style={styles.heroBottom}>
+          <Text style={styles.heroValue}>{live ? `${abs}°` : '–'}</Text>
+          <Text style={styles.heroLabel}>{sub}</Text>
+        </View>
+      </GradientCard>
+
+      <View style={styles.tiles}>
+        <GradientCard colors={pastel.peach} style={styles.tile}>
+          <Text style={styles.tileLabel}>{s.session ? '이번 측정' : '오늘'}</Text>
+          <View>
+            <Text style={styles.tileValue}>
+              {s.session
+                ? `${Math.round(s.session.goodRatio * 100)}%`
+                : today.judgedSec > 0
+                  ? `${Math.round(today.goodRatio * 100)}%`
+                  : '–'}
+            </Text>
+            <Text style={styles.tileCaption}>바른 자세</Text>
+          </View>
+        </GradientCard>
+        <GradientCard colors={pastel.sage} style={styles.tile}>
+          <Text style={styles.tileLabel}>{s.session ? '이번 측정' : '오늘'}</Text>
+          <View>
+            <Text style={styles.tileValue}>{s.session ? s.session.alertCount : today.alerts}</Text>
+            <Text style={styles.tileCaption}>알림</Text>
+          </View>
+        </GradientCard>
+      </View>
+
+      <View style={styles.actions}>
+        <View style={[styles.pill, styles.pillSoft]}>
+          <Text style={styles.pillSoftText}>
+            {s.session
+              ? formatClock((now - s.session.startedAt) / 1000)
+              : today.judgedSec > 0
+                ? formatShort(today.judgedSec)
+                : `±${s.settings.posture.enterDeg}°`}
           </Text>
-        </Banner>
-      )}
-      {s.error && s.authorization !== 'denied' && <Banner tone="warning">{s.error}</Banner>}
-      {s.calibrationMismatch && <Banner tone="warning">다른 쪽 이어폰의 센서가 사용 중입니다. 다시 보정하세요.</Banner>}
-
-      <Section footer={`좌우로 ${enterDeg}° 이상 ${holdSec}초 동안 기울어지면 알려드립니다.`}>
-        <View style={styles.dialBox}>
-          <View style={styles.dialHeader}>
-            <Text style={styles.dialTitle}>현재 기울기</Text>
-            <ConnectionStatus />
-          </View>
-          <PostureDial
-            angle={s.calibration && snapshot && state !== 'paused' ? snapshot.angle : null}
-            enterDeg={enterDeg}
-            state={state}
-            caption={caption}
-          />
         </View>
-      </Section>
-
-      {!s.calibration ? (
-        <Section footer="이어폰이 귀에 걸린 각도는 사람마다 다릅니다. 바른 자세를 한 번 등록하면 그 기준으로 측정합니다.">
-          <View style={styles.actionBox}>
-            <Button title="기준 자세 등록" onPress={() => monitor.startCalibration()} />
-          </View>
-        </Section>
-      ) : s.session ? (
-        <Section header="측정 중">
-          <Row title="경과 시간" value={formatClock((now - s.session.startedAt) / 1000)} />
-          <Row title="바른 자세" value={`${Math.round(s.session.goodRatio * 100)}%`} />
-          <Row title="알림" value={`${s.session.alertCount}회`} />
-          <View style={styles.actionBox}>
-            <Button title="측정 종료" variant="tinted" role="destructive" onPress={() => void monitor.endSession()} />
-          </View>
-        </Section>
-      ) : (
-        <View style={styles.primaryAction}>
-          <Button title="측정 시작" onPress={() => void monitor.startSession()} />
-        </View>
-      )}
-
-      <Section header="오늘">
-        <Row title="바른 자세" value={today.judgedSec > 0 ? `${Math.round(today.goodRatio * 100)}%` : '–'} />
-        <Row title="측정 시간" value={today.judgedSec > 0 ? formatDuration(today.judgedSec) : '–'} />
-        <Row title="알림" value={`${today.alerts}회`} />
-        <Row title="주로 기우는 쪽" value={today.bias} />
-      </Section>
-    </Screen>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            !s.calibration
+              ? monitor.startCalibration()
+              : s.session
+                ? void monitor.endSession()
+                : void monitor.startSession()
+          }
+          style={({ pressed }) => [styles.pill, styles.pillDark, { opacity: pressed ? 0.8 : 1 }]}>
+          <Text style={styles.pillDarkText}>{!s.calibration ? '등록하기' : s.session ? '종료' : '측정 시작'}</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 function ConnectionStatus() {
   const s = useMonitor();
-  let text: string;
-  let tone;
-  if (s.sourceKind === 'demo') {
-    text = '데모';
-    tone = colors.warning;
-  } else if (s.sourceKind === 'phone') {
-    text = s.connected ? 'iPhone' : '대기 중';
-    tone = s.connected ? colors.good : colors.muted;
-  } else if (!s.available) {
-    text = '지원 안 됨';
-    tone = colors.danger;
-  } else if (s.connected) {
-    text = 'AirPods';
-    tone = colors.good;
-  } else {
-    text = '연결 안 됨';
-    tone = colors.muted;
-  }
+  const [text, tone] =
+    s.sourceKind === 'demo'
+      ? ['데모', colors.warning]
+      : s.sourceKind === 'phone'
+        ? [s.connected ? 'iPhone 센서' : '대기 중', s.connected ? colors.good : colors.muted]
+        : !s.available
+          ? ['지원 안 됨', colors.danger]
+          : s.connected
+            ? ['AirPods', colors.good]
+            : ['연결 안 됨', colors.muted];
   return (
     <View style={styles.status}>
       <View style={[styles.statusDot, { backgroundColor: tone }]} />
-      <Text style={styles.statusText}>{text}</Text>
+      <Text style={styles.date}>{text}</Text>
     </View>
   );
 }
@@ -114,21 +146,26 @@ function useTodaySummary() {
   const isToday = (ts: number) => new Date(ts).toDateString() === new Date().toDateString();
   let good = 0;
   let tilt = 0;
-  let left = 0;
-  let right = 0;
   let alerts = 0;
   for (const x of sessions.filter((x) => isToday(x.startedAt))) {
     good += x.goodSec;
     tilt += x.tiltSec;
-    left += x.leftTiltSec;
-    right += x.rightTiltSec;
     alerts += x.alertCount;
   }
   if (session) alerts += session.alertCount;
   const judgedSec = good + tilt;
-  const bias =
-    left + right < 5 ? '–' : Math.abs(left - right) / (left + right) < 0.2 ? '균형' : left > right ? '왼쪽' : '오른쪽';
-  return { judgedSec, goodRatio: judgedSec > 0 ? good / judgedSec : 0, alerts, bias };
+  return { judgedSec, goodRatio: judgedSec > 0 ? good / judgedSec : 0, alerts };
+}
+
+function formatToday() {
+  const d = new Date();
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
+}
+
+function formatShort(sec: number) {
+  const m = Math.round(sec / 60);
+  return m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`;
 }
 
 function formatClock(sec: number) {
@@ -150,20 +187,38 @@ function useNow(active: boolean) {
 }
 
 const styles = StyleSheet.create({
-  dialBox: { alignItems: 'center', paddingBottom: 20 },
-  dialHeader: {
-    alignSelf: 'stretch',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 4,
-  },
-  dialTitle: { fontSize: 17, fontWeight: '600', color: colors.text, letterSpacing: -0.4 },
+  screen: { backgroundColor: colors.bg },
+  container: { paddingHorizontal: 22, paddingTop: 12, paddingBottom: 28 },
+  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  date: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
   status: { flexDirection: 'row', alignItems: 'center' },
-  statusDot: { width: 7, height: 7, borderRadius: 3.5, marginRight: 6 },
-  statusText: { fontSize: 15, color: colors.subtext },
-  actionBox: { padding: 16 },
-  primaryAction: { marginHorizontal: 16, marginTop: 22 },
+  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
+  headline: {
+    fontSize: 40,
+    lineHeight: 46,
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: -1.2,
+    marginTop: 22,
+    marginBottom: 22,
+  },
+  notice: { fontSize: 14, color: colors.danger, marginTop: -10, marginBottom: 16 },
+  hero: { height: 240, padding: 24, justifyContent: 'space-between' },
+  levelBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  level: { width: 150, height: 2, borderRadius: 1, backgroundColor: 'rgba(20,20,20,0.75)', alignItems: 'center' },
+  levelDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.text, marginTop: -4 },
+  heroBottom: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  heroValue: { fontSize: 56, fontWeight: '800', color: colors.text, letterSpacing: -2, fontVariant: ['tabular-nums'] },
+  heroLabel: { fontSize: 15, fontWeight: '600', color: 'rgba(20,20,20,0.6)' },
+  tiles: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  tile: { flex: 1, height: 150, padding: 20, justifyContent: 'space-between' },
+  tileLabel: { fontSize: 13, fontWeight: '600', color: 'rgba(20,20,20,0.5)' },
+  tileValue: { fontSize: 34, fontWeight: '800', color: colors.text, letterSpacing: -1, fontVariant: ['tabular-nums'] },
+  tileCaption: { fontSize: 15, fontWeight: '700', color: colors.text, marginTop: 2 },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  pill: { flex: 1, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
+  pillSoft: { backgroundColor: colors.fill },
+  pillSoftText: { fontSize: 18, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'], letterSpacing: 0.5 },
+  pillDark: { backgroundColor: colors.text },
+  pillDarkText: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
 });

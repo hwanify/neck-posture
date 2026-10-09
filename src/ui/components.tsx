@@ -14,7 +14,7 @@ import { colors } from './theme';
 
 /** iOS metrics (points). */
 const INSET = 16;
-const RADIUS = 10;
+const RADIUS = 22;
 
 /** Scrollable screen on the grouped background with an iOS large title. */
 export function Screen({ title, children }: { title: string; children: ReactNode }) {
@@ -104,7 +104,7 @@ export function Row({
 export function ToggleRow(props: { title: string; subtitle?: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <Row title={props.title} subtitle={props.subtitle}>
-      <Switch value={props.value} onValueChange={props.onChange} />
+      <Switch value={props.value} onValueChange={props.onChange} trackColor={{ true: colors.good }} />
     </Row>
   );
 }
@@ -216,9 +216,9 @@ export function Banner({ tone, children }: { tone: 'warning' | 'danger' | 'info'
 const styles = StyleSheet.create({
   screen: { paddingBottom: 40 },
   largeTitle: {
-    fontSize: 34,
-    fontWeight: '700',
-    letterSpacing: 0.37,
+    fontSize: 36,
+    fontWeight: '800',
+    letterSpacing: -1,
     color: colors.text,
     marginHorizontal: INSET + 4,
     marginTop: 8,
@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
   section: { marginTop: 22, marginHorizontal: INSET },
   sectionHeader: {
     fontSize: 13,
+    fontWeight: '600',
     color: colors.subtext,
-    textTransform: 'uppercase',
     marginLeft: INSET,
     marginBottom: 7,
   },
@@ -243,17 +243,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.fill,
-    borderRadius: 8,
+    borderRadius: 16,
     marginLeft: 12,
     height: 32,
   },
   stepperHalf: { width: 46, height: 32, alignItems: 'center', justifyContent: 'center' },
   stepperSymbol: { fontSize: 20, color: colors.text, marginTop: -2 },
   stepperDivider: { width: StyleSheet.hairlineWidth, height: 18, backgroundColor: colors.separator },
-  button: { height: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { fontSize: 17, fontWeight: '600', letterSpacing: -0.4 },
-  segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 9, padding: 2 },
-  segment: { flex: 1, height: 28, alignItems: 'center', justifyContent: 'center', borderRadius: 7 },
+  button: { height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  buttonText: { fontSize: 17, fontWeight: '700', letterSpacing: -0.2 },
+  segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
+  segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
   segmentSelected: {
     backgroundColor: colors.card,
     shadowColor: '#000',
