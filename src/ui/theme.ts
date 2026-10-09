@@ -1,42 +1,71 @@
+import { Platform, PlatformColor, useColorScheme, type ColorValue } from 'react-native';
+
 import type { PauseReason, PostureState } from '../engine';
 
-// Monochrome dark palette: color appears only when posture needs attention.
+/** iOS semantic system colors (adapt to light/dark automatically); light-mode values elsewhere. */
+const sys = (name: string, fallback: string): ColorValue => (Platform.OS === 'ios' ? PlatformColor(name) : fallback);
+
 export const colors = {
-  bg: '#0A0A0B',
-  card: '#151517',
-  text: '#F2F2F2',
-  subtext: '#8A8A8F',
-  border: '#26262A',
-  primary: '#F2F2F2',
-  primarySoft: '#1C1C1F',
-  good: '#F2F2F2',
-  goodSoft: '#1C1C1F',
-  warning: '#D8B26E',
-  warningSoft: '#2A2418',
-  danger: '#E2665A',
-  dangerSoft: '#2C1A18',
-  muted: '#55555A',
-  mutedSoft: '#1C1C1F',
+  bg: sys('systemGroupedBackground', '#F2F2F7'),
+  card: sys('secondarySystemGroupedBackground', '#FFFFFF'),
+  barBg: sys('systemBackground', '#F9F9F9'),
+  fill: sys('tertiarySystemFill', '#7676801F'),
+  text: sys('label', '#000000'),
+  subtext: sys('secondaryLabel', '#3C3C4399'),
+  tertiary: sys('tertiaryLabel', '#3C3C434D'),
+  separator: sys('separator', '#3C3C434A'),
+  tint: sys('systemBlue', '#007AFF'),
+  good: sys('systemGreen', '#34C759'),
+  warning: sys('systemOrange', '#FF9500'),
+  danger: sys('systemRed', '#FF3B30'),
+  muted: sys('systemGray', '#8E8E93'),
 };
 
-export const stateColor: Record<PostureState, string> = {
+export const stateColor: Record<PostureState, ColorValue> = {
   good: colors.good,
   tilting: colors.warning,
   alerted: colors.danger,
   paused: colors.muted,
 };
 
-export const stateSoftColor: Record<PostureState, string> = {
-  good: colors.goodSoft,
-  tilting: colors.warningSoft,
-  alerted: colors.dangerSoft,
-  paused: colors.mutedSoft,
+/** Plain hex values for SVG drawings, matching the iOS system palette. */
+const SVG_PALETTE = {
+  light: {
+    text: '#000000',
+    subtext: '#8E8E93',
+    track: '#E5E5EA',
+    separator: '#C6C6C8',
+    tint: '#007AFF',
+    good: '#34C759',
+    tilting: '#FF9500',
+    alerted: '#FF3B30',
+    paused: '#AEAEB2',
+    surface: '#FFFFFF',
+  },
+  dark: {
+    text: '#FFFFFF',
+    subtext: '#8E8E93',
+    track: '#2C2C2E',
+    separator: '#38383A',
+    tint: '#0A84FF',
+    good: '#30D158',
+    tilting: '#FF9F0A',
+    alerted: '#FF453A',
+    paused: '#636366',
+    surface: '#1C1C1E',
+  },
 };
+
+export type SvgPalette = (typeof SVG_PALETTE)['light'];
+
+export function useSvgPalette(): SvgPalette {
+  return useColorScheme() === 'dark' ? SVG_PALETTE.dark : SVG_PALETTE.light;
+}
 
 export const stateLabel: Record<PostureState, string> = {
   good: '바른 자세',
   tilting: '기울어짐 감지',
-  alerted: '자세를 바로 해주세요',
+  alerted: '고개를 바로 세워주세요',
   paused: '일시정지',
 };
 

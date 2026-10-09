@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { monitor, useMonitor } from '../state/monitor';
-import { Button, Card } from '../ui/components';
+import { Button } from '../ui/components';
 import { PostureDial } from '../ui/PostureDial';
 import { colors } from '../ui/theme';
 
+/** Full-screen sheet guiding the two calibration steps. */
 export function CalibrationScreen() {
   const s = useMonitor();
   const status = s.calibrating;
@@ -12,99 +13,96 @@ export function CalibrationScreen() {
 
   const waiting = s.sourceKind === 'airpods' && !s.connected;
   const phone = s.sourceKind === 'phone';
+  const done = status.phase === 'done';
+
+  const title = {
+    neutral: phone ? 'iPhone을 똑바로 세워 주세요' : '정면을 바라봐 주세요',
+    tiltRight: phone ? 'iPhone을 오른쪽으로 기울이세요' : '고개를 오른쪽으로 기울이세요',
+    done: '등록 완료',
+  }[status.phase];
+
+  const body = {
+    neutral: phone
+      ? 'iPhone을 세로로 세운 채 3초간 움직이지 마세요. 이 iPhone이 머리 역할을 합니다.'
+      : '허리를 펴고 고개를 똑바로 세운 채 3초간 움직이지 마세요.',
+    tiltRight: phone
+      ? 'iPhone 윗부분을 오른쪽으로 15° 정도 천천히 기울이고 잠시 멈추세요.'
+      : '오른쪽 귀를 오른쪽 어깨 쪽으로 천천히 기울이고 잠시 멈추세요. 좌우 방향을 파악하는 단계입니다.',
+    done: `${phone ? 'iPhone을' : '고개를'} 기울여 방향이 맞게 표시되는지 확인하세요.`,
+  }[status.phase];
+
+  const hint = waiting
+    ? 'AirPods 신호를 기다리는 중입니다. 양쪽 이어폰을 착용하세요.'
+    : status.tooMuchMotion
+      ? '움직임이 감지되었습니다. 잠시 멈춰 주세요.'
+      : status.phase === 'tiltRight'
+        ? `현재 ${Math.round(status.tiltDeg)}°`
+        : ' ';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.step}>
-        {status.phase === 'neutral' ? '1 / 2' : status.phase === 'tiltRight' ? '2 / 2' : '완료'}
-      </Text>
-
-      {status.phase === 'neutral' && (
-        <>
-          <Text style={styles.title}>{phone ? 'iPhone을 똑바로 세워 들어주세요' : '바른 자세로 정면을 봐주세요'}</Text>
-          <Text style={styles.body}>
-            {phone
-              ? 'iPhone을 세로로 똑바로 세운 채 3초간 가만히 들고 있어주세요. 이 iPhone이 머리 역할을 해요.'
-              : '허리를 펴고 고개를 똑바로 세운 채 3초간 가만히 있어주세요.'}
+      <View style={styles.topBar}>
+        {!done ? (
+          <Text style={styles.cancel} onPress={() => monitor.cancelCalibration()}>
+            취소
           </Text>
-        </>
-      )}
-      {status.phase === 'tiltRight' && (
-        <>
-          <Text style={styles.title}>{phone ? 'iPhone을 오른쪽으로 기울여주세요' : '고개를 오른쪽으로 기울여주세요'}</Text>
-          <Text style={styles.body}>
-            {phone
-              ? '화면을 보면서 iPhone 윗부분을 오른쪽으로 15° 정도 천천히 기울이고 잠깐 멈춰주세요.'
-              : '오른쪽 귀를 오른쪽 어깨 쪽으로 천천히 기울이고 잠깐 멈춰주세요.'}{' '}
-            좌우 방향을 정확히 알기 위한 단계예요.
-          </Text>
-        </>
-      )}
-      {status.phase === 'done' && (
-        <>
-          <Text style={styles.title}>등록 완료!</Text>
-          <Text style={styles.body}>
-            {phone ? 'iPhone을' : '고개를'} 오른쪽으로 기울이면 &apos;우&apos;, 왼쪽으로 기울이면 &apos;좌&apos;로 표시되는지
-            확인해보세요.
-          </Text>
-        </>
-      )}
-
-      <Card style={{ alignItems: 'center', marginTop: 24 }}>
-        {status.phase === 'done' ? (
-          <>
-            <PostureDial
-              angle={s.snapshot?.angle ?? 0}
-              enterDeg={s.settings.posture.enterDeg}
-              color={colors.good}
-              caption="기준 자세 등록됨"
-              size={240}
-            />
-          </>
         ) : (
-          <>
+          <View />
+        )}
+        <Text style={styles.step}>{done ? '' : `${status.phase === 'neutral' ? 1 : 2} / 2`}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.body}>{body}</Text>
+
+      <View style={styles.center}>
+        {done ? (
+          <PostureDial
+            angle={s.snapshot?.angle ?? 0}
+            enterDeg={s.settings.posture.enterDeg}
+            state="good"
+            caption="기준 자세"
+            size={240}
+          />
+        ) : (
+          <View style={styles.progressBox}>
             <View style={styles.progressTrack}>
               <View style={[styles.progressFill, { width: `${Math.round(status.progress * 100)}%` }]} />
             </View>
-            {waiting ? (
-              <Text style={styles.warn}>AirPods 신호를 기다리는 중이에요. 양쪽 이어폰을 착용해주세요.</Text>
-            ) : status.tooMuchMotion ? (
-              <Text style={styles.warn}>움직임이 감지됐어요. 가만히 있어주세요.</Text>
-            ) : status.phase === 'tiltRight' ? (
-              <Text style={styles.big}>{Math.round(status.tiltDeg)}°</Text>
-            ) : null}
-          </>
+            <Text style={[styles.hint, (waiting || status.tooMuchMotion) && { color: colors.warning }]}>{hint}</Text>
+          </View>
         )}
-      </Card>
+      </View>
 
-      <View style={{ flex: 1 }} />
-      {status.phase === 'done' ? (
-        <>
-          <Button title="좌우가 반대예요" variant="secondary" onPress={() => void monitor.swapLeftRight()} />
-          <View style={{ height: 10 }} />
+      {done && (
+        <View style={styles.actions}>
           <Button title="완료" onPress={() => monitor.finishCalibration()} />
-        </>
-      ) : (
-        <Button title="취소" variant="secondary" onPress={() => monitor.cancelCalibration()} />
+          <Button title="좌우가 반대로 표시됨" variant="plain" onPress={() => void monitor.swapLeftRight()} />
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-  step: { fontSize: 13, color: colors.subtext, fontWeight: '600', marginTop: 12, letterSpacing: 1 },
-  title: { fontSize: 26, fontWeight: '700', color: colors.text, marginTop: 8, letterSpacing: -0.4 },
-  body: { fontSize: 16, color: colors.subtext, marginTop: 10, lineHeight: 23 },
-  progressTrack: {
-    width: '100%',
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.mutedSoft,
-    overflow: 'hidden',
-    marginVertical: 16,
+  container: { flex: 1, backgroundColor: colors.card, paddingHorizontal: 24 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 44 },
+  cancel: { fontSize: 17, color: colors.tint, width: 40 },
+  step: { fontSize: 15, color: colors.subtext, fontVariant: ['tabular-nums'] },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+    marginTop: 32,
+    letterSpacing: 0.36,
   },
-  progressFill: { height: '100%', backgroundColor: colors.primary },
-  warn: { fontSize: 15, color: colors.warning, textAlign: 'center' },
-  big: { fontSize: 48, fontWeight: '200', color: colors.text, marginTop: 8 },
+  body: { fontSize: 17, lineHeight: 24, color: colors.subtext, textAlign: 'center', marginTop: 12, letterSpacing: -0.4 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  progressBox: { alignSelf: 'stretch', paddingHorizontal: 16 },
+  progressTrack: { height: 4, borderRadius: 2, backgroundColor: colors.fill, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: colors.tint },
+  hint: { fontSize: 15, color: colors.subtext, textAlign: 'center', marginTop: 16, fontVariant: ['tabular-nums'] },
+  actions: { gap: 4, paddingBottom: 8 },
 });

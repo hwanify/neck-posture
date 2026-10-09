@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { Banner } from '../ui/components';
+import { Banner, Button, Row, Screen, Section } from '../ui/components';
 import { PostureDial } from '../ui/PostureDial';
-import { colors, pauseLabel, stateColor, stateLabel } from '../ui/theme';
+import { colors, formatDuration, pauseLabel, stateLabel } from '../ui/theme';
 
 export function HomeScreen() {
   const s = useMonitor();
@@ -13,7 +13,7 @@ export function HomeScreen() {
   const state: PostureState = s.calibration ? (snapshot?.state ?? 'paused') : 'paused';
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
-  const { enterDeg } = s.settings.posture;
+  const { enterDeg, holdSec } = s.settings.posture;
 
   const caption =
     state === 'paused'
@@ -21,79 +21,83 @@ export function HomeScreen() {
       : stateLabel[state];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.date}>{formatToday()}</Text>
-        <ConnectionStatus />
-      </View>
-
-      {s.sourceKind === 'phone' && <Banner tone="info">Expo Go — iPhone 모션 센서로 테스트 중</Banner>}
+    <Screen title="자세">
+      {s.sourceKind === 'phone' && <Banner tone="info">Expo Go 테스트 모드 · iPhone 모션 센서 사용 중</Banner>}
       {s.authorization === 'denied' && (
         <Banner tone="danger">
-          동작 및 피트니스 권한이 꺼져 있어요.{' '}
-          <Text style={{ fontWeight: '700' }} onPress={() => Linking.openSettings()}>
+          동작 및 피트니스 접근이 꺼져 있습니다.{' '}
+          <Text style={{ color: colors.tint }} onPress={() => Linking.openSettings()}>
             설정 열기
           </Text>
         </Banner>
       )}
       {s.error && s.authorization !== 'denied' && <Banner tone="warning">{s.error}</Banner>}
-      {s.calibrationMismatch && <Banner tone="warning">다른 쪽 이어폰 센서 사용 중 — 다시 보정을 권장해요</Banner>}
+      {s.calibrationMismatch && <Banner tone="warning">다른 쪽 이어폰의 센서가 사용 중입니다. 다시 보정하세요.</Banner>}
 
-      <View style={styles.dial}>
-        <PostureDial
-          angle={s.calibration && snapshot && state !== 'paused' ? snapshot.angle : null}
-          enterDeg={enterDeg}
-          color={stateColor[state]}
-          caption={caption}
-        />
-      </View>
+      <Section footer={`좌우로 ${enterDeg}° 이상 ${holdSec}초 동안 기울어지면 알려드립니다.`}>
+        <View style={styles.dialBox}>
+          <View style={styles.dialHeader}>
+            <Text style={styles.dialTitle}>현재 기울기</Text>
+            <ConnectionStatus />
+          </View>
+          <PostureDial
+            angle={s.calibration && snapshot && state !== 'paused' ? snapshot.angle : null}
+            enterDeg={enterDeg}
+            state={state}
+            caption={caption}
+          />
+        </View>
+      </Section>
 
       {!s.calibration ? (
-        <View style={styles.block}>
-          <Text style={styles.blockText}>바른 자세를 한 번 등록하면{'\n'}그 기준으로 측정해요.</Text>
-          <ActionButton title="기준 자세 등록" onPress={() => monitor.startCalibration()} />
-        </View>
+        <Section footer="이어폰이 귀에 걸린 각도는 사람마다 다릅니다. 바른 자세를 한 번 등록하면 그 기준으로 측정합니다.">
+          <View style={styles.actionBox}>
+            <Button title="기준 자세 등록" onPress={() => monitor.startCalibration()} />
+          </View>
+        </Section>
       ) : s.session ? (
-        <View style={styles.block}>
-          <View style={styles.stats}>
-            <Stat value={formatClock((now - s.session.startedAt) / 1000)} label="경과" live />
-            <Stat value={`${Math.round(s.session.goodRatio * 100)}%`} label="바른 자세" />
-            <Stat value={`${s.session.alertCount}`} label="알림" />
+        <Section header="측정 중">
+          <Row title="경과 시간" value={formatClock((now - s.session.startedAt) / 1000)} />
+          <Row title="바른 자세" value={`${Math.round(s.session.goodRatio * 100)}%`} />
+          <Row title="알림" value={`${s.session.alertCount}회`} />
+          <View style={styles.actionBox}>
+            <Button title="측정 종료" variant="tinted" role="destructive" onPress={() => void monitor.endSession()} />
           </View>
-          <ActionButton title="종료" variant="secondary" onPress={() => void monitor.endSession()} />
-        </View>
+        </Section>
       ) : (
-        <View style={styles.block}>
-          <View style={styles.stats}>
-            <Stat value={today.judgedSec > 0 ? `${Math.round(today.goodRatio * 100)}%` : '–'} label="오늘 바른 자세" />
-            <Stat value={today.judgedSec > 0 ? formatShort(today.judgedSec) : '–'} label="측정" />
-            <Stat value={today.bias} label="기우는 쪽" />
-          </View>
-          <ActionButton title="측정 시작" onPress={() => void monitor.startSession()} />
+        <View style={styles.primaryAction}>
+          <Button title="측정 시작" onPress={() => void monitor.startSession()} />
         </View>
       )}
-    </ScrollView>
+
+      <Section header="오늘">
+        <Row title="바른 자세" value={today.judgedSec > 0 ? `${Math.round(today.goodRatio * 100)}%` : '–'} />
+        <Row title="측정 시간" value={today.judgedSec > 0 ? formatDuration(today.judgedSec) : '–'} />
+        <Row title="알림" value={`${today.alerts}회`} />
+        <Row title="주로 기우는 쪽" value={today.bias} />
+      </Section>
+    </Screen>
   );
 }
 
 function ConnectionStatus() {
   const s = useMonitor();
   let text: string;
-  let tone: string;
+  let tone;
   if (s.sourceKind === 'demo') {
     text = '데모';
     tone = colors.warning;
   } else if (s.sourceKind === 'phone') {
-    text = s.connected ? 'iPhone 센서' : '센서 대기';
+    text = s.connected ? 'iPhone' : '대기 중';
     tone = s.connected ? colors.good : colors.muted;
   } else if (!s.available) {
-    text = '미지원 기기';
+    text = '지원 안 됨';
     tone = colors.danger;
   } else if (s.connected) {
     text = 'AirPods';
     tone = colors.good;
   } else {
-    text = 'AirPods 연결 안 됨';
+    text = '연결 안 됨';
     tone = colors.muted;
   }
   return (
@@ -101,42 +105,6 @@ function ConnectionStatus() {
       <View style={[styles.statusDot, { backgroundColor: tone }]} />
       <Text style={styles.statusText}>{text}</Text>
     </View>
-  );
-}
-
-function Stat({ value, label, live }: { value: string; label: string; live?: boolean }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <View style={styles.statLabelRow}>
-        {live && <View style={styles.liveDot} />}
-        <Text style={styles.statLabel}>{label}</Text>
-      </View>
-    </View>
-  );
-}
-
-function ActionButton({
-  title,
-  onPress,
-  variant = 'primary',
-}: {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary';
-}) {
-  const primary = variant === 'primary';
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.action,
-        primary ? styles.actionPrimary : styles.actionSecondary,
-        { opacity: pressed ? 0.7 : 1 },
-      ]}>
-      <Text style={[styles.actionText, { color: primary ? colors.bg : colors.text }]}>{title}</Text>
-    </Pressable>
   );
 }
 
@@ -159,19 +127,8 @@ function useTodaySummary() {
   if (session) alerts += session.alertCount;
   const judgedSec = good + tilt;
   const bias =
-    left + right < 5 ? '–' : Math.abs(left - right) / (left + right) < 0.2 ? '균형' : left > right ? 'L' : 'R';
+    left + right < 5 ? '–' : Math.abs(left - right) / (left + right) < 0.2 ? '균형' : left > right ? '왼쪽' : '오른쪽';
   return { judgedSec, goodRatio: judgedSec > 0 ? good / judgedSec : 0, alerts, bias };
-}
-
-function formatToday() {
-  const d = new Date();
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
-}
-
-function formatShort(sec: number) {
-  const m = Math.round(sec / 60);
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
 }
 
 function formatClock(sec: number) {
@@ -193,23 +150,20 @@ function useNow(active: boolean) {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 32 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  date: { fontSize: 13, color: colors.subtext, letterSpacing: 0.3 },
+  dialBox: { alignItems: 'center', paddingBottom: 20 },
+  dialHeader: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 4,
+  },
+  dialTitle: { fontSize: 17, fontWeight: '600', color: colors.text, letterSpacing: -0.4 },
   status: { flexDirection: 'row', alignItems: 'center' },
-  statusDot: { width: 5, height: 5, borderRadius: 2.5, marginRight: 6 },
-  statusText: { fontSize: 12, color: colors.subtext, letterSpacing: 0.3 },
-  dial: { alignItems: 'center', marginTop: 48, marginBottom: 36 },
-  block: { flex: 1, justifyContent: 'flex-end' },
-  blockText: { fontSize: 15, color: colors.subtext, lineHeight: 23, textAlign: 'center', marginBottom: 28 },
-  stats: { flexDirection: 'row', marginBottom: 32 },
-  stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 26, fontWeight: '200', color: colors.text, fontVariant: ['tabular-nums'] },
-  statLabelRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  statLabel: { fontSize: 11, color: colors.subtext, letterSpacing: 0.5 },
-  liveDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: colors.danger, marginRight: 5 },
-  action: { borderRadius: 30, paddingVertical: 17, alignItems: 'center' },
-  actionPrimary: { backgroundColor: colors.primary },
-  actionSecondary: { borderWidth: StyleSheet.hairlineWidth * 2, borderColor: colors.muted },
-  actionText: { fontSize: 15, fontWeight: '500', letterSpacing: 0.5 },
+  statusDot: { width: 7, height: 7, borderRadius: 3.5, marginRight: 6 },
+  statusText: { fontSize: 15, color: colors.subtext },
+  actionBox: { padding: 16 },
+  primaryAction: { marginHorizontal: 16, marginTop: 22 },
 });

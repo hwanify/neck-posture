@@ -1,6 +1,6 @@
 import Svg, { Line, Polyline } from 'react-native-svg';
 
-import { colors } from './theme';
+import { useSvgPalette } from './theme';
 
 /** Tilt timeline: center line = straight, up = right, down = left. */
 export function Sparkline({
@@ -14,6 +14,7 @@ export function Sparkline({
   height: number;
   limitDeg: number;
 }) {
+  const palette = useSvgPalette();
   const range = Math.max(limitDeg * 2, 20);
   const mid = height / 2;
   const y = (v: number) => mid - (Math.max(-range, Math.min(range, v)) / range) * (height / 2);
@@ -34,11 +35,11 @@ export function Sparkline({
 
   return (
     <Svg width={width} height={height}>
-      <Line x1={0} x2={width} y1={y(limitDeg)} y2={y(limitDeg)} stroke={colors.warningSoft} strokeWidth={1} />
-      <Line x1={0} x2={width} y1={y(-limitDeg)} y2={y(-limitDeg)} stroke={colors.warningSoft} strokeWidth={1} />
-      <Line x1={0} x2={width} y1={mid} y2={mid} stroke={colors.border} strokeWidth={1} />
+      <Line x1={0} x2={width} y1={y(limitDeg)} y2={y(limitDeg)} stroke={palette.separator} strokeDasharray="3 3" />
+      <Line x1={0} x2={width} y1={y(-limitDeg)} y2={y(-limitDeg)} stroke={palette.separator} strokeDasharray="3 3" />
+      <Line x1={0} x2={width} y1={mid} y2={mid} stroke={palette.separator} />
       {segments.map((points, i) => (
-        <Polyline key={i} points={points} stroke={colors.primary} strokeWidth={1.5} fill="none" />
+        <Polyline key={i} points={points} stroke={palette.tint} strokeWidth={2} strokeLinejoin="round" fill="none" />
       ))}
     </Svg>
   );

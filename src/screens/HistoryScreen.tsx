@@ -1,8 +1,8 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import type { SessionSummary } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { Card, SectionTitle } from '../ui/components';
+import { Row, Screen, Section } from '../ui/components';
 import { Sparkline } from '../ui/Sparkline';
 import { colors, formatDuration } from '../ui/theme';
 
@@ -12,51 +12,56 @@ export function HistoryScreen() {
   const today = summarizeDay(sessions, new Date());
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Card>
-        <Text style={styles.title}>오늘</Text>
-        {today.judgedSec > 0 ? (
-          <View style={styles.statsRow}>
-            <Stat label="바른 자세" value={`${Math.round((today.goodSec / today.judgedSec) * 100)}%`} />
-            <Stat label="측정 시간" value={formatDuration(today.judgedSec)} />
-            <Stat label="알림" value={`${today.alerts}회`} />
+    <Screen title="기록">
+      <Section header="오늘">
+        <Row
+          title="바른 자세"
+          value={today.judgedSec > 0 ? `${Math.round((today.goodSec / today.judgedSec) * 100)}%` : '–'}
+        />
+        <Row title="측정 시간" value={today.judgedSec > 0 ? formatDuration(today.judgedSec) : '–'} />
+        <Row title="알림" value={`${today.alerts}회`} />
+        {today.tiltSec > 0 ? (
+          <View style={styles.biasBox}>
+            <BiasBar left={today.leftSec} right={today.rightSec} />
           </View>
-        ) : (
-          <Text style={styles.empty}>오늘 측정 기록이 없어요.</Text>
-        )}
-        {today.tiltSec > 0 && <BiasBar left={today.leftSec} right={today.rightSec} />}
-      </Card>
+        ) : null}
+      </Section>
 
-      <SectionTitle>세션 기록</SectionTitle>
-      {sessions.length === 0 && <Text style={styles.empty}>측정을 시작하면 여기에 기록이 쌓여요.</Text>}
-      {sessions.map((session) => (
-        <Pressable
-          key={session.id}
-          onLongPress={() =>
-            Alert.alert('기록 삭제', '이 세션 기록을 삭제할까요?', [
-              { text: '취소', style: 'cancel' },
-              { text: '삭제', style: 'destructive', onPress: () => void monitor.removeSession(session.id) },
-            ])
-          }>
-          <Card>
-            <View style={styles.sessionHeader}>
-              <Text style={styles.sessionTitle}>{formatDate(session.startedAt)}</Text>
-              <Text style={styles.sessionRatio}>{Math.round(goodRatio(session) * 100)}%</Text>
+      <Section
+        header="세션"
+        footer={sessions.length > 0 ? '세션을 길게 눌러 삭제할 수 있습니다.' : '측정을 시작하면 여기에 기록이 쌓입니다.'}>
+        {sessions.length === 0 ? (
+          <Row title="기록 없음" />
+        ) : (
+          sessions.map((session) => (
+            <View key={session.id}>
+              <Row
+                title={formatDate(session.startedAt)}
+                subtitle={`${formatDuration(session.goodSec + session.tiltSec)} · 알림 ${session.alertCount}회 · 평균 ${session.avgAbsAngle}°`}
+                value={`${Math.round(goodRatio(session) * 100)}%`}
+                valueColor={colors.text}
+                onLongPress={() =>
+                  Alert.alert('세션 삭제', '이 세션 기록을 삭제하시겠습니까?', [
+                    { text: '취소', style: 'cancel' },
+                    { text: '삭제', style: 'destructive', onPress: () => void monitor.removeSession(session.id) },
+                  ])
+                }
+              />
+              {session.timeline.length > 1 && (
+                <View style={styles.chart}>
+                  <Sparkline
+                    values={session.timeline}
+                    width={width - 64}
+                    height={40}
+                    limitDeg={settings.posture.enterDeg}
+                  />
+                </View>
+              )}
             </View>
-            <Text style={styles.sessionMeta}>
-              {formatDuration(session.goodSec + session.tiltSec)} · 알림 {session.alertCount}회 · 평균{' '}
-              {session.avgAbsAngle}°
-            </Text>
-            {session.timeline.length > 1 && (
-              <View style={{ marginTop: 10 }}>
-                <Sparkline values={session.timeline} width={width - 64} height={48} limitDeg={settings.posture.enterDeg} />
-              </View>
-            )}
-            {session.tiltSec > 0 && <BiasBar left={session.leftTiltSec} right={session.rightTiltSec} />}
-          </Card>
-        </Pressable>
-      ))}
-    </ScrollView>
+          ))
+        )}
+      </Section>
+    </Screen>
   );
 }
 
@@ -64,24 +69,17 @@ function BiasBar({ left, right }: { left: number; right: number }) {
   const total = left + right;
   const leftPct = total > 0 ? Math.round((left / total) * 100) : 50;
   return (
-    <View style={{ marginTop: 12 }}>
-      <View style={styles.biasTrack}>
-        <View style={[styles.biasLeft, { flex: Math.max(leftPct, 1) }]} />
-        <View style={[styles.biasRight, { flex: Math.max(100 - leftPct, 1) }]} />
-      </View>
+    <View>
       <View style={styles.biasLabels}>
         <Text style={styles.biasText}>왼쪽 {leftPct}%</Text>
+        <Text style={styles.biasCaption}>기울어진 방향</Text>
         <Text style={styles.biasText}>오른쪽 {100 - leftPct}%</Text>
       </View>
-    </View>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={{ flex: 1, alignItems: 'center' }}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+      <View style={styles.biasTrack}>
+        <View style={{ flex: Math.max(leftPct, 1), backgroundColor: colors.tint }} />
+        <View style={{ width: 2 }} />
+        <View style={{ flex: Math.max(100 - leftPct, 1), backgroundColor: colors.warning }} />
+      </View>
     </View>
   );
 }
@@ -115,19 +113,10 @@ function formatDate(ts: number) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32 },
-  title: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 6 },
-  empty: { fontSize: 15, color: colors.subtext, marginVertical: 8, marginLeft: 4 },
-  statsRow: { flexDirection: 'row', marginTop: 8 },
-  statValue: { fontSize: 24, fontWeight: '300', color: colors.text, fontVariant: ['tabular-nums'] },
-  statLabel: { fontSize: 12, color: colors.subtext, marginTop: 2 },
-  sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  sessionTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
-  sessionRatio: { fontSize: 22, fontWeight: '300', color: colors.text },
-  sessionMeta: { fontSize: 13, color: colors.subtext, marginTop: 4 },
-  biasTrack: { flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden' },
-  biasLeft: { backgroundColor: '#7C8796' },
-  biasRight: { backgroundColor: '#C2A27D' },
-  biasLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  biasText: { fontSize: 12, color: colors.subtext },
+  biasBox: { paddingHorizontal: 16, paddingVertical: 12 },
+  biasLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  biasText: { fontSize: 13, color: colors.subtext, fontVariant: ['tabular-nums'] },
+  biasCaption: { fontSize: 13, color: colors.tertiary },
+  biasTrack: { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden' },
+  chart: { paddingHorizontal: 16, paddingBottom: 12 },
 });
