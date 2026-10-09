@@ -11,11 +11,13 @@ import {
 
 import { type } from './fonts';
 import { Text } from './Text';
+import { RowIcon, type RowIconName } from './RowIcon';
 import { colors } from './theme';
 
 /** iOS metrics (points). */
 const INSET = 16;
 const RADIUS = 22;
+const ICON_INSET = INSET + 30 + 14;
 
 /** Scrollable screen on the grouped background with an iOS large title. */
 export function Screen({ title, children }: { title: string; children: ReactNode }) {
@@ -38,11 +40,14 @@ export function Section({
   footer,
   children,
   style,
+  iconInset,
 }: {
   header?: string;
   footer?: ReactNode;
   children: ReactNode;
   style?: ViewStyle;
+  /** Rows have leading icons: start separators after the icon, as iOS does. */
+  iconInset?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
   return (
@@ -52,7 +57,7 @@ export function Section({
         {items.map((child, i) => (
           <Fragment key={i}>
             {child}
-            {i < items.length - 1 ? <View style={styles.separator} /> : null}
+            {i < items.length - 1 ? <View style={[styles.separator, iconInset && { marginLeft: ICON_INSET }]} /> : null}
           </Fragment>
         ))}
       </View>
@@ -63,6 +68,7 @@ export function Section({
 
 /** Standard 44pt list row: title on the left, value or accessory on the right. */
 export function Row({
+  icon,
   title,
   subtitle,
   value,
@@ -71,6 +77,7 @@ export function Row({
   onPress,
   onLongPress,
 }: {
+  icon?: RowIconName;
   title: string;
   subtitle?: string;
   value?: string;
@@ -81,6 +88,11 @@ export function Row({
 }) {
   const content = (
     <View style={styles.row}>
+      {icon ? (
+        <View style={styles.rowIcon}>
+          <RowIcon name={icon} />
+        </View>
+      ) : null}
       <View style={{ flex: 1, paddingRight: 12 }}>
         <Text style={styles.rowTitle}>{title}</Text>
         {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
@@ -102,16 +114,29 @@ export function Row({
   );
 }
 
-export function ToggleRow(props: { title: string; subtitle?: string; value: boolean; onChange: (v: boolean) => void }) {
+export function ToggleRow(props: {
+  icon?: RowIconName;
+  title: string;
+  subtitle?: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
-    <Row title={props.title} subtitle={props.subtitle}>
-      <Switch value={props.value} onValueChange={props.onChange} trackColor={{ true: colors.good }} />
+    <Row icon={props.icon} title={props.title} subtitle={props.subtitle}>
+      <Switch
+        value={props.value}
+        onValueChange={props.onChange}
+        trackColor={{ true: colors.tint, false: colors.fill }}
+        thumbColor={colors.text}
+        ios_backgroundColor={colors.fill}
+      />
     </Row>
   );
 }
 
 /** Value + UIStepper-style control. */
 export function StepperRow(props: {
+  icon?: RowIconName;
   title: string;
   subtitle?: string;
   value: number;
@@ -128,7 +153,7 @@ export function StepperRow(props: {
   const atMin = props.value <= props.min;
   const atMax = props.value >= props.max;
   return (
-    <Row title={props.title} subtitle={props.subtitle} value={props.format(props.value)}>
+    <Row icon={props.icon} title={props.title} subtitle={props.subtitle} value={props.format(props.value)}>
       <View style={styles.stepper}>
         <Pressable onPress={() => change(-props.step)} disabled={atMin} style={styles.stepperHalf} hitSlop={4}>
           <Text style={[styles.stepperSymbol, atMin && { color: colors.tertiary }]}>−</Text>
@@ -195,7 +220,7 @@ export function Segmented<T extends string>({
             disabled={disabled}
             onPress={() => onChange(o.value)}
             style={[styles.segment, selected && styles.segmentSelected]}>
-            <Text style={[styles.segmentText, selected && { fontFamily: type.callout.fontFamily }]}>{o.label}</Text>
+            <Text style={[styles.segmentText, selected && { fontFamily: type.callout.fontFamily, color: colors.onText }]}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -234,6 +259,7 @@ const styles = StyleSheet.create({
   group: { backgroundColor: colors.card, borderRadius: RADIUS, overflow: 'hidden' },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator, marginLeft: INSET },
   row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: INSET, paddingVertical: 11 },
+  rowIcon: { marginRight: 14 },
   rowTitle: { ...type.body, color: colors.text },
   rowSubtitle: { ...type.caption, color: colors.subtext, marginTop: 2 },
   rowValue: { ...type.body, color: colors.subtext, fontVariant: ['tabular-nums'] },
@@ -253,7 +279,7 @@ const styles = StyleSheet.create({
   segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
   segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
   segmentSelected: {
-    backgroundColor: colors.tertiary,
+    backgroundColor: colors.tint,
     shadowColor: '#000',
     shadowOpacity: 0.12,
     shadowRadius: 4,

@@ -1,5 +1,7 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
+import { colors } from './theme';
+
 export type TabIconName = 'home' | 'history' | 'settings';
 
 /** SF Symbols–like tab icons: outlined when inactive, filled when selected. */
@@ -11,8 +13,8 @@ export function TabIcon({ name, color, active }: { name: TabIconName; color: str
         <>
           {/* gauge.with.needle */}
           <Circle cx={14} cy={13} r={10.5} fill={active ? color : 'none'} {...stroke} />
-          <Path d="M14 13 L18.5 8" stroke={active ? '#000000' : color} strokeWidth={2} strokeLinecap="round" />
-          <Circle cx={14} cy={13} r={1.6} fill={active ? '#000000' : color} />
+          <Path d="M14 13 L18.5 8" stroke={active ? colors.bg : color} strokeWidth={2} strokeLinecap="round" />
+          <Circle cx={14} cy={13} r={1.6} fill={active ? colors.bg : color} />
         </>
       )}
       {name === 'history' && (
@@ -32,7 +34,7 @@ export function TabIcon({ name, color, active }: { name: TabIconName; color: str
             fill={active ? color : 'none'}
             {...stroke}
           />
-          <Circle cx={13} cy={13} r={3.6} fill={active ? '#000000' : 'none'} stroke={active ? '#000000' : color} strokeWidth={1.7} />
+          <Circle cx={13} cy={13} r={3.6} fill={active ? colors.bg : 'none'} stroke={active ? colors.bg : color} strokeWidth={1.7} />
         </>
       )}
     </Svg>
