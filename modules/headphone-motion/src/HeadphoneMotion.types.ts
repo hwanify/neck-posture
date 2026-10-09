@@ -25,3 +25,5 @@ export type HeadphoneMotionEvents = {
   onConnectionChange: (event: ConnectionChangeEvent) => void;
   onError: (event: MotionErrorEvent) => void;
 };
+
+export type LiveActivityStatus = 'good' | 'tilting' | 'alerted' | 'paused';

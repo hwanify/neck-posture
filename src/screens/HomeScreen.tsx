@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
@@ -37,7 +37,7 @@ export function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         <View style={styles.top}>
           <Text style={styles.meta}>{formatToday()}</Text>
           <ConnectionStatus />
@@ -79,7 +79,7 @@ export function HomeScreen() {
             {!s.calibration ? '기준 자세 등록' : s.session ? '측정 종료' : '측정 시작'}
           </Text>
         </Pressable>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -163,7 +163,7 @@ function useNow(active: boolean) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
+  container: { flex: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   meta: { ...type.label, fontSize: 13, color: colors.subtext },
   status: { flexDirection: 'row', alignItems: 'center' },

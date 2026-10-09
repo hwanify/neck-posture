@@ -19,20 +19,25 @@ export function PostureCheckScreen() {
 
   const waiting = s.sourceKind === 'airpods' && !s.connected;
   const largeShift = check.largeShiftDeg !== null;
+  const starting = check.starting;
   const seconds = Math.max(0, Math.ceil(POSTURE_CHECK_SEC * (1 - check.progress)));
 
-  const label = largeShift
-    ? '등록할 때와 많이 달라요'
-    : check.resumed
-      ? '에어팟이 다시 연결됐어요'
-      : '정면을 바라보고 멈춰 주세요';
-  const hint = largeShift
-    ? '기준 자세를 다시 등록하는 걸 추천해요'
-    : waiting
-      ? 'AirPods 신호를 기다리는 중'
-      : check.tooMuchMotion
-        ? '움직임이 감지되어 다시 셉니다'
-        : `바른 자세로 ${POSTURE_CHECK_SEC}초간 확인합니다`;
+  const label = starting
+    ? '측정을 시작합니다'
+    : largeShift
+      ? '등록할 때와 많이 달라요'
+      : check.resumed
+        ? '에어팟이 다시 연결됐어요'
+        : '정면을 바라보고 멈춰 주세요';
+  const hint = starting
+    ? '바른 자세를 기준으로 맞췄어요'
+    : largeShift
+      ? '기준 자세를 다시 등록하는 걸 추천해요'
+      : waiting
+        ? 'AirPods 신호를 기다리는 중'
+        : check.tooMuchMotion
+          ? '움직임이 감지되어 다시 셉니다'
+          : `바른 자세로 ${POSTURE_CHECK_SEC}초간 확인합니다`;
 
   return (
     <View style={styles.container}>
@@ -45,10 +50,12 @@ export function PostureCheckScreen() {
       <View style={styles.center}>
         <View style={styles.levelBox}>
           <View style={styles.horizon} />
-          <View style={[styles.level, { width: largeShift ? LINE_WIDTH : LINE_WIDTH * check.progress }]} />
+          <View style={[styles.level, { width: largeShift || starting ? LINE_WIDTH : LINE_WIDTH * check.progress }]} />
           <View style={styles.levelDot} />
         </View>
-        <Text style={styles.number}>{largeShift ? `${Math.round(check.largeShiftDeg!)}°` : seconds}</Text>
+        <Text style={styles.number}>
+          {starting ? '시작' : largeShift ? `${Math.round(check.largeShiftDeg!)}°` : seconds}
+        </Text>
         <Text style={styles.label}>{label}</Text>
         <Text style={[styles.hint, (waiting || check.tooMuchMotion) && { color: colors.text }]}>{hint}</Text>
       </View>

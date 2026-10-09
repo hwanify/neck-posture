@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
-  s.frameworks = 'CoreMotion', 'AVFoundation'
+  s.frameworks = 'CoreMotion', 'AVFoundation', 'ActivityKit'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {

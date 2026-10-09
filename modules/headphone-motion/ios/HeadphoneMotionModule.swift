@@ -16,6 +16,7 @@ public class HeadphoneMotionModule: Module {
     self?.sendEvent("onConnectionChange", ["connected": connected])
   }
   private lazy var cuePlayer = CuePlayer()
+  private let liveActivity = PostureLiveActivity()
 
   public func definition() -> ModuleDefinition {
     Name("HeadphoneMotion")
@@ -83,6 +84,22 @@ public class HeadphoneMotionModule: Module {
     // pan: -1 (left ear) ... 1 (right ear); volume: 0...1
     AsyncFunction("playCue") { (kind: String, pan: Double, volume: Double) in
       try self.cuePlayer.play(kind: CueKind(rawValue: kind) ?? .alert, pan: Float(pan), volume: Float(volume))
+    }
+
+    // Lock Screen / Dynamic Island. startedAt in ms since epoch; status: good | tilting | alerted | paused.
+    AsyncFunction("startLiveActivity") { (startedAt: Double, angle: Double, status: String, goodPercent: Int) -> Bool in
+      return try self.liveActivity.start(
+        startedAt: Date(timeIntervalSince1970: startedAt / 1000),
+        state: .init(angle: angle, status: status, goodPercent: goodPercent)
+      )
+    }
+
+    AsyncFunction("updateLiveActivity") { (angle: Double, status: String, goodPercent: Int) in
+      self.liveActivity.update(.init(angle: angle, status: status, goodPercent: goodPercent))
+    }
+
+    AsyncFunction("endLiveActivity") {
+      self.liveActivity.endAll()
     }
   }
 

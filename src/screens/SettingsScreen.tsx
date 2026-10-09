@@ -169,12 +169,18 @@ export function SettingsScreen() {
       <Section
         header="측정"
         iconInset
-        footer="백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.">
+        footer="잠금화면 표시는 측정 중 각도를 잠금화면과 다이나믹 아일랜드에 보여 줍니다. 백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.">
         <ToggleRow
           icon="moon"
           title="백그라운드 측정"
           value={feedback.backgroundMode}
           onChange={(backgroundMode) => setFeedback({ backgroundMode })}
+        />
+        <ToggleRow
+          icon="lock"
+          title="잠금화면 표시"
+          value={feedback.liveActivity}
+          onChange={(liveActivity) => setFeedback({ liveActivity })}
         />
         <ToggleRow
           icon="sun"
