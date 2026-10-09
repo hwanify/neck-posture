@@ -16,6 +16,10 @@ export function HomeScreen() {
   const live = s.calibration && snapshot && state !== 'paused';
   const angle = live ? snapshot.angle : 0;
   const abs = Math.round(Math.abs(angle));
+  // While judging pauses for a big head movement (or walking), say so instead of showing 0°.
+  const pauseReason = s.calibration ? snapshot?.pauseReason : null;
+  const pauseText =
+    pauseReason === 'moving' ? t('home.bigMovement') : pauseReason === 'walking' ? t('pause.walking') : null;
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 
@@ -57,7 +61,11 @@ export function HomeScreen() {
               <View style={styles.levelDot} />
             </View>
           </View>
-          <Text style={styles.angle}>{live ? `${abs}°` : '0°'}</Text>
+          {pauseText ? (
+            <Text style={[styles.angle, styles.pauseText]}>{pauseText}</Text>
+          ) : (
+            <Text style={styles.angle}>{live ? `${abs}°` : '0°'}</Text>
+          )}
         </View>
 
         <View style={styles.stats}>
@@ -176,6 +184,8 @@ const styles = StyleSheet.create({
   level: { width: 180, height: 1.5, borderRadius: 1, backgroundColor: colors.text, alignItems: 'center' },
   levelDot: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: colors.tint, marginTop: -3.75 },
   angle: { ...type.display, color: colors.text, fontVariant: ['tabular-nums'], lineHeight: 44 },
+  /** Same line height as the angle so the layout doesn't jump. */
+  pauseText: { ...type.heading, color: colors.subtext, lineHeight: 44 },
   stats: { flexDirection: 'row', marginBottom: 28 },
   stat: { flex: 1, alignItems: 'center' },
   statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },

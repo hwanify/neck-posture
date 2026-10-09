@@ -46,6 +46,15 @@ describe('PostureStateMachine', () => {
     expect(m.update(201, 0, false)).toEqual([{ type: 'recovered', at: 201, afterAlert: true }]);
   });
 
+  it('with a 0-second interval repeats right after each cue', () => {
+    const m = new PostureStateMachine({ ...settings, cooldownSec: 0 });
+    const alerts: number[] = [];
+    for (let t = 0; t <= 7; t += 0.1) {
+      for (const e of m.update(Math.round(t * 10) / 10, 15, false)) if (e.type === 'alert') alerts.push(e.at);
+    }
+    expect(alerts).toEqual([5, 5.5, 6, 6.5, 7]);
+  });
+
   it('pausing resets the tilt timer', () => {
     const m = new PostureStateMachine(settings);
     m.update(0, 12, false);
@@ -60,11 +69,7 @@ describe('PostureStateMachine', () => {
 describe('PostureEngine', () => {
   it('alerts once for a sustained right tilt and recovers', () => {
     const engine = new PostureEngine(calibration, settings);
-    const samples = [
-      ...stream(0, 2, () => 0),
-      ...stream(2, 7, () => 14),
-      ...stream(9, 2, () => 0),
-    ];
+    const samples = [...stream(0, 2, () => 0), ...stream(2, 7, () => 14), ...stream(9, 2, () => 0)];
     const { events, last } = run(engine, samples);
     expect(events.filter((e) => e.type === 'alert')).toHaveLength(1);
     expect(events.find((e) => e.type === 'alert')).toMatchObject({ direction: 'right' });
@@ -102,13 +107,23 @@ describe('PostureEngine', () => {
 
   it('stays paused without calibration', () => {
     const engine = new PostureEngine(null, settings);
-    const { events, last } = run(engine, stream(0, 10, () => 30));
+    const { events, last } = run(
+      engine,
+      stream(0, 10, () => 30),
+    );
     expect(events).toHaveLength(0);
     expect(last.pauseReason).toBe('notCalibrated');
   });
 });
 
 describe('SessionStats', () => {
+  it('averages the signed angle so a left lean reads negative', () => {
+    const stats = new SessionStats('s0', 0);
+    for (let t = 0; t <= 10; t += 0.5) stats.add(t, t < 5 ? -6 : -2, 'good', []);
+    expect(stats.summary(10).avgAngle).toBeCloseTo(-4, 0);
+    expect(stats.summary(10).avgAbsAngle).toBeCloseTo(4, 0);
+  });
+
   it('accumulates good/tilt time, left/right bias and timeline', () => {
     const engine = new PostureEngine(calibration, settings);
     const stats = new SessionStats('s1', 0);

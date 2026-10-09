@@ -25,7 +25,7 @@ export function SettingsScreen() {
   const setPosture = (patch: Partial<PostureSettings>) =>
     void monitor.updateSettings((prev: AppSettings) => {
       const next = { ...prev.posture, ...patch };
-      next.exitDeg = Math.max(2, next.enterDeg - HYSTERESIS_DEG);
+      next.exitDeg = Math.max(1, next.enterDeg - HYSTERESIS_DEG);
       return { ...prev, posture: next };
     });
   const setFeedback = (patch: Partial<FeedbackSettings>) =>
@@ -83,7 +83,7 @@ export function SettingsScreen() {
           title={t('settings.alertAngle')}
           value={posture.enterDeg}
           step={1}
-          min={5}
+          min={3}
           max={25}
           format={(v) => `${v}°`}
           onChange={(enterDeg) => setPosture({ enterDeg })}
@@ -102,8 +102,8 @@ export function SettingsScreen() {
           icon="repeat"
           title={t('settings.alertInterval')}
           value={posture.cooldownSec}
-          step={5}
-          min={5}
+          step={1}
+          min={0}
           max={300}
           format={(n) => t('common.seconds', { n })}
           onChange={(cooldownSec) => setPosture({ cooldownSec })}

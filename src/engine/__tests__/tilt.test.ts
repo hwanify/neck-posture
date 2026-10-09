@@ -23,15 +23,17 @@ describe('lateralTiltDeg', () => {
 
 describe('Calibrator', () => {
   type Pose = [tiltDeg: number, nodDeg: number];
-  const hold = (t0: number, [tilt, nod]: Pose) => stream(t0, 1.3, () => tilt, 25, () => nod);
+  const hold = (t0: number, [tilt, nod]: Pose) =>
+    stream(
+      t0,
+      1.3,
+      () => tilt,
+      25,
+      () => nod,
+    );
 
   /** Neutral, then hold each pose of left / right / forward / back in turn. */
-  function calibrate(
-    left: Pose = [-20, 0],
-    right: Pose = [20, 0],
-    forward: Pose = [0, 20],
-    back: Pose = [0, -20],
-  ) {
+  function calibrate(left: Pose = [-20, 0], right: Pose = [20, 0], forward: Pose = [0, 20], back: Pose = [0, -20]) {
     const calibrator = new Calibrator();
     let status = calibrator.feed(sample(0, 0));
     for (const s of stream(0.04, 3.2, () => 0)) status = calibrator.feed(s);
@@ -59,7 +61,7 @@ describe('Calibrator', () => {
     expect(lateralTiltDeg(gravityFor(15), result)).toBeCloseTo(15, 1);
   });
 
-  it("corrects a neck whose nod drifts sideways differently forward and back", () => {
+  it('corrects a neck whose nod drifts sideways differently forward and back', () => {
     // Nodding forward drifts 3° right, nodding back drifts 2° right.
     const result = calibrate([-20, 0], [20, 0], [3, 20], [2, -20]);
     expect(Math.abs(lateralTiltDeg(gravityFor(3, 20), result))).toBeLessThan(0.3);

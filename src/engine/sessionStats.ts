@@ -16,6 +16,8 @@ export type SessionSummary = {
   alertCount: number;
   /** Mean |angle| over judged (non-paused) time. */
   avgAbsAngle: number;
+  /** Mean signed angle over judged time: negative = leaning left on average. Missing on old sessions. */
+  avgAngle?: number;
   /** Mean signed angle per 5-second bucket; null where the whole bucket was paused. */
   timeline: (number | null)[];
 };
@@ -28,6 +30,7 @@ export class SessionStats {
   private rightTiltSec = 0;
   private alertCount = 0;
   private absAngleIntegral = 0;
+  private angleIntegral = 0;
   private lastT: number | null = null;
   private firstT: number | null = null;
   private bucketSum = 0;
@@ -51,6 +54,7 @@ export class SessionStats {
           this.pausedSec += dt;
         } else {
           this.absAngleIntegral += Math.abs(angle) * dt;
+          this.angleIntegral += angle * dt;
           if (state === 'good') {
             this.goodSec += dt;
           } else {
@@ -95,6 +99,7 @@ export class SessionStats {
       rightTiltSec: round1(this.rightTiltSec),
       alertCount: this.alertCount,
       avgAbsAngle: judged > 0 ? round1(this.absAngleIntegral / judged) : 0,
+      avgAngle: judged > 0 ? round1(this.angleIntegral / judged) : 0,
       timeline,
     };
   }

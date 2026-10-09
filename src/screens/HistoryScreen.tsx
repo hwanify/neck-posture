@@ -8,7 +8,7 @@ import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Row, Screen, Section } from '../ui/components';
 import { Sparkline } from '../ui/Sparkline';
-import { colors, formatDuration } from '../ui/theme';
+import { colors, formatAngle, formatDuration } from '../ui/theme';
 
 export function HistoryScreen() {
   const { sessions, settings } = useMonitor();
@@ -44,7 +44,7 @@ export function HistoryScreen() {
                 subtitle={t('history.sessionSummary', {
                   duration: formatDuration(session.goodSec + session.tiltSec),
                   n: session.alertCount,
-                  deg: session.avgAbsAngle,
+                  avg: session.avgAngle === undefined ? `${session.avgAbsAngle}°` : formatAngle(session.avgAngle),
                 })}
                 value={`${Math.round(goodRatio(session) * 100)}%`}
                 valueColor={colors.text}

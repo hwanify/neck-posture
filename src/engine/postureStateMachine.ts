@@ -1,5 +1,8 @@
 import type { PostureEvent, PostureSettings, PostureState, TiltDirection } from './types';
 
+/** An alert interval of 0 repeats as soon as the previous cue (~0.35 s) has finished. */
+const MIN_REPEAT_SEC = 0.5;
+
 /**
  * good ──|θ|≥enter──▶ tilting ──held holdSec──▶ alerted ──|θ|<exit──▶ good
  *   ▲                    │                       │ still tilted after cooldown → alert again
@@ -59,7 +62,7 @@ export class PostureStateMachine {
           this.repeats = 0;
           return [{ type: 'recovered', at: t, afterAlert: true }];
         }
-        if (t - this.lastAlertAt >= cooldownSec) {
+        if (t - this.lastAlertAt >= Math.max(cooldownSec, MIN_REPEAT_SEC)) {
           this.repeats += 1;
           this.lastAlertAt = t;
           return [{ type: 'alert', at: t, direction, angle, repeat: this.repeats }];

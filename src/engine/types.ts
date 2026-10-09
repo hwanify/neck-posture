@@ -13,7 +13,7 @@ export type PostureSettings = {
   exitDeg: number;
   /** Seconds a tilt must last before alerting. */
   holdSec: number;
-  /** Fixed seconds between alerts while still tilted. */
+  /** Fixed seconds between alerts while still tilted (0 = right after the previous cue). */
   cooldownSec: number;
   /** Angle smoothing time constant (s). */
   smoothingSec: number;
