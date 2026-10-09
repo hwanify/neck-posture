@@ -54,7 +54,7 @@ export function HistoryScreen() {
                 <View style={styles.chart}>
                   <Sparkline
                     values={session.timeline}
-                    width={width - 64}
+                    width={width - 40}
                     height={40}
                     limitDeg={settings.posture.enterDeg}
                   />
@@ -116,10 +116,10 @@ function formatDate(ts: number) {
 }
 
 const styles = StyleSheet.create({
-  biasBox: { paddingHorizontal: 16, paddingVertical: 12 },
+  biasBox: { paddingVertical: 14 },
   biasLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   biasText: { ...type.caption, color: colors.subtext, fontVariant: ['tabular-nums'] },
   biasCaption: { ...type.caption, color: colors.tertiary },
-  biasTrack: { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden' },
-  chart: { paddingHorizontal: 16, paddingBottom: 12 },
+  biasTrack: { flexDirection: 'row', height: 3, borderRadius: 1.5, overflow: 'hidden' },
+  chart: { paddingBottom: 14 },
 });

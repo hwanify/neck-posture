@@ -24,10 +24,10 @@ export function useAppFonts(): boolean {
  * semibold is reserved for titles and buttons.
  */
 export const type = {
-  display: { fontFamily: font.medium, fontSize: 48, letterSpacing: -1.4 },
+  display: { fontFamily: font.medium, fontSize: 36, letterSpacing: -1 },
   title: { fontFamily: font.semibold, fontSize: 28, letterSpacing: -1 },
   heading: { fontFamily: font.semibold, fontSize: 20, letterSpacing: -0.7 },
-  numeral: { fontFamily: font.medium, fontSize: 18, letterSpacing: -0.5 },
+  numeral: { fontFamily: font.medium, fontSize: 15, letterSpacing: -0.4 },
   body: { fontFamily: font.regular, fontSize: 16, letterSpacing: -0.5 },
   bodyStrong: { fontFamily: font.medium, fontSize: 16, letterSpacing: -0.5 },
   callout: { fontFamily: font.medium, fontSize: 15, letterSpacing: -0.45 },

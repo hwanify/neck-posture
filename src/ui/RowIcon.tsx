@@ -18,12 +18,12 @@ export type RowIconName =
   | 'ear'
   | 'info';
 
-/** Small glyph on a rounded tile, like the leading icons in iOS Settings. */
+/** Small leading glyph for list rows. */
 export function RowIcon({ name }: { name: RowIconName }) {
-  const c = colors.tint;
-  const s = { stroke: c, strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+  const c = colors.subtext;
+  const s = { stroke: c, strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
   return (
-    <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: 20, alignItems: 'center' }}>
       <Svg width={18} height={18} viewBox="0 0 18 18">
         {name === 'angle' && (
           <>

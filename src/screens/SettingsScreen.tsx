@@ -179,12 +179,9 @@ function Pill({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.pill,
-        small && styles.pillSmall,
-        { backgroundColor: primary ? colors.tint : colors.fill, opacity: pressed ? 0.75 : 1 },
-      ]}>
-      <Text style={[small ? styles.pillSmallText : styles.pillText, { color: primary ? colors.onText : colors.text }]}>
+      hitSlop={8}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+      <Text style={[small ? styles.pillSmallText : styles.pillText, { color: primary ? colors.text : colors.subtext }]}>
         {title}
       </Text>
     </Pressable>
@@ -199,14 +196,12 @@ function formatDate(ts: number) {
 const styles = StyleSheet.create({
   hero: { marginHorizontal: 20, marginTop: 12, marginBottom: 6 },
   heroLabel: { ...type.label, color: colors.subtext },
-  heroTitle: { ...type.heading, fontSize: 24, color: colors.text, marginTop: 6 },
+  heroTitle: { ...type.heading, color: colors.text, marginTop: 6 },
   heroMeta: { ...type.caption, color: colors.subtext, marginTop: 4 },
-  heroActions: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  pill: { height: 40, paddingHorizontal: 18, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  pillSmall: { height: 30, paddingHorizontal: 12, borderRadius: 15 },
-  pillText: { ...type.button, fontSize: 14 },
-  pillSmallText: { ...type.label, fontSize: 13 },
-  inlinePills: { flexDirection: 'row', gap: 6 },
-  segmentBox: { padding: 12 },
+  heroActions: { flexDirection: 'row', gap: 22, marginTop: 14 },
+  pillText: { ...type.callout },
+  pillSmallText: { ...type.callout },
+  inlinePills: { flexDirection: 'row', gap: 18 },
+  segmentBox: { paddingVertical: 8 },
   footer: { ...type.caption, color: colors.tertiary, textAlign: 'center', lineHeight: 19, marginTop: 28 },
 });

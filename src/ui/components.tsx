@@ -15,9 +15,7 @@ import { RowIcon, type RowIconName } from './RowIcon';
 import { colors } from './theme';
 
 /** iOS metrics (points). */
-const INSET = 16;
-const RADIUS = 22;
-const ICON_INSET = INSET + 30 + 14;
+const ICON_INSET = 20 + 14;
 
 /** Scrollable screen on the grouped background with an iOS large title. */
 export function Screen({ title, children }: { title: string; children: ReactNode }) {
@@ -153,12 +151,12 @@ export function StepperRow(props: {
   const atMin = props.value <= props.min;
   const atMax = props.value >= props.max;
   return (
-    <Row icon={props.icon} title={props.title} subtitle={props.subtitle} value={props.format(props.value)}>
+    <Row icon={props.icon} title={props.title} subtitle={props.subtitle}>
       <View style={styles.stepper}>
         <Pressable onPress={() => change(-props.step)} disabled={atMin} style={styles.stepperHalf} hitSlop={4}>
           <Text style={[styles.stepperSymbol, atMin && { color: colors.tertiary }]}>−</Text>
         </Pressable>
-        <View style={styles.stepperDivider} />
+        <Text style={styles.stepperValue}>{props.format(props.value)}</Text>
         <Pressable onPress={() => change(props.step)} disabled={atMax} style={styles.stepperHalf} hitSlop={4}>
           <Text style={[styles.stepperSymbol, atMax && { color: colors.tertiary }]}>+</Text>
         </Pressable>
@@ -190,7 +188,7 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         variant === 'filled' && { backgroundColor: accent },
-        variant === 'tinted' && { backgroundColor: colors.fill },
+        variant === 'tinted' && { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.tertiary },
         { opacity: disabled ? 0.35 : pressed ? 0.6 : 1 },
       ]}>
       <Text style={[styles.buttonText, { color: variant === 'filled' ? colors.onText : accent }]}>{title}</Text>
@@ -198,7 +196,7 @@ export function Button({
   );
 }
 
-/** UISegmentedControl look-alike. */
+/** Text options; the selected one is bright, the rest are dimmed. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -215,12 +213,8 @@ export function Segmented<T extends string>({
       {options.map((o) => {
         const selected = o.value === value;
         return (
-          <Pressable
-            key={o.value}
-            disabled={disabled}
-            onPress={() => onChange(o.value)}
-            style={[styles.segment, selected && styles.segmentSelected]}>
-            <Text style={[styles.segmentText, selected && { fontFamily: type.callout.fontFamily, color: colors.onText }]}>{o.label}</Text>
+          <Pressable key={o.value} disabled={disabled} onPress={() => onChange(o.value)} style={styles.segment}>
+            <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -228,11 +222,11 @@ export function Segmented<T extends string>({
   );
 }
 
-/** Inline notice shown as its own inset group. */
+/** Inline notice: a dot and a line of text, no container. */
 export function Banner({ tone, children }: { tone: 'warning' | 'danger' | 'info'; children: ReactNode }) {
   const dot = { warning: colors.warning, danger: colors.danger, info: colors.tint }[tone];
   return (
-    <View style={[styles.group, styles.banner]}>
+    <View style={styles.banner}>
       <View style={[styles.bannerDot, { backgroundColor: dot }]} />
       <Text style={styles.bannerText}>{children}</Text>
     </View>
@@ -244,49 +238,35 @@ const styles = StyleSheet.create({
   largeTitle: {
     ...type.title,
     color: colors.text,
-    marginHorizontal: INSET + 4,
+    marginHorizontal: 20,
     marginTop: 8,
     marginBottom: 8,
   },
-  section: { marginTop: 22, marginHorizontal: INSET },
+  section: { marginTop: 30, marginHorizontal: 20 },
   sectionHeader: {
     ...type.label,
     color: colors.subtext,
-    marginLeft: INSET,
-    marginBottom: 7,
+    marginBottom: 4,
   },
-  sectionFooter: { ...type.caption, lineHeight: 18, color: colors.subtext, marginHorizontal: INSET, marginTop: 7 },
-  group: { backgroundColor: colors.card, borderRadius: RADIUS, overflow: 'hidden' },
-  separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator, marginLeft: INSET },
-  row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: INSET, paddingVertical: 11 },
+  sectionFooter: { ...type.caption, lineHeight: 18, color: colors.subtext, marginTop: 8 },
+  group: {},
+  separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator },
+  row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
   rowIcon: { marginRight: 14 },
   rowTitle: { ...type.body, color: colors.text },
   rowSubtitle: { ...type.caption, color: colors.subtext, marginTop: 2 },
   rowValue: { ...type.body, color: colors.subtext, fontVariant: ['tabular-nums'] },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.fill,
-    borderRadius: 16,
-    marginLeft: 12,
-    height: 32,
-  },
-  stepperHalf: { width: 46, height: 32, alignItems: 'center', justifyContent: 'center' },
-  stepperSymbol: { ...type.body, fontSize: 18, color: colors.text },
-  stepperDivider: { width: StyleSheet.hairlineWidth, height: 18, backgroundColor: colors.separator },
+  stepper: { flexDirection: 'row', alignItems: 'center', marginLeft: 12 },
+  stepperHalf: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  stepperSymbol: { ...type.body, fontSize: 18, color: colors.subtext },
+  stepperValue: { ...type.body, color: colors.text, minWidth: 48, textAlign: 'center', fontVariant: ['tabular-nums'] },
   button: { height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   buttonText: { ...type.button },
-  segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
-  segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
-  segmentSelected: {
-    backgroundColor: colors.tint,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  segmentText: { ...type.caption, color: colors.text },
-  banner: { flexDirection: 'row', alignItems: 'center', padding: INSET, marginTop: 12, marginHorizontal: INSET },
-  bannerDot: { width: 8, height: 8, borderRadius: 4, marginRight: 12 },
-  bannerText: { ...type.caption, flex: 1, fontSize: 14, lineHeight: 20, color: colors.text },
+  segmented: { flexDirection: 'row', gap: 24 },
+  segment: { paddingVertical: 6 },
+  segmentText: { ...type.callout, color: colors.tertiary },
+  segmentTextSelected: { color: colors.text },
+  banner: { flexDirection: 'row', alignItems: 'center', marginTop: 12, marginHorizontal: 20 },
+  bannerDot: { width: 6, height: 6, borderRadius: 3, marginRight: 10 },
+  bannerText: { ...type.caption, flex: 1, lineHeight: 19, color: colors.subtext },
 });
