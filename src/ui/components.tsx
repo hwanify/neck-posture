@@ -168,7 +168,7 @@ export function Button({
         variant === 'tinted' && { backgroundColor: colors.fill },
         { opacity: disabled ? 0.35 : pressed ? 0.6 : 1 },
       ]}>
-      <Text style={[styles.buttonText, { color: variant === 'filled' ? '#FFFFFF' : accent }]}>{title}</Text>
+      <Text style={[styles.buttonText, { color: variant === 'filled' ? colors.onText : accent }]}>{title}</Text>
     </Pressable>
   );
 }
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   segmented: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 20, padding: 3 },
   segment: { flex: 1, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: 17 },
   segmentSelected: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.tertiary,
     shadowColor: '#000',
     shadowOpacity: 0.12,
     shadowRadius: 4,

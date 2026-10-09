@@ -1,20 +1,22 @@
 import type { PauseReason, PostureState } from '../engine';
 
-/** Clean palette: white screens, ink type, soft warm-gray groups, color only for posture state. */
+/** Dark palette: black screens, near-white type, graphite groups; color only for status text. */
 export const colors = {
-  bg: '#FFFFFF',
-  card: '#F7F6F3',
-  barBg: '#FFFFFF',
-  fill: '#EFEAE2',
-  text: '#141414',
-  subtext: '#8C867D',
-  tertiary: '#BDB6AC',
-  separator: '#ECE6DC',
-  tint: '#141414',
-  good: '#5E9C7A',
-  warning: '#D08A3E',
-  danger: '#D2584A',
-  muted: '#A8A198',
+  bg: '#000000',
+  card: '#141416',
+  barBg: '#000000',
+  fill: '#232326',
+  text: '#F2F2F2',
+  /** Text/icons drawn on a `text`-colored (light) surface, e.g. the primary button. */
+  onText: '#000000',
+  subtext: '#8E8E93',
+  tertiary: '#48484A',
+  separator: '#26262A',
+  tint: '#F2F2F2',
+  good: '#7FBF98',
+  warning: '#E0A458',
+  danger: '#EF6F61',
+  muted: '#6C6C70',
 };
 
 export const stateColor: Record<PostureState, string> = {

@@ -6,7 +6,7 @@ import { Text } from '../ui/Text';
 
 import type { PostureState } from '../engine';
 import { monitor, useMonitor } from '../state/monitor';
-import { colors, stateColor } from '../ui/theme';
+import { colors } from '../ui/theme';
 
 export function HomeScreen() {
   const s = useMonitor();
@@ -18,8 +18,6 @@ export function HomeScreen() {
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 
-  // No caption: the level line and dot carry the state color; gray while idle.
-  const tone = live && state !== 'good' ? stateColor[state] : live ? colors.text : colors.tertiary;
 
   const notice =
     s.authorization === 'denied'
@@ -55,10 +53,10 @@ export function HomeScreen() {
         )}
 
         <View style={styles.center}>
-          <View style={[styles.level, { backgroundColor: tone }, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
-            <View style={[styles.levelDot, { backgroundColor: tone }]} />
+          <View style={[styles.level, { transform: [{ rotate: `${Math.max(-30, Math.min(30, angle))}deg` }] }]}>
+            <View style={styles.levelDot} />
           </View>
-          <Text style={[styles.angle, !live && { color: colors.tertiary }]}>{live ? `${abs}°` : '0°'}</Text>
+          <Text style={styles.angle}>{live ? `${abs}°` : '0°'}</Text>
         </View>
 
         <View style={styles.stats}>
@@ -176,5 +174,5 @@ const styles = StyleSheet.create({
   statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
   statLabel: { ...type.label, color: colors.subtext, marginTop: 4 },
   button: { height: 60, borderRadius: 30, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { ...type.button, color: '#FFFFFF' },
+  buttonText: { ...type.button, color: colors.onText },
 });

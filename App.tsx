@@ -24,7 +24,7 @@ type TabKey = (typeof TABS)[number]['key'];
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Root />
     </SafeAreaProvider>
   );
