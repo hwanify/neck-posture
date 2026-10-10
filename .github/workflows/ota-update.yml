@@ -1,6 +1,7 @@
 # Publishes JS-only changes over the air to the installed TestFlight app.
-# Native changes (modules/, app.json plugins, new native packages) need a new "iOS Build" instead;
-# the fingerprint runtime version keeps an update from reaching an incompatible binary.
+# Updates reach builds with the same app version (runtimeVersion policy "appVersion"). After a native
+# change (modules/, app.json plugins, new native packages) bump "version" in app.json and run "iOS Build",
+# so the new JS never lands on a binary that lacks its native code.
 name: OTA Update
 
 on:

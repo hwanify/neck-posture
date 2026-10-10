@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
@@ -195,7 +196,7 @@ export function SettingsScreen() {
       </Section>
 
       <Text style={styles.footer}>
-        {t('settings.appName', { version: Constants.expoConfig?.version ?? '' })}
+        {`${t('settings.appName', { version: Constants.expoConfig?.version ?? '' })} · ${updateLabel()}`}
         {'\n'}
         {t('settings.disclaimer')}
       </Text>
@@ -261,6 +262,12 @@ function LanguageSection({ value }: { value: LanguageSetting }) {
       </Sheet>
     </Section>
   );
+}
+
+/** Which JS is running: the one built into the app, or an over-the-air update (first characters of its id). */
+function updateLabel() {
+  if (!Updates.isEnabled) return 'dev';
+  return Updates.isEmbeddedLaunch || !Updates.updateId ? 'build' : `ota ${Updates.updateId.slice(0, 6)}`;
 }
 
 function formatDate(ts: number) {
