@@ -184,6 +184,7 @@ export const hi: Strings = {
   'settings.demoOff': 'डेमो मोड बंद है।',
 
   'liveActivity.title': 'माप जारी है',
+  'liveActivity.stop': 'रोकें',
   'notification.titleLeft': 'आपका सिर बाईं ओर झुका है',
   'notification.titleRight': 'आपका सिर दाईं ओर झुका है',
   'notification.body': '{deg}° झुका है। सिर सीधा करें।',

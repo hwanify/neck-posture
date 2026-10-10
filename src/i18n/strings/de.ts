@@ -187,6 +187,7 @@ export const de: Strings = {
   'settings.demoOff': 'Demomodus aus.',
 
   'liveActivity.title': 'Misst',
+  'liveActivity.stop': 'Beenden',
   'notification.titleLeft': 'Dein Kopf ist nach links geneigt',
   'notification.titleRight': 'Dein Kopf ist nach rechts geneigt',
   'notification.body': 'Um {deg}° geneigt. Richte deinen Kopf auf.',

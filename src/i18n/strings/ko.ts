@@ -181,6 +181,7 @@ export const ko: Strings = {
   'settings.demoOff': '데모 모드를 껐어요.',
 
   'liveActivity.title': '측정 중',
+  'liveActivity.stop': '측정 종료',
   'notification.titleLeft': '고개가 왼쪽으로 기울었어요',
   'notification.titleRight': '고개가 오른쪽으로 기울었어요',
   'notification.body': '{deg}° 기울어진 상태예요. 고개를 바로 세워주세요.',

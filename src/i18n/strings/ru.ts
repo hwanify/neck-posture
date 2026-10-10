@@ -186,6 +186,7 @@ export const ru: Strings = {
   'settings.demoOff': 'Демо-режим выключен.',
 
   'liveActivity.title': 'Идёт измерение',
+  'liveActivity.stop': 'Стоп',
   'notification.titleLeft': 'Голова наклонена влево',
   'notification.titleRight': 'Голова наклонена вправо',
   'notification.body': 'Наклон {deg}°. Выпрямите голову.',

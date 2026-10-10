@@ -179,6 +179,7 @@ export const zhHans: Strings = {
   'settings.demoOff': '已关闭演示模式。',
 
   'liveActivity.title': '测量中',
+  'liveActivity.stop': '结束测量',
   'notification.titleLeft': '头部向左倾斜',
   'notification.titleRight': '头部向右倾斜',
   'notification.body': '已倾斜 {deg}°，请把头摆正。',

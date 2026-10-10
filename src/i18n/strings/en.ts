@@ -187,6 +187,7 @@ export const en = {
   'settings.demoOff': 'Demo mode off.',
 
   'liveActivity.title': 'Measuring',
+  'liveActivity.stop': 'Stop',
   'notification.titleLeft': 'Your head is tilted to the left',
   'notification.titleRight': 'Your head is tilted to the right',
   'notification.body': 'Tilted {deg}°. Straighten your head.',

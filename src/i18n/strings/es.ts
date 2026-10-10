@@ -187,6 +187,7 @@ export const es: Strings = {
   'settings.demoOff': 'Modo demo desactivado.',
 
   'liveActivity.title': 'Midiendo',
+  'liveActivity.stop': 'Detener',
   'notification.titleLeft': 'Tienes la cabeza inclinada a la izquierda',
   'notification.titleRight': 'Tienes la cabeza inclinada a la derecha',
   'notification.body': 'Inclinación de {deg}°. Endereza la cabeza.',

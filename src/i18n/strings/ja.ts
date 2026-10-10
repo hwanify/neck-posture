@@ -184,6 +184,7 @@ export const ja: Strings = {
   'settings.demoOff': 'デモモードをオフにしました。',
 
   'liveActivity.title': '測定中',
+  'liveActivity.stop': '測定終了',
   'notification.titleLeft': '頭が左に傾いています',
   'notification.titleRight': '頭が右に傾いています',
   'notification.body': '{deg}°傾いています。頭をまっすぐにしてください。',

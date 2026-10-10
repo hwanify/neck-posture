@@ -186,6 +186,7 @@ export const pt: Strings = {
   'settings.demoOff': 'Modo demo desativado.',
 
   'liveActivity.title': 'Medindo',
+  'liveActivity.stop': 'Parar',
   'notification.titleLeft': 'Sua cabeça está inclinada para a esquerda',
   'notification.titleRight': 'Sua cabeça está inclinada para a direita',
   'notification.body': 'Inclinação de {deg}°. Endireite a cabeça.',

@@ -12,7 +12,7 @@ declare class HeadphoneMotionModule extends NativeModule<HeadphoneMotionEvents> 
   /** pan: -1 (left ear) ... 1 (right ear), volume: 0...1 */
   playCue(kind: CueKind, pan: number, volume: number): Promise<void>;
   /** Lock Screen / Dynamic Island card with a running timer. Resolves false when Live Activities are off. */
-  startLiveActivity?(startedAtMs: number, title: string): Promise<boolean>;
+  startLiveActivity?(startedAtMs: number, title: string, stopTitle: string): Promise<boolean>;
   endLiveActivity?(): Promise<void>;
 }
 

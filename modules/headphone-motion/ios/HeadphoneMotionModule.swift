@@ -87,8 +87,12 @@ public class HeadphoneMotionModule: Module {
     }
 
     // Lock Screen / Dynamic Island "measuring" card. startedAt in ms since epoch; title already localized.
-    AsyncFunction("startLiveActivity") { (startedAt: Double, title: String) -> Bool in
-      return try self.liveActivity.start(startedAt: Date(timeIntervalSince1970: startedAt / 1000), title: title)
+    AsyncFunction("startLiveActivity") { (startedAt: Double, title: String, stopTitle: String) -> Bool in
+      return try self.liveActivity.start(
+        startedAt: Date(timeIntervalSince1970: startedAt / 1000),
+        title: title,
+        stopTitle: stopTitle
+      )
     }
 
     AsyncFunction("endLiveActivity") {

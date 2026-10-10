@@ -37,7 +37,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     haptic: true,
     notification: true,
     recoveryChime: true,
-    volume: 0.6,
+    volume: 1,
     backgroundMode: true,
     keepAwake: false,
     cueSide: 'tilted',

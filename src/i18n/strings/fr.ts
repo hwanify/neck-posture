@@ -189,6 +189,7 @@ export const fr: Strings = {
   'settings.demoOff': 'Mode démo désactivé.',
 
   'liveActivity.title': 'Mesure en cours',
+  'liveActivity.stop': 'Arrêter',
   'notification.titleLeft': 'Votre tête penche vers la gauche',
   'notification.titleRight': 'Votre tête penche vers la droite',
   'notification.body': 'Inclinaison de {deg}°. Redressez la tête.',

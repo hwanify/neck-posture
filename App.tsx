@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalibrationScreen } from './src/screens/CalibrationScreen';
@@ -35,6 +35,19 @@ function Root() {
 
   useEffect(() => {
     void monitor.init();
+  }, []);
+
+  // "측정 종료" on the Lock Screen card opens plumb://stop.
+  useEffect(() => {
+    const handle = (url: string | null) => {
+      if (url?.startsWith('plumb://stop')) {
+        setTab('home');
+        void monitor.endSession();
+      }
+    };
+    void Linking.getInitialURL().then(handle);
+    const sub = Linking.addEventListener('url', ({ url }) => handle(url));
+    return () => sub.remove();
   }, []);
 
   // The posture check runs on the posture tab (e.g. after the AirPods reconnect mid-session).
