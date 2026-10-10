@@ -31,7 +31,7 @@ export const en = {
   'duration.m': '{m}m',
   'duration.s': '{s}s',
 
-  'onboarding.title': 'Welcome to\nBaromok',
+  'onboarding.title': 'Welcome to\nPlumb',
   'onboarding.airpods.title': 'Measured with AirPods',
   'onboarding.airpods.body':
     'The head-tracking sensor in your AirPods measures how your head tilts. No camera or extra device needed.',
@@ -180,8 +180,10 @@ export const en = {
   'settings.auth.restricted': 'Restricted',
   'settings.auth.denied': 'Denied',
   'settings.auth.authorized': 'Allowed',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': 'Not a medical device. All data stays on this iPhone.',
+  'settings.demoOn': 'Demo mode on. Simulated head movement is used instead of AirPods.',
+  'settings.demoOff': 'Demo mode off.',
 
   'notification.titleLeft': 'Your head is tilted to the left',
   'notification.titleRight': 'Your head is tilted to the right',

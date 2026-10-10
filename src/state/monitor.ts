@@ -6,6 +6,7 @@ import type { AuthorizationStatus, MotionSample } from '../../modules/headphone-
 import {
   type Calibration,
   Calibrator,
+  DEMO_CALIBRATION,
   type CalibratorStatus,
   flipCalibration,
   PostureCheck,
@@ -308,7 +309,11 @@ class MonitorController {
     this.cancelCalibration();
     await this.stopStreaming();
     this.source = createMotionSource(kind);
-    const calibration = await storage.loadCalibration(this.source.kind);
+    let calibration = await storage.loadCalibration(this.source.kind);
+    if (!calibration && kind === 'demo') {
+      calibration = { ...DEMO_CALIBRATION, createdAt: Date.now() };
+      await storage.saveCalibration('demo', calibration);
+    }
     this.engine.setCalibration(calibration);
     this.set({
       sourceKind: this.source.kind,
@@ -324,7 +329,15 @@ class MonitorController {
     await this.startStreaming();
   }
 
-  // MARK: - Session
+  /**
+   * Hidden demo mode (Settings → tap the version line 5 times) so App Review can try the app
+   * without supported AirPods. Not persisted: the app returns to AirPods on the next launch.
+   */
+  async toggleDemo(): Promise<boolean> {
+    const next = this.source.kind === 'demo' ? storage.DEFAULT_SETTINGS.source : 'demo';
+    await this.setSourceKind(next);
+    return this.source.kind === 'demo';
+  }
 
   // MARK: - Posture check
 

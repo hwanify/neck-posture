@@ -29,7 +29,7 @@ export const es: Strings = {
   'duration.m': '{m} min',
   'duration.s': '{s} s',
 
-  'onboarding.title': 'Te damos la bienvenida\na Baromok',
+  'onboarding.title': 'Te damos la bienvenida\na Plumb',
   'onboarding.airpods.title': 'Medición con AirPods',
   'onboarding.airpods.body':
     'El sensor de seguimiento de cabeza de tus AirPods mide cómo inclinas la cabeza. Sin cámara ni otros dispositivos.',
@@ -180,8 +180,10 @@ export const es: Strings = {
   'settings.auth.restricted': 'Restringido',
   'settings.auth.denied': 'Denegado',
   'settings.auth.authorized': 'Permitido',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': 'No es un dispositivo médico. Todos los datos se quedan en este iPhone.',
+  'settings.demoOn': 'Modo demo activado. Se usa un movimiento de cabeza simulado en lugar de los AirPods.',
+  'settings.demoOff': 'Modo demo desactivado.',
 
   'notification.titleLeft': 'Tienes la cabeza inclinada a la izquierda',
   'notification.titleRight': 'Tienes la cabeza inclinada a la derecha',

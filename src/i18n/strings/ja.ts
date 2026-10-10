@@ -29,7 +29,7 @@ export const ja: Strings = {
   'duration.m': '{m}分',
   'duration.s': '{s}秒',
 
-  'onboarding.title': 'Baromokへ\nようこそ',
+  'onboarding.title': 'Plumbへ\nようこそ',
   'onboarding.airpods.title': 'AirPodsで測定',
   'onboarding.airpods.body':
     'AirPodsのヘッドトラッキングセンサーで頭の傾きを測定します。カメラや別のデバイスは必要ありません。',
@@ -177,8 +177,10 @@ export const ja: Strings = {
   'settings.auth.restricted': '制限あり',
   'settings.auth.denied': '拒否',
   'settings.auth.authorized': '許可',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': '医療機器ではありません。すべてのデータはこのiPhoneにのみ保存されます。',
+  'settings.demoOn': 'デモモードをオンにしました。AirPodsの代わりに仮想の頭の動きを使用します。',
+  'settings.demoOff': 'デモモードをオフにしました。',
 
   'notification.titleLeft': '頭が左に傾いています',
   'notification.titleRight': '頭が右に傾いています',

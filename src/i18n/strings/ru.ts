@@ -29,7 +29,7 @@ export const ru: Strings = {
   'duration.m': '{m} мин',
   'duration.s': '{s} с',
 
-  'onboarding.title': 'Добро пожаловать\nв Baromok',
+  'onboarding.title': 'Добро пожаловать\nв Plumb',
   'onboarding.airpods.title': 'Измерение с AirPods',
   'onboarding.airpods.body':
     'Датчик отслеживания головы в AirPods измеряет наклон головы. Камера и другие устройства не нужны.',
@@ -179,8 +179,10 @@ export const ru: Strings = {
   'settings.auth.restricted': 'Ограничен',
   'settings.auth.denied': 'Запрещен',
   'settings.auth.authorized': 'Разрешен',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': 'Не является медицинским изделием. Все данные хранятся только на этом iPhone.',
+  'settings.demoOn': 'Демо-режим включён. Вместо AirPods используются имитированные движения головы.',
+  'settings.demoOff': 'Демо-режим выключен.',
 
   'notification.titleLeft': 'Голова наклонена влево',
   'notification.titleRight': 'Голова наклонена вправо',

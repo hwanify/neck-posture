@@ -29,7 +29,7 @@ export const fr: Strings = {
   'duration.m': '{m} min',
   'duration.s': '{s} s',
 
-  'onboarding.title': 'Bienvenue dans\nBaromok',
+  'onboarding.title': 'Bienvenue dans\nPlumb',
   'onboarding.airpods.title': 'Mesure avec les AirPods',
   'onboarding.airpods.body':
     'Le capteur de suivi de la tête de vos AirPods mesure l’inclinaison de votre tête. Aucune caméra ni appareil supplémentaire requis.',
@@ -182,8 +182,10 @@ export const fr: Strings = {
   'settings.auth.restricted': 'Restreint',
   'settings.auth.denied': 'Refusé',
   'settings.auth.authorized': 'Autorisé',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': 'Ceci n’est pas un dispositif médical. Toutes les données restent sur cet iPhone.',
+  'settings.demoOn': 'Mode démo activé. Des mouvements de tête simulés remplacent les AirPods.',
+  'settings.demoOff': 'Mode démo désactivé.',
 
   'notification.titleLeft': 'Votre tête penche vers la gauche',
   'notification.titleRight': 'Votre tête penche vers la droite',

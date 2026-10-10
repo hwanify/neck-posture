@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
@@ -38,6 +38,16 @@ export function SettingsScreen() {
   };
 
   const calibration = s.calibration;
+
+  // Five quick taps on the version line toggle the hidden demo mode (for App Review without AirPods).
+  const taps = useRef<number[]>([]);
+  const onFooterTap = () => {
+    const now = Date.now();
+    taps.current = [...taps.current.filter((at) => now - at < 3000), now];
+    if (taps.current.length < 5 || s.session) return;
+    taps.current = [];
+    void monitor.toggleDemo().then((on) => Alert.alert(t(on ? 'settings.demoOn' : 'settings.demoOff')));
+  };
 
   return (
     <Screen title={t('settings.title')}>
@@ -195,7 +205,7 @@ export function SettingsScreen() {
         <Row icon="info" title={t('settings.motionPermission')} value={t(`settings.auth.${s.authorization}`)} />
       </Section>
 
-      <Text style={styles.footer}>
+      <Text style={styles.footer} onPress={onFooterTap} suppressHighlighting>
         {`${t('settings.appName', { version: Constants.expoConfig?.version ?? '' })} · ${updateLabel()}`}
         {'\n'}
         {t('settings.disclaimer')}

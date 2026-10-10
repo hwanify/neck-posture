@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { Calibrator } from '../calibrator';
+import { Calibrator, DEMO_CALIBRATION, demoGravity } from '../calibrator';
 import { flipCalibration, lateralTiltDeg } from '../tilt';
 import { CALIBRATION as calibration, gravityFor, sample, stream } from './helpers';
 
@@ -18,6 +18,14 @@ describe('lateralTiltDeg', () => {
 
   it('flips sign when calibration is flipped', () => {
     expect(lateralTiltDeg(gravityFor(8), flipCalibration(calibration))).toBeCloseTo(-8, 5);
+  });
+});
+
+describe('DEMO_CALIBRATION', () => {
+  it('reads demo tilts and ignores demo nods', () => {
+    expect(lateralTiltDeg(demoGravity(12), DEMO_CALIBRATION)).toBeCloseTo(12, 3);
+    expect(lateralTiltDeg(demoGravity(-8), DEMO_CALIBRATION)).toBeCloseTo(-8, 3);
+    expect(lateralTiltDeg(demoGravity(0, 20), DEMO_CALIBRATION)).toBeCloseTo(0, 3);
   });
 });
 

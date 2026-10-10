@@ -241,6 +241,17 @@ export class Calibrator {
   }
 }
 
+/** Calibration that matches `demoGravity`, so demo mode can measure without calibrating first. */
+export const DEMO_CALIBRATION: Calibration = {
+  neutralGravity: vec(0, 0, -1),
+  forwardAxis: vec(0, -1, 0),
+  pitchAxis: vec(0, 1, 0),
+  leakForward: 0,
+  leakBack: 0,
+  sensorLocation: 'default',
+  createdAt: 0,
+};
+
 /** Synthetic helper for tests and demo mode: gravity for a head tilted `deg` to the right. */
 export function demoGravity(deg: number, nodDeg = 0): Vector3 {
   // Arbitrary sensor frame: gravity along -z when upright, tilt rotates it towards +x, nodding towards +y.

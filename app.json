@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "바로목",
+    "name": "Plumb",
     "slug": "baromok",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -16,14 +16,22 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSMotionUsageDescription": "Baromok uses your AirPods’ motion sensor to detect when your head tilts to one side.",
+        "NSMotionUsageDescription": "Plumb uses your AirPods’ motion sensor to detect when your head tilts to one side.",
         "UIBackgroundModes": [
           "audio"
         ]
       }
     },
     "plugins": [
-      "./plugins/withoutPushEntitlement"
+      "./plugins/withoutPushEntitlement",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
+        }
+      ]
     ],
     "extra": {
       "eas": {}

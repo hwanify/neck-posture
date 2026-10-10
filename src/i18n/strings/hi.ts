@@ -29,7 +29,7 @@ export const hi: Strings = {
   'duration.m': '{m} मि',
   'duration.s': '{s} से',
 
-  'onboarding.title': 'Baromok में\nआपका स्वागत है',
+  'onboarding.title': 'Plumb में\nआपका स्वागत है',
   'onboarding.airpods.title': 'AirPods से मापन',
   'onboarding.airpods.body':
     'आपके AirPods का हेड-ट्रैकिंग सेंसर मापता है कि आपका सिर कितना झुका है। कैमरा या किसी और डिवाइस की ज़रूरत नहीं।',
@@ -177,8 +177,10 @@ export const hi: Strings = {
   'settings.auth.restricted': 'प्रतिबंधित',
   'settings.auth.denied': 'अस्वीकृत',
   'settings.auth.authorized': 'अनुमत',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': 'यह मेडिकल डिवाइस नहीं है। सारा डेटा इसी iPhone पर रहता है।',
+  'settings.demoOn': 'डेमो मोड चालू है। AirPods की जगह नकली सिर की हलचल इस्तेमाल होगी।',
+  'settings.demoOff': 'डेमो मोड बंद है।',
 
   'notification.titleLeft': 'आपका सिर बाईं ओर झुका है',
   'notification.titleRight': 'आपका सिर दाईं ओर झुका है',

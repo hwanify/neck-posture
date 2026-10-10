@@ -29,7 +29,7 @@ export const ko: Strings = {
   'duration.m': '{m}분',
   'duration.s': '{s}초',
 
-  'onboarding.title': '바로목에 오신 것을\n환영합니다',
+  'onboarding.title': 'Plumb에 오신 것을\n환영합니다',
   'onboarding.airpods.title': 'AirPods로 측정',
   'onboarding.airpods.body':
     'AirPods의 헤드 트래킹 센서로 고개 기울기를 측정합니다. 카메라나 별도 기기가 필요 없습니다.',
@@ -174,8 +174,10 @@ export const ko: Strings = {
   'settings.auth.restricted': '제한됨',
   'settings.auth.denied': '거부됨',
   'settings.auth.authorized': '허용됨',
-  'settings.appName': '바로목 {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': '의료기기가 아니며, 모든 데이터는 이 iPhone에만 저장됩니다.',
+  'settings.demoOn': '데모 모드를 켰어요. AirPods 대신 가상의 고개 움직임을 사용합니다.',
+  'settings.demoOff': '데모 모드를 껐어요.',
 
   'notification.titleLeft': '고개가 왼쪽으로 기울었어요',
   'notification.titleRight': '고개가 오른쪽으로 기울었어요',

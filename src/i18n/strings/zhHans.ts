@@ -29,7 +29,7 @@ export const zhHans: Strings = {
   'duration.m': '{m}分钟',
   'duration.s': '{s}秒',
 
-  'onboarding.title': '欢迎使用\nBaromok',
+  'onboarding.title': '欢迎使用\nPlumb',
   'onboarding.airpods.title': '用 AirPods 测量',
   'onboarding.airpods.body': '通过 AirPods 的头部追踪传感器测量头部倾斜，无需摄像头或其他设备。',
   'onboarding.alert.title': '倾斜提醒',
@@ -172,8 +172,10 @@ export const zhHans: Strings = {
   'settings.auth.restricted': '受限',
   'settings.auth.denied': '已拒绝',
   'settings.auth.authorized': '已允许',
-  'settings.appName': 'Baromok {version}',
+  'settings.appName': 'Plumb {version}',
   'settings.disclaimer': '本 App 并非医疗器械。所有数据仅保存在此 iPhone 上。',
+  'settings.demoOn': '已开启演示模式，将使用模拟的头部动作代替 AirPods。',
+  'settings.demoOff': '已关闭演示模式。',
 
   'notification.titleLeft': '头部向左倾斜',
   'notification.titleRight': '头部向右倾斜',

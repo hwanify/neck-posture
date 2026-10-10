@@ -1,4 +1,4 @@
 {
-  "CFBundleDisplayName": "Baromok",
-  "NSMotionUsageDescription": "Baromok 使用 AirPods 的运动传感器检测头部是否向一侧倾斜。"
+  "CFBundleDisplayName": "Plumb",
+  "NSMotionUsageDescription": "Plumb 使用 AirPods 的运动传感器检测头部是否向一侧倾斜。"
 }
