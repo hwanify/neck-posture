@@ -1,0 +1,87 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+@font-face { font-family: P; font-weight: 300; src: url(../../assets/fonts/Pretendard-Light.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 440px; height: 956px; background: #000; font-family: P, sans-serif; color: #F2F2F2; overflow: hidden; }
+.cap { position: absolute; top: 70px; left: 0; right: 0; text-align: center; padding: 0 28px; }
+.cap h1 { font-weight: 600; font-size: 30px; line-height: 1.28; letter-spacing: -1px; margin: 0; white-space: pre-line; }
+.cap p { font-size: 15px; color: #8E8E8E; margin: 12px 0 0; letter-spacing: -0.3px; white-space: pre-line; }
+.phone { position: absolute; left: 34px; right: 34px; top: 236px; height: 760px; border-radius: 46px; border: 1.5px solid #2a2a2a; background: #000; overflow: hidden; }
+.sb { height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0; font-weight: 600; font-size: 14px; }
+.bat { width: 22px; height: 11px; border: 1.3px solid #F2F2F2; border-radius: 3px; position: relative; } .bat::after { content: ''; position: absolute; inset: 1.5px; right: 4px; background: #F2F2F2; border-radius: 1px; }
+.scr { position: absolute; top: 48px; left: 0; right: 0; bottom: 0; padding: 8px 20px 0; }
+.row2 { display: flex; justify-content: space-between; align-items: center; }
+.meta { font-weight: 500; font-size: 11.5px; color: #8E8E8E; letter-spacing: -0.2px; }
+.dot { width: 5px; height: 5px; border-radius: 3px; background: #F2F2F2; display: inline-block; margin-right: 5px; vertical-align: middle; }
+.level { position: relative; width: 210px; height: 9px; margin: 0 auto; }
+.hz { position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: #4A4A4A; opacity: .6; }
+.ln { position: absolute; left: 50%; top: 3.6px; width: 158px; height: 1.6px; margin-left: -79px; background: #F2F2F2; border-radius: 1px; }
+.ld { position: absolute; left: 50%; top: 0; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 5px; background: #F2F2F2; }
+.num { text-align: center; font-weight: 500; font-size: 32px; letter-spacing: -1px; margin-top: 24px; font-variant-numeric: tabular-nums; }
+.stats { display: flex; position: absolute; left: 20px; right: 20px; bottom: 112px; }
+.stat { flex: 1; text-align: center; } .sv { font-weight: 500; font-size: 14px; } .sl { font-weight: 500; font-size: 10px; color: #8E8E8E; margin-top: 3px; }
+.btn { position: absolute; left: 20px; right: 20px; bottom: 44px; height: 46px; border-radius: 23px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.btn.q { background: transparent; border: 1px solid #4A4A4A; color: #8E8E8E; }
+.title { font-weight: 600; font-size: 27px; letter-spacing: -1px; margin: 6px 0 4px; }
+.sh { font-weight: 500; font-size: 11px; color: #8E8E8E; margin: 22px 0 6px; }
+.r { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid #262626; font-size: 14.5px; letter-spacing: -0.4px; }
+.r .v { color: #8E8E8E; } .r .sub { font-size: 11.5px; color: #8E8E8E; margin-top: 2px; }
+.week { display: flex; justify-content: space-between; padding: 10px 2px 14px; }
+.wd { text-align: center; width: 28px; } .wd i { display: block; margin: 0 auto; width: 13px; height: 13px; border-radius: 7px; background: #F2F2F2; } .wd i.e { background: none; border: 1px solid #4A4A4A; } .wd span { display: block; font-size: 10px; color: #8E8E8E; margin-top: 7px; font-weight: 500; }
+.tg { width: 44px; height: 26px; border-radius: 13px; background: #F2F2F2; position: relative; } .tg::after { content: ''; position: absolute; right: 2px; top: 2px; width: 22px; height: 22px; border-radius: 11px; background: #000; }
+.seg { display: flex; gap: 14px; font-size: 13px; } .seg b { font-weight: 500; } .seg span { color: #8E8E8E; }
+</style></head>
+<body><div id="root"></div>
+<script>
+const L = new URLSearchParams(location.search).get('lang') || 'ko';
+const N = +(new URLSearchParams(location.search).get('n') || 1);
+const T = {
+  ko: { date: '10월 10일 금요일', air: 'AirPods',
+    c1: ['고개가 기울면\n귀로 알려드려요', '에어팟 센서로 좌우 기울기를 측정합니다'],
+    c2: ['에어팟을 낄 때마다\n3초면 준비 끝', '그날의 착용 각도에 맞춰 기준을 다시 잡아요'],
+    c3: ['한 주의 자세를\n한눈에', '날짜별 측정 시간과 자주 기우는 방향까지'],
+    c4: ['알림은\n내 방식대로', '각도·시간·간격을 1단위로 조절하세요'],
+    good: '바른 자세', alerts: '알림', elapsed: '경과', stop: '측정 종료', cancel: '취소',
+    look: '정면을 바라보고 멈춰 주세요', hold: '바른 자세로 3초간 확인합니다',
+    hist: '기록', week: '이번 주', wd: ['토','일','월','화','수','목','금'], measured: '측정 시간', byday: '날짜별',
+    days: [['10월 10일 (금)','1시간 2분 · 알림 4회 · 평균 우 2°','85%'],['10월 9일 (목)','52분 · 알림 6회 · 평균 좌 4°','71%'],['10월 8일 (수)','1시간 34분 · 알림 3회 · 평균 좌 1°','88%'],['10월 6일 (월)','47분 · 알림 5회 · 평균 우 3°','76%']],
+    wtime: '4시간 15분', bias: ['왼쪽 58%','기울어진 방향','오른쪽 42%'],
+    set: '설정', detect: '감지', angle: '알림 각도', holdt: '유지 시간', interval: '알림 간격', walk: '걷는 중에도 측정', alertsH: '알림', ear: '알림 방향', tilted: '기운 쪽', opposite: '반대쪽', sound: 'AirPods 알림음', vol: '소리 크기', sec: s => s + '초' },
+  en: { date: 'Friday, October 10', air: 'AirPods',
+    c1: ['Lean too long,\nhear a gentle cue', 'Your AirPods measure sideways head tilt'],
+    c2: ['Ready in\n3 seconds', 'Adapts to how your AirPods sit today'],
+    c3: ['Your week\nat a glance', 'Time measured and your usual lean, day by day'],
+    c4: ['Alerts,\nyour way', 'Angle, hold time and interval in single steps'],
+    good: 'Good posture', alerts: 'Alerts', elapsed: 'Elapsed', stop: 'Stop', cancel: 'Cancel',
+    look: 'Look straight ahead and hold still', hold: 'Checking your posture for 3 seconds',
+    hist: 'History', week: 'This week', wd: ['S','S','M','T','W','T','F'], measured: 'Measured', byday: 'By day',
+    days: [['Fri, October 10','1h 2m · Alerts 4 · Avg R 2°','85%'],['Thu, October 9','52m · Alerts 6 · Avg L 4°','71%'],['Wed, October 8','1h 34m · Alerts 3 · Avg L 1°','88%'],['Mon, October 6','47m · Alerts 5 · Avg R 3°','76%']],
+    wtime: '4h 15m', bias: ['Left 58%','Tilt direction','Right 42%'],
+    set: 'Settings', detect: 'Detection', angle: 'Alert angle', holdt: 'Hold time', interval: 'Alert interval', walk: 'Measure while walking', alertsH: 'Alerts', ear: 'Alert ear', tilted: 'Tilted side', opposite: 'Opposite', sound: 'AirPods sound', vol: 'Volume', sec: s => s + 's' },
+}[L];
+const sb = `<div class="sb"><span>9:41</span><span class="bat"></span></div>`;
+const header = `<div class="row2"><span class="meta">${T.date}</span><span class="meta"><i class="dot"></i>${T.air}</span></div>`;
+const level = (deg, fill = 1) => `<div class="level"><div class="hz"></div><div class="ln" style="transform:rotate(${deg}deg) scaleX(${fill})"></div><div class="ld"></div></div>`;
+const cap = c => `<div class="cap"><h1>${c[0]}</h1><p>${c[1]}</p></div>`;
+const screens = {
+  1: () => cap(T.c1) + `<div class="phone">${sb}<div class="scr">${header}<div style="margin-top:250px">${level(9)}</div><div class="num">9°</div>
+      <div class="stats"><div class="stat"><div class="sv">82%</div><div class="sl">${T.good}</div></div><div class="stat"><div class="sv">3</div><div class="sl">${T.alerts}</div></div><div class="stat"><div class="sv">12:41</div><div class="sl">${T.elapsed}</div></div></div>
+      <div class="btn">${T.stop}</div></div></div>`,
+  2: () => cap(T.c2) + `<div class="phone">${sb}<div class="scr">${header}<div style="margin-top:250px">${level(0, 0.62)}</div><div class="num">2</div>
+      <div style="text-align:center;margin-top:12px;font-weight:500;font-size:12px">${T.look}</div><div style="text-align:center;margin-top:6px;font-weight:500;font-size:11px;color:#8E8E8E">${T.hold}</div>
+      <div class="btn q">${T.cancel}</div></div></div>`,
+  3: () => cap(T.c3) + `<div class="phone">${sb}<div class="scr"><div class="title">${T.hist}</div><div class="sh">${T.week}</div>
+      <div class="week">${[.9,null,.6,.75,.88,.71,.85].map((v,i)=>`<div class="wd"><i class="${v===null?'e':''}" style="${v===null?'':`opacity:${.2+.8*v}`}"></i><span>${T.wd[i]}</span></div>`).join('')}</div>
+      <div class="r"><span>${T.good}</span><span class="v">80%</span></div><div class="r"><span>${T.measured}</span><span class="v">${T.wtime}</span></div>
+      <div style="padding:12px 0;border-top:1px solid #262626"><div class="row2" style="font-size:11.5px;color:#8E8E8E;margin-bottom:7px"><span>${T.bias[0]}</span><span style="color:#4A4A4A">${T.bias[1]}</span><span>${T.bias[2]}</span></div><div style="display:flex;height:3px;border-radius:2px;overflow:hidden"><div style="flex:58;background:#F2F2F2"></div><div style="width:2px"></div><div style="flex:42;background:#B0B0B0"></div></div></div>
+      <div class="sh">${T.byday}</div>${T.days.map(d=>`<div class="r"><div><div>${d[0]}</div><div class="sub">${d[1]}</div></div><span>${d[2]}  ›</span></div>`).join('')}</div></div>`,
+  4: () => cap(T.c4) + `<div class="phone">${sb}<div class="scr"><div class="title">${T.set}</div><div class="sh">${T.detect}</div>
+      <div class="r"><span>${T.angle}</span><span class="v">−&nbsp;&nbsp;10°&nbsp;&nbsp;+</span></div><div class="r"><span>${T.holdt}</span><span class="v">−&nbsp;&nbsp;${T.sec(5)}&nbsp;&nbsp;+</span></div><div class="r"><span>${T.interval}</span><span class="v">−&nbsp;&nbsp;${T.sec(30)}&nbsp;&nbsp;+</span></div><div class="r"><span>${T.walk}</span><span class="tg"></span></div>
+      <div class="sh">${T.alertsH}</div><div class="r"><span>${T.sound}</span><span class="tg"></span></div><div class="r"><span>${T.vol}</span><span class="v">−&nbsp;&nbsp;60%&nbsp;&nbsp;+</span></div><div class="r"><span>${T.ear}</span><span class="seg"><b>${T.tilted}</b><span>${T.opposite}</span></span></div></div></div>`,
+};
+document.getElementById('root').innerHTML = screens[N]();
+</script></body></html>

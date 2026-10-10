@@ -61,6 +61,8 @@ export function formatDuration(sec: number): string {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   if (h > 0) return t('duration.hm', { h, m });
+  // Seconds only matter for short spans.
+  if (m >= 10) return t('duration.m', { m });
   if (m > 0) return t('duration.ms', { m, s: s % 60 });
   return t('duration.s', { s });
 }
