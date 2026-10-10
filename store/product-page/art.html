@@ -23,7 +23,7 @@ function mark(cx,cy,len){
 if(v==='only'){
   // All four app screens centered, no mark.
   const lang=q.get('lang')||'en';
-  const h=H*0.82, w=h*1320/2868, gap=w*0.08, total=4*w+3*gap;
+  const w=Math.min(H*0.82*1320/2868, W*0.92/4.24), h=w*2868/1320, gap=w*0.08, total=4*w+3*gap;
   const imgs=['1','2','3','4'].map((n,i)=>`<img src="../screenshots/${lang}-${n}.png" style="height:${h}px;width:${w}px;--r:${w*0.08}px;margin-left:${i? gap:0}px">`).join('');
   c.insertAdjacentHTML('beforeend',`<div class="shots" style="left:${(W-total)/2}px;right:${(W-total)/2}px;top:${(H-h)/2}px">${imgs}</div>`);
 }
