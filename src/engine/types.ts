@@ -26,10 +26,10 @@ export type PostureSettings = {
 };
 
 export const DEFAULT_POSTURE_SETTINGS: PostureSettings = {
-  enterDeg: 10,
-  exitDeg: 7,
-  holdSec: 5,
-  cooldownSec: 30,
+  enterDeg: 5,
+  exitDeg: 2,
+  holdSec: 2,
+  cooldownSec: 5,
   smoothingSec: 0.3,
   motionGateRadPerSec: 1.2,
   walkingAccelG: 0.15,

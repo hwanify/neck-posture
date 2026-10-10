@@ -5,7 +5,8 @@ import { PostureStateMachine } from '../postureStateMachine';
 import { SessionStats } from '../sessionStats';
 import { DEFAULT_POSTURE_SETTINGS, type PostureEvent } from '../types';
 import { CALIBRATION as calibration, sample, stream } from './helpers';
-const settings = DEFAULT_POSTURE_SETTINGS; // enter 10, exit 7, hold 5s, cooldown 30s
+// Fixed values (not the app defaults) so the timings below stay readable.
+const settings = { ...DEFAULT_POSTURE_SETTINGS, enterDeg: 10, exitDeg: 7, holdSec: 5, cooldownSec: 30 };
 
 function run(engine: PostureEngine, samples: ReturnType<typeof stream>) {
   const events: PostureEvent[] = [];
