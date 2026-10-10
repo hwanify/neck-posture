@@ -1,0 +1,93 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
+.abs { position: absolute; left: 0; right: 0; text-align: center; }
+#hook { top: 230px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; }
+#cap { top: 690px; font-weight: 500; font-size: 22px; letter-spacing: -0.6px; color: #F2F2F2; }
+#sub { top: 728px; font-size: 16px; color: #8E8E8E; letter-spacing: -0.3px; }
+#level { position: absolute; left: 50%; top: 470px; width: 360px; height: 12px; margin-left: -180px; }
+#hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1.5px; background: #4A4A4A; }
+#ln { position: absolute; left: 50%; top: 4.5px; width: 290px; margin-left: -145px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+#dot { position: absolute; left: 50%; top: 0; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 7px; background: #F2F2F2; }
+#num { top: 515px; font-weight: 500; font-size: 64px; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.ring { position: absolute; border: 2px solid #F2F2F2; border-radius: 50%; }
+#phone { position: absolute; left: 50%; top: 110px; width: 300px; margin-left: -150px; border-radius: 34px; border: 1.5px solid #333; overflow: hidden; }
+#phone img { width: 100%; display: block; }
+#end { top: 360px; }
+#end .name { font-weight: 600; font-size: 56px; letter-spacing: -2px; margin-top: 34px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 10px; letter-spacing: -0.4px; }
+#end .cta { display: inline-block; margin-top: 46px; padding: 14px 30px; border-radius: 30px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 19px; letter-spacing: -0.4px; }
+#icon { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+</style></head>
+<body>
+<div id="hook" class="abs"></div>
+<div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
+<div id="num" class="abs"></div>
+<div id="rings"></div>
+<div id="phone"><img src="../screenshots/ko-1.png"></div>
+<div id="cap" class="abs"></div>
+<div id="sub" class="abs"></div>
+<div id="end" class="abs"><img id="icon" src="../../assets/icon.png"><div class="name">Plumb</div><div class="tag">에어팟이 고개 기울기를 알려줘요</div><div class="cta">App Store에서 무료</div></div>
+<script>
+// Timeline (seconds). render(t) is pure so frames can be captured one by one.
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.35) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+const CUE_AT = 5.2, RECOVER_AT = 8.2;
+
+function angleAt(t) {
+  if (t < 2.2) return 2 + 1.5 * ease(t / 2.2);           // a slight lean already
+  if (t < 5.0) return 3.5 + 8.5 * ease((t - 2.2) / 2.8);  // drifting right to 12°
+  if (t < 6.8) return 12;
+  if (t < 8.2) return 12 * (1 - ease((t - 6.8) / 1.4));   // straightening up
+  return 0;
+}
+
+function render(t) {
+  const a = angleAt(t);
+  // Hook
+  $('hook').innerHTML = t < 2.6 ? '나도 모르게<br>고개가 기울어 있다면' : '';
+  $('hook').style.opacity = fade(t, 0, 2.6);
+  // Level + number, visible 0.4–9.2s
+  const lv = fade(t, 0.4, 9.2, 0.5);
+  $('level').style.opacity = lv; $('num').style.opacity = lv;
+  $('ln').style.transform = `rotate(${a}deg)`;
+  $('num').textContent = `${Math.round(a)}°`;
+  // Captions
+  let cap = '', sub = '';
+  if (t >= 2.6 && t < 5.0) { cap = '공부할 때, 일할 때, 걸을 때'; sub = '고개는 조금씩 한쪽으로 기울어요'; }
+  else if (t >= 5.0 && t < 6.9) { cap = '오른쪽 귀에서 "띵"'; sub = '기울어진 채 2초가 지나면 알려줘요'; }
+  else if (t >= 6.9 && t < 9.2) { cap = '고개를 세우면 조용해져요'; sub = '바른 자세 기준으로 몇 도인지 측정'; }
+  else if (t >= 9.6 && t < 12.6) { cap = '카메라 없이, 에어팟 센서로'; sub = '화면을 꺼도 측정은 계속돼요'; }
+  const capWin = t < 5 ? fade(t, 2.6, 5.0, 0.25) : t < 6.9 ? fade(t, 5.0, 6.9, 0.25) : t < 9.2 ? fade(t, 6.9, 9.2, 0.25) : fade(t, 9.6, 12.6, 0.3);
+  $('cap').textContent = cap; $('sub').textContent = sub;
+  $('cap').style.opacity = capWin; $('sub').style.opacity = capWin;
+  $("cap").style.top = t >= 9.6 ? "792px" : "690px"; $("sub").style.top = t >= 9.6 ? "830px" : "728px";
+  // Sound rings from the right "ear" at the cue
+  let rings = '';
+  for (const start of [CUE_AT, CUE_AT + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${470 - r}px;top:${476 - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.8}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+  // Phone with the app
+  const ph = fade(t, 9.4, 12.6, 0.45);
+  $('phone').style.opacity = ph;
+  $('phone').style.transform = `translateY(${(1 - ease((t - 9.4) / 0.6)) * 60}px)`;
+  // End card
+  $('end').style.opacity = clamp((t - 12.7) / 0.5);
+  $('end').style.transform = `translateY(${(1 - ease((t - 12.7) / 0.6)) * 30}px)`;
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
