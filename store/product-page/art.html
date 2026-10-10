@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+html,body{margin:0;background:#000;overflow:hidden;font-family:P,sans-serif;color:#F2F2F2}
+#c{position:relative;width:100vw;height:100vh}
+.mark{position:absolute;left:50%;top:50%}
+.hz{position:absolute;height:var(--hz);background:#4A4A4A;opacity:.7;transform:translate(-50%,-50%)}
+.ln{position:absolute;height:var(--lw);background:#F2F2F2;border-radius:99px;transform:translate(-50%,-50%) rotate(-12deg)}
+.dot{position:absolute;border-radius:50%;background:#F2F2F2;transform:translate(-50%,-50%)}
+.shots{position:absolute;display:flex;align-items:center;justify-content:center;left:0;right:0}
+.shots img{border-radius:var(--r);border:2px solid #222}
+</style></head><body><div id="c"></div>
+<script>
+const q=new URLSearchParams(location.search), kind=q.get('kind'), v=q.get('v'), W=innerWidth, H=innerHeight;
+const c=document.getElementById('c');
+function mark(cx,cy,len){
+  const s=len/600*0.75;
+  c.insertAdjacentHTML('beforeend',`<div class="mark" style="left:${cx}px;top:${cy}px;--hz:${Math.max(3,10*s)}px;--lw:${22*s}px">
+   <div class="hz" style="width:${len*1.2}px"></div><div class="ln" style="width:${len}px"></div>
+   <div class="dot" style="width:${80*s}px;height:${80*s}px"></div></div>`);
+}
+if(v==='mark'){ mark(W/2,H/2, kind==='header'? W*0.42 : W*0.38); }
+else {
+  // App screens on the right, mark on the left.
+  mark(W*0.27,H/2, W*0.26);
+  // Three phones fit in the right half: 3 widths + 2 gaps of 8%.
+  const w = Math.min((W*0.5)/3.16, (H*0.82)*1320/2868), h = w*2868/1320;
+  const imgs=['ko-1','ko-3','ko-4'].map((n,i)=>`<img src="../screenshots/${n}.png" style="height:${h}px;width:${w}px;--r:${w*0.08}px;margin-left:${i? w*0.08:0}px">`).join('');
+  c.insertAdjacentHTML('beforeend',`<div class="shots" style="left:${W*0.46}px;right:${W*0.04}px;top:${(H-h)/2}px">${imgs}</div>`);
+}
+</script></body></html>
