@@ -102,6 +102,10 @@ export const zhHans: Strings = {
   'cal.flipped': '左右方向相反',
 
   'history.title': '记录',
+  'history.thisWeek': '本周',
+  'history.byDay': '按日期',
+  'history.dayFooter': '点按日期可查看当天的测量记录。',
+  'history.retention': '超过 90 天的记录会自动删除。',
   'history.today': '今日',
   'history.good': '姿势良好',
   'history.measured': '测量时长',

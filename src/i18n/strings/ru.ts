@@ -107,6 +107,10 @@ export const ru: Strings = {
   'cal.flipped': 'Лево и право поменяны местами',
 
   'history.title': 'История',
+  'history.thisWeek': 'Эта неделя',
+  'history.byDay': 'По дням',
+  'history.dayFooter': 'Коснитесь дня, чтобы увидеть сеансы.',
+  'history.retention': 'Записи старше 90 дней удаляются автоматически.',
   'history.today': 'Сегодня',
   'history.good': 'Ровная осанка',
   'history.measured': 'Измерено',

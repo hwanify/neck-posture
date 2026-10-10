@@ -105,6 +105,10 @@ export const ja: Strings = {
   'cal.flipped': '左右が反転しています',
 
   'history.title': '履歴',
+  'history.thisWeek': '今週',
+  'history.byDay': '日別',
+  'history.dayFooter': '日付をタップするとその日のセッションを表示します。',
+  'history.retention': '90日を過ぎた記録は自動的に削除されます。',
   'history.today': '今日',
   'history.good': '良い姿勢',
   'history.measured': '測定時間',

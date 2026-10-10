@@ -109,6 +109,10 @@ export const en = {
   'cal.flipped': 'Left and right are reversed',
 
   'history.title': 'History',
+  'history.thisWeek': 'This week',
+  'history.byDay': 'By day',
+  'history.dayFooter': 'Tap a day to see its sessions.',
+  'history.retention': 'Records older than 90 days are removed automatically.',
   'history.today': 'Today',
   'history.good': 'Good posture',
   'history.measured': 'Measured',

@@ -51,7 +51,7 @@ const KEYS = {
   onboarded: 'baromok.onboarded.v1',
 };
 
-const MAX_SESSIONS = 200;
+const MAX_SESSIONS = 1000;
 
 async function readJson<T>(key: string): Promise<T | null> {
   try {
@@ -85,8 +85,16 @@ export const saveCalibration = (source: MotionSourceKind, calibration: Calibrati
   writeJson(`${KEYS.calibration}.${source}`, calibration);
 
 /** Newest first. */
+/** Sessions older than this are dropped when loading or saving. */
+const RETENTION_DAYS = 90;
+
+const recent = (sessions: SessionSummary[]) => {
+  const cutoff = Date.now() - RETENTION_DAYS * 24 * 3600 * 1000;
+  return sessions.filter((s) => s.startedAt >= cutoff);
+};
+
 export async function loadSessions(): Promise<SessionSummary[]> {
-  return (await readJson<SessionSummary[]>(KEYS.sessions)) ?? [];
+  return recent((await readJson<SessionSummary[]>(KEYS.sessions)) ?? []);
 }
 
 export async function addSession(session: SessionSummary): Promise<SessionSummary[]> {

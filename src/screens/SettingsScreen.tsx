@@ -8,7 +8,7 @@ import { type MotionSourceKind, selectableSourceKinds } from '../services/motion
 import type { AppSettings, FeedbackSettings } from '../services/storage';
 import { getLanguage, LANGUAGES, type LanguageSetting, languageName, localeTag, systemLanguage, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
-import { Row, Screen, Section, Segmented, StepperRow, ToggleRow } from '../ui/components';
+import { Row, Screen, Section, Segmented, Sheet, StepperRow, ToggleRow } from '../ui/components';
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
 import { colors } from '../ui/theme';
@@ -227,7 +227,7 @@ function Pill({
   );
 }
 
-/** Language picker: the current choice, expanding into the list (system + every language). */
+/** Language row; tapping it opens a sheet listing System + every language. */
 function LanguageSection({ value }: { value: LanguageSetting }) {
   const [open, setOpen] = useState(false);
   const options: { value: LanguageSetting; label: string }[] = [
@@ -235,28 +235,30 @@ function LanguageSection({ value }: { value: LanguageSetting }) {
     ...LANGUAGES.map((l) => ({ value: l.code, label: l.name })),
   ];
   const choose = (language: LanguageSetting) => {
-    setOpen(false);
     void monitor.updateSettings((prev) => ({ ...prev, language }));
+    setOpen(false);
   };
   return (
     <Section header={t('settings.language')} iconInset>
       <Row
         icon="globe"
         title={t('settings.language')}
-        value={value === 'system' ? languageName(getLanguage()) : languageName(value)}
-        onPress={() => setOpen((o) => !o)}
+        value={`${value === 'system' ? languageName(getLanguage()) : languageName(value)}  ›`}
+        onPress={() => setOpen(true)}
       />
-      {open
-        ? options.map((o) => (
+      <Sheet visible={open} title={t('settings.language')} doneLabel={t('common.done')} onClose={() => setOpen(false)}>
+        <Section>
+          {options.map((o) => (
             <Row
               key={o.value}
               title={o.label}
-              value={o.value === value ? '✓' : undefined}
+              value={o.value === value ? '✓' : ''}
               valueColor={colors.text}
               onPress={() => choose(o.value)}
             />
-          ))
-        : null}
+          ))}
+        </Section>
+      </Sheet>
     </Section>
   );
 }

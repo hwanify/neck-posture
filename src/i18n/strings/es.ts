@@ -108,6 +108,10 @@ export const es: Strings = {
   'cal.flipped': 'Izquierda y derecha invertidas',
 
   'history.title': 'Historial',
+  'history.thisWeek': 'Esta semana',
+  'history.byDay': 'Por día',
+  'history.dayFooter': 'Toca un día para ver sus sesiones.',
+  'history.retention': 'Los registros de más de 90 días se eliminan automáticamente.',
   'history.today': 'Hoy',
   'history.good': 'Buena postura',
   'history.measured': 'Medido',

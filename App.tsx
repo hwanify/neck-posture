@@ -7,7 +7,6 @@ import { CalibrationScreen } from './src/screens/CalibrationScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
-import { PostureCheckScreen } from './src/screens/PostureCheckScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { t } from './src/i18n';
 import { monitor, useMonitor } from './src/state/monitor';
@@ -38,6 +37,12 @@ function Root() {
     void monitor.init();
   }, []);
 
+  // The posture check runs on the posture tab (e.g. after the AirPods reconnect mid-session).
+  const checking = s.checking !== null;
+  useEffect(() => {
+    if (checking) setTab('home');
+  }, [checking]);
+
   if (!s.loaded || !fontsReady) {
     return (
       <View style={[styles.fill, styles.center]}>
@@ -58,14 +63,6 @@ function Root() {
     return (
       <SafeAreaView style={styles.sheet}>
         <CalibrationScreen />
-      </SafeAreaView>
-    );
-  }
-
-  if (s.checking) {
-    return (
-      <SafeAreaView style={styles.fill}>
-        <PostureCheckScreen />
       </SafeAreaView>
     );
   }

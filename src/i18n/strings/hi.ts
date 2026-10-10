@@ -105,6 +105,10 @@ export const hi: Strings = {
   'cal.flipped': 'बायाँ और दायाँ उलटे हैं',
 
   'history.title': 'इतिहास',
+  'history.thisWeek': 'इस सप्ताह',
+  'history.byDay': 'दिन के अनुसार',
+  'history.dayFooter': 'उस दिन के सत्र देखने के लिए तारीख़ पर टैप करें।',
+  'history.retention': '90 दिन से पुराने रिकॉर्ड अपने आप हट जाते हैं।',
   'history.today': 'आज',
   'history.good': 'सही पोस्चर',
   'history.measured': 'मापा गया',

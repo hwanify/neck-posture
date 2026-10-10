@@ -108,6 +108,10 @@ export const de: Strings = {
   'cal.flipped': 'Links und rechts vertauscht',
 
   'history.title': 'Verlauf',
+  'history.thisWeek': 'Diese Woche',
+  'history.byDay': 'Nach Tag',
+  'history.dayFooter': 'Tippe auf einen Tag, um seine Sitzungen zu sehen.',
+  'history.retention': 'Einträge, die älter als 90 Tage sind, werden automatisch gelöscht.',
   'history.today': 'Heute',
   'history.good': 'Gute Haltung',
   'history.measured': 'Gemessen',

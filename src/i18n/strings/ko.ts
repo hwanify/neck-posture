@@ -103,6 +103,10 @@ export const ko: Strings = {
   'cal.flipped': '좌우가 반대로 표시됨',
 
   'history.title': '기록',
+  'history.thisWeek': '이번 주',
+  'history.byDay': '날짜별',
+  'history.dayFooter': '날짜를 누르면 그날의 세션을 볼 수 있어요.',
+  'history.retention': '90일이 지난 기록은 자동으로 정리됩니다.',
   'history.today': '오늘',
   'history.good': '바른 자세',
   'history.measured': '측정 시간',

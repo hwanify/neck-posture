@@ -1,13 +1,5 @@
 import { Children, Fragment, type ReactNode } from 'react';
-import {
-  type ColorValue,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { type ColorValue, Modal, Pressable, ScrollView, StyleSheet, Switch, View, type ViewStyle } from 'react-native';
 
 import { type } from './fonts';
 import { Text } from './Text';
@@ -29,6 +21,41 @@ export function Screen({ title, children }: { title: string; children: ReactNode
       </Text>
       {children}
     </ScrollView>
+  );
+}
+
+/**
+ * iOS page sheet that slides up from the bottom; swipe down or tap Done to close. Used for pickers
+ * and detail lists so screens don't grow accordion-style.
+ */
+export function Sheet({
+  visible,
+  title,
+  doneLabel,
+  onClose,
+  children,
+}: {
+  visible: boolean;
+  title: string;
+  doneLabel: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={styles.sheet}>
+        <View style={styles.sheetBar}>
+          <View style={styles.sheetSide} />
+          <Text style={styles.sheetTitle} numberOfLines={1}>
+            {title}
+          </Text>
+          <Pressable style={styles.sheetSide} onPress={onClose} hitSlop={10} accessibilityRole="button">
+            <Text style={styles.sheetDone}>{doneLabel}</Text>
+          </Pressable>
+        </View>
+        <ScrollView contentContainerStyle={styles.sheetContent}>{children}</ScrollView>
+      </View>
+    </Modal>
   );
 }
 
@@ -243,6 +270,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   section: { marginTop: 30, marginHorizontal: 20 },
+  sheet: { flex: 1, backgroundColor: colors.card },
+  sheetBar: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 20 },
+  sheetSide: { width: 64, alignItems: 'flex-end' },
+  sheetTitle: { ...type.bodyStrong, flex: 1, textAlign: 'center', color: colors.text },
+  sheetDone: { ...type.bodyStrong, color: colors.tint },
+  sheetContent: { paddingBottom: 40 },
   sectionHeader: {
     ...type.label,
     color: colors.subtext,
