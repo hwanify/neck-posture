@@ -53,8 +53,7 @@
           "balance",
           "office",
           "reading",
-          "focus",
-          "earbuds"
+          "focus"
         ],
         "releaseNotes": "First release.",
         "supportUrl": "https://hwanify.github.io/neck-posture/support/",
