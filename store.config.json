@@ -32,8 +32,8 @@
           "AirPods"
         ],
         "releaseNotes": "첫 출시입니다.",
-        "supportUrl": "https://hwanify.github.io/neck-posture/support/",
-        "privacyPolicyUrl": "https://hwanify.github.io/neck-posture/privacy/"
+        "supportUrl": "https://hwanify.github.io/neck-posture/docs/support/",
+        "privacyPolicyUrl": "https://hwanify.github.io/neck-posture/docs/privacy/"
       },
       "en-US": {
         "title": "Plumb - AirPods Head Tilt",
@@ -56,8 +56,8 @@
           "focus"
         ],
         "releaseNotes": "First release.",
-        "supportUrl": "https://hwanify.github.io/neck-posture/support/",
-        "privacyPolicyUrl": "https://hwanify.github.io/neck-posture/privacy/"
+        "supportUrl": "https://hwanify.github.io/neck-posture/docs/support/",
+        "privacyPolicyUrl": "https://hwanify.github.io/neck-posture/docs/privacy/"
       }
     },
     "advisory": {
