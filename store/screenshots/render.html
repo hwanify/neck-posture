@@ -81,7 +81,7 @@ const screens = {
       <div class="sh">${T.byday}</div>${T.days.map(d=>`<div class="r"><div><div>${d[0]}</div><div class="sub">${d[1]}</div></div><span>${d[2]}  ›</span></div>`).join('')}</div></div>`,
   4: () => cap(T.c4) + `<div class="phone">${sb}<div class="scr"><div class="title">${T.set}</div><div class="sh">${T.detect}</div>
       <div class="r"><span>${T.angle}</span><span class="v">−&nbsp;&nbsp;5°&nbsp;&nbsp;+</span></div><div class="r"><span>${T.holdt}</span><span class="v">−&nbsp;&nbsp;${T.sec(2)}&nbsp;&nbsp;+</span></div><div class="r"><span>${T.interval}</span><span class="v">−&nbsp;&nbsp;${T.sec(5)}&nbsp;&nbsp;+</span></div><div class="r"><span>${T.walk}</span><span class="tg"></span></div>
-      <div class="sh">${T.alertsH}</div><div class="r"><span>${T.sound}</span><span class="tg"></span></div><div class="r"><span>${T.vol}</span><span class="v">−&nbsp;&nbsp;60%&nbsp;&nbsp;+</span></div><div class="r"><span>${T.ear}</span><span class="seg"><b>${T.tilted}</b><span>${T.opposite}</span></span></div></div></div>`,
+      <div class="sh">${T.alertsH}</div><div class="r"><span>${T.sound}</span><span class="tg"></span></div><div class="r"><span>${T.vol}</span><span class="v">−&nbsp;&nbsp;100%&nbsp;&nbsp;+</span></div><div class="r"><span>${T.ear}</span><span class="seg"><b>${T.tilted}</b><span>${T.opposite}</span></span></div></div></div>`,
 };
 document.getElementById('root').innerHTML = screens[N]();
 </script></body></html>
