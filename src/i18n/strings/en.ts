@@ -171,6 +171,7 @@ export const en = {
   'settings.measurementFooter': 'Background measuring keeps the app awake with silent audio, which uses more battery.',
   'settings.backgroundMode': 'Measure in background',
   'settings.keepAwake': 'Keep screen on',
+  'settings.liveActivity': 'Show on Lock Screen',
   'settings.language': 'Language',
   'settings.languageSystem': 'System ({name})',
   'settings.info': 'About',
@@ -185,6 +186,7 @@ export const en = {
   'settings.demoOn': 'Demo mode on. Simulated head movement is used instead of AirPods.',
   'settings.demoOff': 'Demo mode off.',
 
+  'liveActivity.title': 'Measuring',
   'notification.titleLeft': 'Your head is tilted to the left',
   'notification.titleRight': 'Your head is tilted to the right',
   'notification.body': 'Tilted {deg}°. Straighten your head.',

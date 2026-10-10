@@ -170,6 +170,7 @@ export const ru: Strings = {
     'Для фонового измерения приложение работает с беззвучным аудио, что увеличивает расход аккумулятора.',
   'settings.backgroundMode': 'Измерять в фоне',
   'settings.keepAwake': 'Не выключать экран',
+  'settings.liveActivity': 'На экране блокировки',
   'settings.language': 'Язык',
   'settings.languageSystem': 'Системный ({name})',
   'settings.info': 'О приложении',
@@ -184,6 +185,7 @@ export const ru: Strings = {
   'settings.demoOn': 'Демо-режим включён. Вместо AirPods используются имитированные движения головы.',
   'settings.demoOff': 'Демо-режим выключен.',
 
+  'liveActivity.title': 'Идёт измерение',
   'notification.titleLeft': 'Голова наклонена влево',
   'notification.titleRight': 'Голова наклонена вправо',
   'notification.body': 'Наклон {deg}°. Выпрямите голову.',

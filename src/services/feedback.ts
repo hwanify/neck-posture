@@ -7,6 +7,16 @@ import type { PostureEvent } from '../engine';
 import { t } from '../i18n';
 import type { FeedbackSettings } from './storage';
 
+/**
+ * Every posture alert reuses this id, so iOS replaces the previous one instead of stacking a new
+ * notification on the Lock Screen each time; recovering (or ending the session) clears it.
+ */
+const ALERT_NOTIFICATION_ID = 'posture-alert';
+
+export async function clearAlertNotification(): Promise<void> {
+  await Notifications.dismissNotificationAsync(ALERT_NOTIFICATION_ID).catch(() => {});
+}
+
 Notifications.setNotificationHandler({
   // While the app is open the on-screen state and sound are enough.
   handleNotification: async () => ({
@@ -41,6 +51,7 @@ export async function deliverFeedback(event: PostureEvent, settings: FeedbackSet
     if (settings.notification && AppState.currentState !== 'active') {
       tasks.push(
         Notifications.scheduleNotificationAsync({
+          identifier: ALERT_NOTIFICATION_ID,
           content: {
             title: t(event.direction === 'left' ? 'notification.titleLeft' : 'notification.titleRight'),
             body: t('notification.body', { deg: Math.round(Math.abs(event.angle)) }),
@@ -50,8 +61,11 @@ export async function deliverFeedback(event: PostureEvent, settings: FeedbackSet
         }),
       );
     }
-  } else if (event.afterAlert && settings.recoveryChime && settings.sound && HeadphoneMotion) {
-    tasks.push(HeadphoneMotion.playCue('good', 0, settings.volume * 0.7));
+  } else {
+    tasks.push(clearAlertNotification());
+    if (event.afterAlert && settings.recoveryChime && settings.sound && HeadphoneMotion) {
+      tasks.push(HeadphoneMotion.playCue('good', 0, settings.volume * 0.7));
+    }
   }
 
   await Promise.allSettled(tasks);

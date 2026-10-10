@@ -19,7 +19,13 @@ import {
   type TiltDirection,
 } from '../engine';
 import { setLanguage, t } from '../i18n';
-import { deliverFeedback, requestNotificationPermission, setBackgroundKeepAlive } from '../services/feedback';
+import {
+  clearAlertNotification,
+  deliverFeedback,
+  requestNotificationPermission,
+  setBackgroundKeepAlive,
+} from '../services/feedback';
+import { endLiveActivity, startLiveActivity } from '../services/liveActivity';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
@@ -146,6 +152,8 @@ class MonitorController {
       authorization: this.source.getAuthorizationStatus(),
     });
 
+    // A card left behind by a run that was killed mid-session.
+    void endLiveActivity();
     AppState.addEventListener('change', this.handleAppState);
     if (onboarded) await this.startStreaming();
   }
@@ -191,6 +199,8 @@ class MonitorController {
     if (!this.state.onboarded) return;
     if (status === 'active') {
       this.set({ authorization: this.source.getAuthorizationStatus() });
+      // The user is looking at the app now; an alert left on the Lock Screen is stale.
+      void clearAlertNotification();
       void this.startStreaming();
     } else if (status === 'background') {
       // Without a session (or background mode) there is nothing to watch for — save battery.
@@ -427,6 +437,7 @@ class MonitorController {
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
     this.set({ session: { id, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
+    if (this.state.settings.feedback.liveActivity) void startLiveActivity(startedAt);
   }
 
   async endSession(): Promise<SessionSummary | null> {
@@ -437,6 +448,7 @@ class MonitorController {
     this.pendingCheck = null;
     this.needsRecheck = false;
     this.set({ session: null, checking: null });
+    await Promise.all([endLiveActivity(), clearAlertNotification()]);
     await this.releaseSessionResources();
 
     // Very short sessions aren't worth keeping.
@@ -459,12 +471,17 @@ class MonitorController {
   // MARK: - Settings
 
   async updateSettings(update: (settings: AppSettings) => AppSettings): Promise<void> {
-    const settings = update(this.state.settings);
+    const previous = this.state.settings;
+    const settings = update(previous);
     setLanguage(settings.language);
     this.engine.setSettings(settings.posture);
     this.set({ settings });
-    if (this.state.session) {
+    const session = this.state.session;
+    if (session) {
       await setBackgroundKeepAlive(settings.feedback.backgroundMode).catch(() => {});
+      if (settings.feedback.liveActivity !== previous.feedback.liveActivity) {
+        await (settings.feedback.liveActivity ? startLiveActivity(session.startedAt) : endLiveActivity());
+      }
     }
     await storage.saveSettings(settings);
   }

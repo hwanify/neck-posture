@@ -168,6 +168,7 @@ export const ja: Strings = {
     'バックグラウンド測定では無音のオーディオでAppを動作させ続けるため、バッテリーの消費が増えます。',
   'settings.backgroundMode': 'バックグラウンドで測定',
   'settings.keepAwake': '画面をオンのままにする',
+  'settings.liveActivity': 'ロック画面に表示',
   'settings.language': '言語',
   'settings.languageSystem': 'システム（{name}）',
   'settings.info': '情報',
@@ -182,6 +183,7 @@ export const ja: Strings = {
   'settings.demoOn': 'デモモードをオンにしました。AirPodsの代わりに仮想の頭の動きを使用します。',
   'settings.demoOff': 'デモモードをオフにしました。',
 
+  'liveActivity.title': '測定中',
   'notification.titleLeft': '頭が左に傾いています',
   'notification.titleRight': '頭が右に傾いています',
   'notification.body': '{deg}°傾いています。頭をまっすぐにしてください。',

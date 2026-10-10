@@ -191,6 +191,12 @@ export function SettingsScreen() {
           onChange={(backgroundMode) => setFeedback({ backgroundMode })}
         />
         <ToggleRow
+          icon="lock"
+          title={t('settings.liveActivity')}
+          value={feedback.liveActivity}
+          onChange={(liveActivity) => setFeedback({ liveActivity })}
+        />
+        <ToggleRow
           icon="sun"
           title={t('settings.keepAwake')}
           value={feedback.keepAwake}

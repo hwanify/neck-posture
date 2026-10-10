@@ -2,7 +2,7 @@
   "expo": {
     "name": "Plumb",
     "slug": "baromok",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -19,7 +19,8 @@
         "NSMotionUsageDescription": "Plumb uses your AirPods’ motion sensor to detect when your head tilts to one side.",
         "UIBackgroundModes": [
           "audio"
-        ]
+        ],
+        "NSSupportsLiveActivities": true
       }
     },
     "plugins": [
@@ -31,7 +32,8 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "extra": {
       "eas": {}

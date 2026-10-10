@@ -171,6 +171,7 @@ export const es: Strings = {
     'La medición en segundo plano mantiene la app activa con audio silencioso, lo que consume más batería.',
   'settings.backgroundMode': 'Medir en segundo plano',
   'settings.keepAwake': 'Pantalla siempre activa',
+  'settings.liveActivity': 'Mostrar en pantalla bloqueada',
   'settings.language': 'Idioma',
   'settings.languageSystem': 'Sistema ({name})',
   'settings.info': 'Información',
@@ -185,6 +186,7 @@ export const es: Strings = {
   'settings.demoOn': 'Modo demo activado. Se usa un movimiento de cabeza simulado en lugar de los AirPods.',
   'settings.demoOff': 'Modo demo desactivado.',
 
+  'liveActivity.title': 'Midiendo',
   'notification.titleLeft': 'Tienes la cabeza inclinada a la izquierda',
   'notification.titleRight': 'Tienes la cabeza inclinada a la derecha',
   'notification.body': 'Inclinación de {deg}°. Endereza la cabeza.',

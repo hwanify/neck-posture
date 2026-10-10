@@ -53,6 +53,10 @@ jobs:
           printf '%s\n' "$ASC_API_KEY_P8" > "$RUNNER_TEMP/asc_api_key.p8"
           echo "EXPO_ASC_API_KEY_PATH=$RUNNER_TEMP/asc_api_key.p8" >> "$GITHUB_ENV"
 
+      # The Live Activity widget target needs the team in the app config to sign the extension.
+      - name: Set Apple team
+        run: node -e "const f='app.json',c=require('./'+f);c.expo.ios.appleTeamId=process.env.EXPO_APPLE_TEAM_ID;require('fs').writeFileSync(f,JSON.stringify(c,null,2)+'\\n')"
+
       - name: Link EAS project
         run: |
           $EAS init --non-interactive --force

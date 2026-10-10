@@ -171,6 +171,7 @@ export const de: Strings = {
     'Die Messung im Hintergrund hält die App mit stillem Audio aktiv und verbraucht mehr Batterie.',
   'settings.backgroundMode': 'Im Hintergrund messen',
   'settings.keepAwake': 'Bildschirm anlassen',
+  'settings.liveActivity': 'Auf Sperrbildschirm zeigen',
   'settings.language': 'Sprache',
   'settings.languageSystem': 'System ({name})',
   'settings.info': 'Info',
@@ -185,6 +186,7 @@ export const de: Strings = {
   'settings.demoOn': 'Demomodus an. Statt der AirPods wird eine simulierte Kopfbewegung verwendet.',
   'settings.demoOff': 'Demomodus aus.',
 
+  'liveActivity.title': 'Misst',
   'notification.titleLeft': 'Dein Kopf ist nach links geneigt',
   'notification.titleRight': 'Dein Kopf ist nach rechts geneigt',
   'notification.body': 'Um {deg}° geneigt. Richte deinen Kopf auf.',

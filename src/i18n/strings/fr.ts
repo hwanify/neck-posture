@@ -173,6 +173,7 @@ export const fr: Strings = {
     'La mesure en arrière-plan maintient l’app active avec un son silencieux, ce qui consomme plus de batterie.',
   'settings.backgroundMode': 'Mesure en arrière-plan',
   'settings.keepAwake': 'Laisser l’écran allumé',
+  'settings.liveActivity': 'Afficher sur l’écran verrouillé',
   'settings.language': 'Langue',
   'settings.languageSystem': 'Système ({name})',
   'settings.info': 'Informations',
@@ -187,6 +188,7 @@ export const fr: Strings = {
   'settings.demoOn': 'Mode démo activé. Des mouvements de tête simulés remplacent les AirPods.',
   'settings.demoOff': 'Mode démo désactivé.',
 
+  'liveActivity.title': 'Mesure en cours',
   'notification.titleLeft': 'Votre tête penche vers la gauche',
   'notification.titleRight': 'Votre tête penche vers la droite',
   'notification.body': 'Inclinaison de {deg}°. Redressez la tête.',

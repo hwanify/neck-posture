@@ -165,6 +165,7 @@ export const ko: Strings = {
   'settings.measurementFooter': '백그라운드 측정은 무음 오디오로 앱을 깨워 두므로 배터리를 더 사용합니다.',
   'settings.backgroundMode': '백그라운드 측정',
   'settings.keepAwake': '화면 켜두기',
+  'settings.liveActivity': '잠금화면 표시',
   'settings.language': '언어',
   'settings.languageSystem': '시스템 설정 ({name})',
   'settings.info': '정보',
@@ -179,6 +180,7 @@ export const ko: Strings = {
   'settings.demoOn': '데모 모드를 켰어요. AirPods 대신 가상의 고개 움직임을 사용합니다.',
   'settings.demoOff': '데모 모드를 껐어요.',
 
+  'liveActivity.title': '측정 중',
   'notification.titleLeft': '고개가 왼쪽으로 기울었어요',
   'notification.titleRight': '고개가 오른쪽으로 기울었어요',
   'notification.body': '{deg}° 기울어진 상태예요. 고개를 바로 세워주세요.',

@@ -168,6 +168,7 @@ export const hi: Strings = {
     'बैकग्राउंड मापन ऐप को साइलेंट ऑडियो से चालू रखता है, जिससे बैटरी ज़्यादा ख़र्च होती है।',
   'settings.backgroundMode': 'बैकग्राउंड में मापें',
   'settings.keepAwake': 'स्क्रीन चालू रखें',
+  'settings.liveActivity': 'लॉक स्क्रीन पर दिखाएं',
   'settings.language': 'भाषा',
   'settings.languageSystem': 'सिस्टम ({name})',
   'settings.info': 'परिचय',
@@ -182,6 +183,7 @@ export const hi: Strings = {
   'settings.demoOn': 'डेमो मोड चालू है। AirPods की जगह नकली सिर की हलचल इस्तेमाल होगी।',
   'settings.demoOff': 'डेमो मोड बंद है।',
 
+  'liveActivity.title': 'माप जारी है',
   'notification.titleLeft': 'आपका सिर बाईं ओर झुका है',
   'notification.titleRight': 'आपका सिर दाईं ओर झुका है',
   'notification.body': '{deg}° झुका है। सिर सीधा करें।',

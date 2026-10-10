@@ -163,6 +163,7 @@ export const zhHans: Strings = {
   'settings.measurementFooter': '后台测量会通过静音音频保持 App 运行，因此耗电更多。',
   'settings.backgroundMode': '后台测量',
   'settings.keepAwake': '保持屏幕常亮',
+  'settings.liveActivity': '在锁定屏幕上显示',
   'settings.language': '语言',
   'settings.languageSystem': '跟随系统（{name}）',
   'settings.info': '关于',
@@ -177,6 +178,7 @@ export const zhHans: Strings = {
   'settings.demoOn': '已开启演示模式，将使用模拟的头部动作代替 AirPods。',
   'settings.demoOff': '已关闭演示模式。',
 
+  'liveActivity.title': '测量中',
   'notification.titleLeft': '头部向左倾斜',
   'notification.titleRight': '头部向右倾斜',
   'notification.body': '已倾斜 {deg}°，请把头摆正。',
