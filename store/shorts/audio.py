@@ -1,10 +1,13 @@
-"""Soundtrack for short1: the app's alert cue in the right ear at 5.2 s, recovery chime at 8.2 s,
-a quiet pad underneath. Mirrors CuePlayer.swift's tones."""
+"""Soundtrack for the shorts: the app's alert cue in the right ear, a recovery chime, an end chime,
+a quiet pad underneath. Mirrors CuePlayer.swift's tones.
+
+usage: audio.py out.wav [duration alert_at good_at end_at]   (defaults: short1)"""
 import sys, wave
 import numpy as np
 
 SR = 48000
-DUR = 15.0
+ARGS = [float(x) for x in sys.argv[2:6]] or [15.0, 5.2, 8.25, 12.75]
+DUR, ALERT_AT, GOOD_AT, END_AT = ARGS
 out = np.zeros((int(SR * DUR), 2))
 
 def tone(notes, amp):
@@ -27,9 +30,9 @@ def place(sig, at, pan):  # pan -1 left .. 1 right
 
 alert = tone([(880, 0.11), (0, 0.06), (660, 0.16)], 0.55)
 good = tone([(660, 0.09), (990, 0.13)], 0.4)
-place(alert, 5.2, 0.85)
-place(good, 8.25, 0)
-place(tone([(660, 0.09), (990, 0.18)], 0.3), 12.75, 0)
+place(alert, ALERT_AT, 0.85)
+place(good, GOOD_AT, 0)
+place(tone([(660, 0.09), (990, 0.18)], 0.3), END_AT, 0)
 
 # Soft pad (A2 + E3) with slow fades.
 t = np.arange(len(out)) / SR
