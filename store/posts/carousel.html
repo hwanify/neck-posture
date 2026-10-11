@@ -1,0 +1,142 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Instagram/Threads carousel, 1080×1350 (rendered at 540×675 × 2). ?s=1..7 picks the slide. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 675px; background: #000; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
+.slide { position: absolute; inset: 0; display: none; }
+.slide.on { display: block; }
+.h { position: absolute; left: 44px; right: 44px; font-weight: 600; font-size: 38px; line-height: 1.28; letter-spacing: -1.6px; }
+.b { position: absolute; left: 44px; right: 44px; font-size: 18px; line-height: 1.55; color: #8E8E8E; letter-spacing: -0.4px; }
+.page { position: absolute; right: 30px; bottom: 26px; font-size: 13px; color: #555; letter-spacing: 0.5px; }
+.brand { position: absolute; left: 44px; bottom: 26px; font-size: 13px; color: #555; font-weight: 500; }
+/* Photo slides */
+.photo { position: absolute; inset: 0; background: #111 center / cover no-repeat; }
+.photo.missing { background: repeating-linear-gradient(45deg, #111 0 14px, #161616 14px 28px); }
+.photo.missing::after { content: attr(data-hint); position: absolute; top: 46%; left: 0; right: 0; text-align: center; color: #555; font-size: 15px; }
+.shade { position: absolute; left: 0; right: 0; bottom: 0; height: 330px; background: linear-gradient(transparent, rgba(0,0,0,.88) 55%); }
+/* Level line */
+.level { position: absolute; left: 50%; width: 380px; height: 14px; margin-left: -190px; }
+.level .hz { position: absolute; left: 0; right: 0; top: 6px; height: 1.5px; background: #3A3A3A; }
+.level .ln { position: absolute; left: 50%; top: 5px; width: 300px; margin-left: -150px; height: 3.5px; border-radius: 2px; background: #F2F2F2; }
+.level .dot { position: absolute; left: 50%; top: 0; width: 14px; height: 14px; margin-left: -7px; border-radius: 7px; background: #F2F2F2; }
+.num { position: absolute; left: 0; right: 0; text-align: center; font-weight: 500; font-size: 64px; letter-spacing: -2px; }
+/* Bias bar */
+.bias { position: absolute; left: 44px; right: 44px; }
+.bias .lb { display: flex; justify-content: space-between; font-size: 17px; color: #8E8E8E; margin-bottom: 12px; }
+.bias .lb b { color: #F2F2F2; font-weight: 600; }
+.bias .tr { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 3px; }
+/* Phone */
+.phone { position: absolute; left: 50%; width: 236px; margin-left: -118px; border-radius: 30px; border: 1.5px solid #333; overflow: hidden; }
+.phone img { width: 100%; display: block; }
+/* App Store screenshot cropped to just its phone frame */
+.shot { position: absolute; left: 50%; width: 300px; margin-left: -150px; bottom: 0; overflow: hidden; }
+.shot img { width: 356px; margin-left: -28px; margin-top: -191px; display: block; }
+.ring { position: absolute; border: 2px solid #F2F2F2; border-radius: 50%; }
+.ear { position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 1.5px solid #333; }
+.list { position: absolute; left: 44px; right: 44px; }
+.list div { font-size: 26px; font-weight: 500; letter-spacing: -0.8px; padding: 20px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
+.list span { color: #8E8E8E; font-weight: 400; font-size: 18px; align-self: center; }
+.icon { width: 132px; height: 132px; border-radius: 30px; border: 1.5px solid #3a3a3a; display: block; margin: 0 auto; }
+.cta { display: inline-block; padding: 15px 32px; border-radius: 30px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 19px; letter-spacing: -0.4px; }
+</style></head>
+<body>
+
+<!-- 1. Hook on a photo -->
+<section class="slide" id="s1">
+  <div class="photo" data-src="photos/p1.jpg" data-hint="사진 1: 친구들 단체사진 (한 명만 고개 기울어짐)"></div>
+  <div class="shade"></div>
+  <div class="h" style="bottom:118px">사진마다<br>내 고개만 기울어 있었다</div>
+  <div class="b" style="bottom:64px;color:#BDBDBD">나만 몰랐던 습관 →</div>
+</section>
+
+<!-- 2. Not just turtle neck -->
+<section class="slide" id="s2">
+  <div class="h" style="top:88px">거북목만<br>문제가 아니에요</div>
+  <div class="b" style="top:200px">고개가 한쪽으로 기우는 습관은<br>스스로는 거의 알아차리지 못해요.</div>
+  <div class="level" style="top:410px"><div class="hz"></div><div class="ln" style="transform:rotate(9deg)"></div><div class="dot"></div></div>
+  <div class="num" style="top:460px">9°</div>
+  <div class="brand">Plumb</div><div class="page">2 / 7</div>
+</section>
+
+<!-- 3. Own record -->
+<section class="slide" id="s3">
+  <div class="h" style="top:88px">재보니<br>오른쪽으로 쏠려 있었어요</div>
+  <div class="b" style="top:200px">일주일 동안 고개가 기울어 있던 시간</div>
+  <div class="bias" style="top:330px">
+    <div class="lb"><span>왼쪽 <b id="lp">22%</b></span><span>오른쪽 <b id="rp">78%</b></span></div>
+    <div class="tr"><div id="lbar" style="flex:22;background:#4A4A4A"></div><div id="rbar" style="flex:78;background:#F2F2F2"></div></div>
+  </div>
+  <div class="b" style="top:430px;font-size:15px;color:#555" id="note">* Plumb 기록 탭의 좌우 쏠림</div>
+  <div class="brand">Plumb</div><div class="page">3 / 7</div>
+</section>
+
+<!-- 4. AirPods measure -->
+<section class="slide" id="s4">
+  <div class="h" style="top:70px">끼고 있던 에어팟이<br>각도를 재요</div>
+  <div class="b" style="top:182px">카메라 없이 에어팟 모션 센서로</div>
+  <div class="shot" style="top:250px"><img src="../screenshots/ko-1.png"></div>
+  <div class="brand">Plumb</div><div class="page">4 / 7</div>
+</section>
+
+<!-- 5. Ding -->
+<section class="slide" id="s5">
+  <div class="h" style="top:88px">기울어진 쪽 귀에서<br>"띵"</div>
+  <div class="b" style="top:200px">2초 넘게 기울어 있으면 그쪽 귀로 알려줘요.<br>고개를 세우면 조용해져요.</div>
+  <div class="ear" style="left:330px;top:370px"></div>
+  <div class="ring" style="left:355px;top:395px;width:100px;height:100px;opacity:.9"></div>
+  <div class="ring" style="left:325px;top:365px;width:160px;height:160px;opacity:.45"></div>
+  <div class="ring" style="left:295px;top:335px;width:220px;height:220px;opacity:.18"></div>
+  <div class="level" style="top:440px;left:200px"><div class="hz"></div><div class="ln" style="transform:rotate(12deg)"></div><div class="dot"></div></div>
+  <div class="brand">Plumb</div><div class="page">5 / 7</div>
+</section>
+
+<!-- 6. Facts -->
+<section class="slide" id="s6">
+  <div class="h" style="top:88px">걸을 때도,<br>화면을 꺼도</div>
+  <div class="list" style="top:236px">
+    <div>카메라 <span>사용 안 함</span></div>
+    <div>데이터 수집 <span>없음 · 기기에만 저장</span></div>
+    <div>화면 꺼짐 <span>계속 측정</span></div>
+    <div>가격 <span>무료</span></div>
+  </div>
+  <div class="brand">Plumb</div><div class="page">6 / 7</div>
+</section>
+
+<!-- 7. End -->
+<section class="slide" id="s7">
+  <div style="position:absolute;left:0;right:0;top:150px;text-align:center">
+    <img class="icon" src="../../assets/icon.png">
+    <div style="font-weight:600;font-size:54px;letter-spacing:-2px;margin-top:30px">Plumb</div>
+    <div style="font-size:19px;color:#8E8E8E;margin-top:10px;letter-spacing:-0.4px">에어팟이 고개 기울기를 알려줘요</div>
+    <div style="margin-top:44px"><span class="cta">App Store에서 "Plumb" 검색</span></div>
+    <div style="font-size:15px;color:#555;margin-top:22px">iPhone · AirPods Pro · Max · 3세대 이상 · 무료</div>
+  </div>
+  <div class="page">7 / 7</div>
+</section>
+
+<script>
+const q = new URLSearchParams(location.search);
+const s = q.get('s') || '1';
+document.getElementById('s' + s).classList.add('on');
+// Real record numbers can be passed in: ?s=3&right=78
+if (q.get('right')) {
+  const r = +q.get('right');
+  document.getElementById('rp').textContent = r + '%';
+  document.getElementById('lp').textContent = (100 - r) + '%';
+  document.getElementById('rbar').style.flex = r;
+  document.getElementById('lbar').style.flex = 100 - r;
+}
+// Photo slots: show the photo when the file exists, otherwise a placeholder.
+document.querySelectorAll('.photo').forEach((el) => {
+  const img = new Image();
+  img.onload = () => { el.style.backgroundImage = `url(${el.dataset.src})`; document.body.dataset.ready = '1'; };
+  img.onerror = () => { el.classList.add('missing'); document.body.dataset.ready = '1'; };
+  img.src = el.dataset.src;
+});
+if (!document.querySelector('.slide.on .photo')) document.body.dataset.ready = '1';
+</script>
+</body></html>
