@@ -124,6 +124,8 @@ html, body { margin: 0; width: 540px; height: 675px; background: #000; overflow:
 const q = new URLSearchParams(location.search);
 const s = q.get('s') || '1';
 document.getElementById('s' + s).classList.add('on');
+// ?clean=1 hides the text on photo slides (just the photo and the circle).
+if (q.get('clean')) document.querySelectorAll('.slide .h, .slide .b, .slide .shade').forEach((e) => e.remove());
 // Real record numbers can be passed in: ?s=3&right=78
 if (q.get('right')) {
   const r = +q.get('right');
