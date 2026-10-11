@@ -17,6 +17,7 @@ html, body { margin: 0; width: 540px; height: 675px; background: #000; overflow:
 .photo { position: absolute; inset: 0; background: #111 center / cover no-repeat; }
 .photo.missing { background: repeating-linear-gradient(45deg, #111 0 14px, #161616 14px 28px); }
 .photo.missing::after { content: attr(data-hint); position: absolute; top: 46%; left: 0; right: 0; text-align: center; color: #555; font-size: 15px; }
+.mark { position: absolute; width: 120px; height: 132px; border: 2px solid rgba(255,255,255,.9); border-radius: 50%; }
 .shade { position: absolute; left: 0; right: 0; bottom: 0; height: 330px; background: linear-gradient(transparent, rgba(0,0,0,.88) 55%); }
 /* Level line */
 .level { position: absolute; left: 50%; width: 380px; height: 14px; margin-left: -190px; }
@@ -49,6 +50,7 @@ html, body { margin: 0; width: 540px; height: 675px; background: #000; overflow:
 <section class="slide" id="s1">
   <div class="photo" data-src="photos/p1.jpg" data-hint="사진 1: 친구들 단체사진 (한 명만 고개 기울어짐)"></div>
   <div class="shade"></div>
+  <div class="mark" style="left:266px;top:200px"></div>
   <div class="h" style="bottom:118px">사진마다<br>내 고개만 기울어 있었다</div>
   <div class="b" style="bottom:64px;color:#BDBDBD">나만 몰랐던 습관 →</div>
 </section>
