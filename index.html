@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
+<title>Plumb · AirPods head tilt alerts</title>
+<meta name="description" content="Plumb uses the motion sensor in your AirPods to notice when your head leans to one side, and plays a soft cue in that ear.">
+<meta property="og:title" content="Plumb · AirPods head tilt alerts">
+<meta property="og:description" content="Lean too long, hear it in that ear. No camera, nothing collected, free.">
+<meta property="og:image" content="https://hwanify.github.io/neck-posture/store/product-page/search-mark.png">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #000; --text: #f2f2f2; --sub: #8e8e8e; --dim: #4a4a4a; --line: #1f1f1f; --card: #0b0b0b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Hiragino Sans", "PingFang SC", "Segoe UI", "Noto Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :lang(ko) { word-break: keep-all; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  header { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.72); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -.3px; text-decoration: none; }
+  .brand img { width: 28px; height: 28px; border-radius: 7px; border: 1px solid #2a2a2a; }
+  select { appearance: none; -webkit-appearance: none; background: transparent; color: var(--sub); border: 1px solid #2a2a2a; border-radius: 999px; padding: 6px 30px 6px 14px; font: inherit; font-size: 14px; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--sub) 50%), linear-gradient(135deg, var(--sub) 50%, transparent 50%);
+    background-position: right 15px top 50%, right 10px top 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+  select:focus-visible, .cta:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+  /* Hero */
+  .hero { text-align: center; padding-top: 72px; padding-bottom: 56px; }
+  .level { position: relative; width: min(340px, 80vw); height: 120px; margin: 0 auto 28px; }
+  .level .hz { position: absolute; left: 0; right: 0; top: 59px; height: 1.5px; background: #333; }
+  .level .ln { position: absolute; left: 12%; right: 12%; top: 58px; height: 3.5px; border-radius: 2px; background: var(--text); animation: tilt 7s ease-in-out infinite; }
+  .level .dot { position: absolute; left: 50%; top: 53px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--text); }
+  .level .ring { position: absolute; right: -6px; top: 59px; width: 0; height: 0; border-radius: 50%; border: 2px solid var(--text); opacity: 0; transform: translate(50%, -50%); animation: ring 7s ease-out infinite; }
+  .level .ring.r2 { animation-delay: .3s; }
+  @keyframes tilt { 0%, 8% { transform: rotate(0deg); } 45%, 62% { transform: rotate(11deg); } 74%, 100% { transform: rotate(0deg); } }
+  @keyframes ring { 0%, 46% { width: 0; height: 0; opacity: 0; } 47% { width: 12px; height: 12px; opacity: .9; } 62% { width: 110px; height: 110px; opacity: 0; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .level .ln { animation: none; transform: rotate(6deg); } .level .ring { display: none; } }
+  h1 { font-size: clamp(36px, 7vw, 64px); line-height: 1.12; letter-spacing: -.035em; font-weight: 600; margin: 0 0 18px; }
+  .lead { max-width: 560px; margin: 0 auto 32px; color: #bdbdbd; font-size: clamp(17px, 2.2vw, 20px); }
+  .cta { display: inline-flex; align-items: center; gap: 10px; padding: 15px 28px; border-radius: 999px; background: var(--text); color: #000; font-weight: 600; text-decoration: none; letter-spacing: -.2px; }
+  .cta svg { width: 18px; height: 18px; }
+  .cta.soon { background: transparent; color: var(--text); border: 1px solid #3a3a3a; cursor: default; }
+  .meta { margin-top: 16px; color: var(--sub); font-size: 14px; }
+
+  section { padding: 72px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -.025em; line-height: 1.2; font-weight: 600; margin: 0 0 14px; }
+  .muted { color: var(--sub); }
+
+  /* Story */
+  .story { max-width: 640px; }
+  .story p { color: #c8c8c8; font-size: 19px; margin: 0; }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 26px 22px; }
+  .step .n { color: var(--sub); font-size: 13px; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+  .step svg { display: block; width: 64px; height: 40px; margin: 14px 0 16px; }
+  .step h3 { font-size: 19px; letter-spacing: -.3px; margin: 0 0 6px; font-weight: 600; }
+  .step p { margin: 0; color: var(--sub); font-size: 15px; }
+
+  /* Screens */
+  .shots { display: flex; justify-content: safe center; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 28px 20px 8px; margin: 0 -20px; scrollbar-width: none; }
+  .shots::-webkit-scrollbar { display: none; }
+  .shots img { flex: 0 0 auto; width: min(240px, 62vw); aspect-ratio: 1320 / 2868; border-radius: 22px; border: 1px solid #222; scroll-snap-align: center; background: #0b0b0b; }
+
+  /* Features */
+  .feats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 40px; margin-top: 20px; }
+  .feat { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .feat h3 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+  .feat p { margin: 0; color: var(--sub); font-size: 15px; }
+
+  /* FAQ */
+  details { border-bottom: 1px solid var(--line); padding: 18px 0; }
+  summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--sub); font-weight: 400; }
+  details[open] summary::after { content: "–"; }
+  details p { margin: 10px 0 0; color: var(--sub); font-size: 15px; }
+
+  .final { text-align: center; }
+  .final img { width: 88px; height: 88px; border-radius: 20px; border: 1px solid #2a2a2a; margin-bottom: 18px; }
+
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--sub); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; }
+  footer nav { display: flex; gap: 20px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 760px) {
+    .hero { padding-top: 48px; padding-bottom: 40px; }
+    section { padding: 56px 0; }
+    .steps { grid-template-columns: 1fr; }
+    .feats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Plumb</a>
+    <select id="lang" aria-label="Language"></select>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="level" aria-hidden="true"><div class="hz"></div><div class="ln"></div><div class="dot"></div><div class="ring"></div><div class="ring r2"></div></div>
+    <h1 data-i="heroTitle"></h1>
+    <p class="lead" data-i="heroLead"></p>
+    <a class="cta" data-cta></a>
+    <div class="meta" data-i="meta"></div>
+  </div>
+
+  <section>
+    <div class="wrap"><div class="story">
+      <h2 data-i="storyTitle"></h2>
+      <p data-i="storyBody"></p>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-i="howTitle"></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="n">01</div>
+          <svg viewBox="0 0 64 40" aria-hidden="true"><line x1="4" y1="20" x2="60" y2="20" stroke="#333" stroke-width="1.5"/><line x1="10" y1="20" x2="54" y2="20" stroke="#f2f2f2" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="20" r="4" fill="#f2f2f2"/></svg>
+          <h3 data-i="s1t"></h3><p data-i="s1p"></p>
+        </div>
+        <div class="step">
+          <div class="n">02</div>
+          <svg viewBox="0 0 72 40" style="width:72px" aria-hidden="true"><line x1="4" y1="20" x2="60" y2="20" stroke="#333" stroke-width="1.5"/><line x1="11" y1="15" x2="53" y2="25" stroke="#f2f2f2" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="20" r="4" fill="#f2f2f2"/><circle cx="58" cy="26" r="7" fill="none" stroke="#f2f2f2" stroke-width="1.5" opacity=".6"/></svg>
+          <h3 data-i="s2t"></h3><p data-i="s2p"></p>
+        </div>
+        <div class="step">
+          <div class="n">03</div>
+          <svg viewBox="0 0 64 40" aria-hidden="true"><line x1="4" y1="20" x2="60" y2="20" stroke="#333" stroke-width="1.5"/><line x1="10" y1="20" x2="54" y2="20" stroke="#f2f2f2" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="20" r="4" fill="#f2f2f2"/><path d="M27 31 l3.5 3.5 l7 -7" fill="none" stroke="#8e8e8e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3 data-i="s3t"></h3><p data-i="s3p"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-i="shotsTitle"></h2>
+      <div class="shots" id="shots"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-i="featsTitle"></h2>
+      <div class="feats">
+        <div class="feat"><h3 data-i="f1t"></h3><p data-i="f1p"></p></div>
+        <div class="feat"><h3 data-i="f2t"></h3><p data-i="f2p"></p></div>
+        <div class="feat"><h3 data-i="f3t"></h3><p data-i="f3p"></p></div>
+        <div class="feat"><h3 data-i="f4t"></h3><p data-i="f4p"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-i="faqTitle"></h2>
+      <details><summary data-i="q1"></summary><p data-i="a1"></p></details>
+      <details><summary data-i="q2"></summary><p data-i="a2"></p></details>
+      <details><summary data-i="q3"></summary><p data-i="a3"></p></details>
+      <details><summary data-i="q4"></summary><p data-i="a4"></p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <img src="assets/icon.png" alt="Plumb">
+      <h2 data-i="finalTitle"></h2>
+      <p class="muted" data-i="meta" style="margin:0 0 26px"></p>
+      <a class="cta" data-cta></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Plumb</span>
+    <nav><a data-i="privacy" data-href="privacy"></a><a data-i="support" data-href="support"></a></nav>
+  </div>
+</footer>
+
+<script>
+// Set this to the App Store link once the app is live; until then the button reads "coming soon".
+const APP_STORE_URL = '';
+
+const L = {
+  en: {
+    name: 'English',
+    title: 'Plumb · AirPods head tilt alerts',
+    heroTitle: 'Lean too long,<br>hear it in that ear.',
+    heroLead: 'Plumb uses the motion sensor in your AirPods to notice when your head drifts to one side, and plays a soft cue in the ear you’re leaning toward.',
+    soon: 'Coming soon to the App Store', get: 'Download on the App Store',
+    meta: 'Free · iPhone + AirPods',
+    storyTitle: 'Made for my own habit',
+    storyBody: 'I kept tilting my head to the right without noticing. Every photo showed it. Posture apps only watch forward and back, so I built one that watches side to side.',
+    howTitle: 'How it works',
+    s1t: 'Put in your AirPods', s1p: 'Hold still for 3 seconds. Plumb learns how your AirPods sit today.',
+    s2t: 'Lean, hear a cue', s2p: 'Tilted past your angle for 2 seconds? A soft sound plays in the ear you’re leaning toward.',
+    s3t: 'Straighten up', s3p: 'Back to level and it goes quiet. Your history shows which side you lean to.',
+    shotsTitle: 'Inside the app',
+    featsTitle: 'Quiet by design',
+    f1t: 'No camera', f1p: 'Only the motion sensor already in your AirPods.',
+    f2t: 'Nothing collected', f2p: 'No account, no tracking. Your history stays on your iPhone.',
+    f3t: 'Keeps measuring with the screen off', f3p: 'Lock your phone and keep working. The Lock Screen shows it’s running.',
+    f4t: 'Works while you walk', f4p: 'Big movements pause the check instead of setting off false alarms.',
+    faqTitle: 'Questions',
+    q1: 'Which AirPods work?', a1: 'AirPods with head tracking: AirPods Pro, AirPods Max and AirPods (3rd generation) or later. Some Beats models with head tracking work too.',
+    q2: 'Does it work for forward head posture?', a2: 'Plumb measures sideways tilt, left and right. Nodding forward or back is separated out during setup so it doesn’t count as a tilt.',
+    q3: 'Can I listen to music at the same time?', a3: 'Yes. The cue plays softly over whatever you’re listening to.',
+    q4: 'How much does it cost?', a4: 'It’s free, with no ads and no in-app purchases.',
+    finalTitle: 'Straighten up, without thinking about it.',
+    privacy: 'Privacy', support: 'Support',
+  },
+  ko: {
+    name: '한국어',
+    title: 'Plumb · 에어팟 고개 기울기 알림',
+    heroTitle: '고개가 기울면,<br>그쪽 귀로 알려드려요',
+    heroLead: 'Plumb은 에어팟의 움직임 센서로 고개가 한쪽으로 기우는 걸 알아채고, 기울어진 쪽 귀에서 작은 소리로 알려줘요.',
+    soon: '곧 App Store 출시', get: 'App Store에서 받기',
+    meta: '무료 · iPhone + AirPods',
+    storyTitle: '제 습관 때문에 만들었어요',
+    storyBody: '저는 저도 모르게 고개를 오른쪽으로 꺾고 다녔어요. 사진마다 그게 보였죠. 자세 앱은 대부분 앞뒤(거북목)만 봐서, 좌우 기울기를 잡아주는 앱을 직접 만들었어요.',
+    howTitle: '이렇게 작동해요',
+    s1t: '에어팟을 끼세요', s1p: '3초만 가만히 있으면 오늘 에어팟이 놓인 각도를 기준으로 잡아요.',
+    s2t: '기울면 "띵"', s2p: '정한 각도보다 2초 넘게 기울어 있으면, 기울어진 쪽 귀에서 소리가 나요.',
+    s3t: '세우면 조용해져요', s3p: '고개를 바로 하면 멈춰요. 기록에서 어느 쪽으로 쏠리는지 볼 수 있어요.',
+    shotsTitle: '앱 화면',
+    featsTitle: '조용하게, 필요할 때만',
+    f1t: '카메라 없음', f1p: '에어팟에 이미 있는 움직임 센서만 써요.',
+    f2t: '수집하는 데이터 없음', f2p: '계정도 추적도 없어요. 기록은 내 iPhone에만 저장돼요.',
+    f3t: '화면을 꺼도 계속 측정', f3p: '폰을 잠그고 하던 일을 하세요. 잠금화면에 측정 중이라고 표시돼요.',
+    f4t: '걸을 때도', f4p: '큰 움직임이 있으면 잘못된 알림 대신 잠깐 판정을 멈춰요.',
+    faqTitle: '자주 묻는 질문',
+    q1: '어떤 에어팟이 되나요?', a1: '헤드 트래킹을 지원하는 에어팟이면 돼요. AirPods Pro, AirPods Max, AirPods(3세대 이상). 헤드 트래킹을 지원하는 일부 Beats 모델도 돼요.',
+    q2: '거북목도 잡아주나요?', a2: 'Plumb은 좌우 기울기를 재요. 처음 설정할 때 앞뒤 끄덕임을 따로 분리해서, 숙이거나 젖혀도 기울기로 잡히지 않아요.',
+    q3: '음악을 들으면서 써도 되나요?', a3: '네. 듣고 있는 음악 위로 작은 소리가 겹쳐서 나요.',
+    q4: '가격은요?', a4: '무료예요. 광고도, 인앱 결제도 없어요.',
+    finalTitle: '신경 쓰지 않아도, 바르게.',
+    privacy: '개인정보 처리방침', support: '지원',
+  },
+  'zh-Hans': {
+    name: '简体中文',
+    title: 'Plumb · AirPods 歪头提醒',
+    heroTitle: '头歪久了，<br>那只耳朵会提醒你',
+    heroLead: 'Plumb 利用 AirPods 中的运动传感器，察觉你的头偏向一侧，并在你倾斜的那只耳朵里轻轻提示。',
+    soon: '即将登陆 App Store', get: '在 App Store 下载',
+    meta: '免费 · iPhone + AirPods',
+    storyTitle: '为我自己的习惯而做',
+    storyBody: '我总是不自觉地把头歪向右边，每张照片里都看得出来。姿势类应用大多只看前后，所以我做了一个能看左右的。',
+    howTitle: '使用方式',
+    s1t: '戴上 AirPods', s1p: '保持静止 3 秒，Plumb 会记住 AirPods 今天的佩戴角度。',
+    s2t: '歪头时会听到提示', s2p: '超过设定角度 2 秒后，倾斜一侧的耳机会响起轻柔的声音。',
+    s3t: '把头摆正', s3p: '回正后提示就会停止。记录会告诉你更常偏向哪一侧。',
+    shotsTitle: '应用界面',
+    featsTitle: '安静，只在需要时出现',
+    f1t: '不用摄像头', f1p: '只使用 AirPods 自带的运动传感器。',
+    f2t: '不收集任何数据', f2p: '无需账号，没有追踪。记录只保存在你的 iPhone 上。',
+    f3t: '锁屏也能继续测量', f3p: '锁上手机继续工作，锁定屏幕会显示正在测量。',
+    f4t: '走路时也能用', f4p: '动作幅度较大时会暂停判断，避免误报。',
+    faqTitle: '常见问题',
+    q1: '支持哪些 AirPods？', a1: '支持头部追踪的 AirPods：AirPods Pro、AirPods Max、AirPods（第三代）及更新机型。部分支持头部追踪的 Beats 也可以。',
+    q2: '能检测头部前倾吗？', a2: 'Plumb 测量的是左右倾斜。设置时会单独分离前后点头的动作，所以低头或仰头不会被算作倾斜。',
+    q3: '可以边听音乐边用吗？', a3: '可以。提示音会轻轻叠加在你正在听的内容上。',
+    q4: '需要付费吗？', a4: '免费，没有广告，也没有应用内购买。',
+    finalTitle: '不用刻意，也能坐正。',
+    privacy: '隐私政策', support: '支持',
+  },
+  ja: {
+    name: '日本語',
+    title: 'Plumb · AirPods 首の傾きアラート',
+    heroTitle: '首が傾いたら、<br>その耳でお知らせ',
+    heroLead: 'Plumb は AirPods のモーションセンサーで頭が片側に傾いたことに気づき、傾いた側の耳に小さな音でお知らせします。',
+    soon: 'まもなく App Store で公開', get: 'App Store でダウンロード',
+    meta: '無料 · iPhone + AirPods',
+    storyTitle: '自分のクセのために作りました',
+    storyBody: '気づかないうちに、いつも頭を右に傾けていました。写真を見るとどれもそう。姿勢アプリは前後しか見ないものが多いので、左右を見るアプリを自分で作りました。',
+    howTitle: '使い方',
+    s1t: 'AirPods をつける', s1p: '3秒じっとしているだけで、今日の AirPods のつけ方を基準にします。',
+    s2t: '傾くと「ポン」', s2p: '設定した角度を超えて2秒たつと、傾いた側の耳で音が鳴ります。',
+    s3t: 'まっすぐに戻す', s3p: '戻すと静かになります。履歴でどちらに傾きやすいかが分かります。',
+    shotsTitle: 'アプリの画面',
+    featsTitle: '静かに、必要なときだけ',
+    f1t: 'カメラ不要', f1p: 'AirPods にもともとあるモーションセンサーだけを使います。',
+    f2t: 'データを収集しません', f2p: 'アカウントもトラッキングもなし。履歴は iPhone の中だけに保存されます。',
+    f3t: '画面を消しても計測', f3p: 'iPhone をロックしたまま作業できます。ロック画面に計測中と表示されます。',
+    f4t: '歩きながらでも', f4p: '大きな動きのときは誤報の代わりに判定を一時停止します。',
+    faqTitle: 'よくある質問',
+    q1: '対応する AirPods は？', a1: 'ヘッドトラッキング対応の AirPods：AirPods Pro、AirPods Max、AirPods（第3世代）以降。ヘッドトラッキング対応の一部の Beats も使えます。',
+    q2: 'ストレートネック（前傾）も分かりますか？', a2: 'Plumb は左右の傾きを測ります。設定時に前後のうなずきを分けて扱うので、うつむいたり見上げたりしても傾きとは判定しません。',
+    q3: '音楽を聴きながら使えますか？', a3: 'はい。聴いている音に重ねて小さく鳴ります。',
+    q4: '料金は？', a4: '無料です。広告もアプリ内課金もありません。',
+    finalTitle: '意識しなくても、まっすぐ。',
+    privacy: 'プライバシーポリシー', support: 'サポート',
+  },
+  es: {
+    name: 'Español',
+    title: 'Plumb · Alertas de inclinación de cabeza con AirPods',
+    heroTitle: 'Si inclinas la cabeza,<br>lo oyes en ese oído.',
+    heroLead: 'Plumb usa el sensor de movimiento de tus AirPods para notar cuándo tu cabeza se inclina hacia un lado y reproduce un aviso suave en el oído hacia el que te inclinas.',
+    soon: 'Muy pronto en el App Store', get: 'Descargar en el App Store',
+    meta: 'Gratis · iPhone + AirPods',
+    storyTitle: 'Hecha para mi propio hábito',
+    storyBody: 'Inclinaba la cabeza hacia la derecha sin darme cuenta; se veía en todas mis fotos. Las apps de postura solo miran adelante y atrás, así que hice una que mira de lado a lado.',
+    howTitle: 'Cómo funciona',
+    s1t: 'Ponte los AirPods', s1p: 'Quédate quieto 3 segundos. Plumb aprende cómo llevas hoy los AirPods.',
+    s2t: 'Si te inclinas, suena', s2p: '¿Más de 2 segundos por encima de tu ángulo? Suena un aviso suave en el oído hacia el que te inclinas.',
+    s3t: 'Endereza la cabeza', s3p: 'Al volver al centro, se calla. El historial muestra hacia qué lado te inclinas.',
+    shotsTitle: 'Dentro de la app',
+    featsTitle: 'Silenciosa por diseño',
+    f1t: 'Sin cámara', f1p: 'Solo el sensor de movimiento que ya tienen tus AirPods.',
+    f2t: 'No recopila nada', f2p: 'Sin cuenta ni rastreo. Tu historial se queda en tu iPhone.',
+    f3t: 'Sigue midiendo con la pantalla apagada', f3p: 'Bloquea el iPhone y sigue trabajando. La pantalla bloqueada muestra que está activa.',
+    f4t: 'Funciona mientras caminas', f4p: 'Con movimientos grandes pausa la medición en lugar de dar falsas alarmas.',
+    faqTitle: 'Preguntas',
+    q1: '¿Qué AirPods son compatibles?', a1: 'AirPods con seguimiento de cabeza: AirPods Pro, AirPods Max y AirPods (3.ª generación) o posteriores. También algunos Beats con seguimiento de cabeza.',
+    q2: '¿Detecta la cabeza adelantada?', a2: 'Plumb mide la inclinación lateral, izquierda y derecha. Durante la configuración separa los movimientos hacia delante y atrás para que no cuenten como inclinación.',
+    q3: '¿Puedo escuchar música a la vez?', a3: 'Sí. El aviso suena suave por encima de lo que estés escuchando.',
+    q4: '¿Cuánto cuesta?', a4: 'Es gratis, sin anuncios ni compras dentro de la app.',
+    finalTitle: 'Recto, sin tener que pensarlo.',
+    privacy: 'Privacidad', support: 'Soporte',
+  },
+  fr: {
+    name: 'Français',
+    title: 'Plumb · Alertes d’inclinaison de la tête avec AirPods',
+    heroTitle: 'Tête penchée trop longtemps ?<br>Vous l’entendez de ce côté.',
+    heroLead: 'Plumb utilise le capteur de mouvement de vos AirPods pour remarquer quand votre tête penche d’un côté, et joue un léger signal dans l’oreille vers laquelle vous penchez.',
+    soon: 'Bientôt sur l’App Store', get: 'Télécharger dans l’App Store',
+    meta: 'Gratuit · iPhone + AirPods',
+    storyTitle: 'Conçue pour ma propre habitude',
+    storyBody: 'Je penchais la tête vers la droite sans m’en rendre compte, et ça se voyait sur toutes mes photos. Les apps de posture ne regardent que l’avant et l’arrière, alors j’en ai créé une qui regarde de gauche à droite.',
+    howTitle: 'Comment ça marche',
+    s1t: 'Mettez vos AirPods', s1p: 'Restez immobile 3 secondes. Plumb apprend comment vos AirPods sont placés aujourd’hui.',
+    s2t: 'Penchez, entendez un signal', s2p: 'Au-delà de votre angle pendant 2 secondes ? Un son doux retentit dans l’oreille du côté où vous penchez.',
+    s3t: 'Redressez-vous', s3p: 'De retour à l’horizontale, tout redevient silencieux. L’historique montre de quel côté vous penchez.',
+    shotsTitle: 'Dans l’app',
+    featsTitle: 'Discrète par nature',
+    f1t: 'Sans caméra', f1p: 'Uniquement le capteur de mouvement déjà présent dans vos AirPods.',
+    f2t: 'Aucune donnée collectée', f2p: 'Pas de compte, pas de suivi. Votre historique reste sur votre iPhone.',
+    f3t: 'Mesure même écran éteint', f3p: 'Verrouillez votre iPhone et continuez. L’écran verrouillé indique que la mesure est en cours.',
+    f4t: 'Fonctionne en marchant', f4p: 'Les grands mouvements mettent la mesure en pause au lieu de déclencher de fausses alertes.',
+    faqTitle: 'Questions',
+    q1: 'Quels AirPods sont compatibles ?', a1: 'Les AirPods avec suivi de la tête : AirPods Pro, AirPods Max et AirPods (3e génération) ou plus récents. Certains modèles Beats avec suivi de la tête fonctionnent aussi.',
+    q2: 'Détecte-t-elle la tête en avant ?', a2: 'Plumb mesure l’inclinaison latérale, à gauche et à droite. Pendant la configuration, les mouvements avant/arrière sont séparés pour ne pas compter comme une inclinaison.',
+    q3: 'Puis-je écouter de la musique en même temps ?', a3: 'Oui. Le signal se superpose doucement à ce que vous écoutez.',
+    q4: 'Combien ça coûte ?', a4: 'C’est gratuit, sans publicité ni achats intégrés.',
+    finalTitle: 'Droit, sans y penser.',
+    privacy: 'Confidentialité', support: 'Assistance',
+  },
+  de: {
+    name: 'Deutsch',
+    title: 'Plumb · Kopfneigungs-Hinweise mit AirPods',
+    heroTitle: 'Kopf zu lange schief?<br>Du hörst es auf dieser Seite.',
+    heroLead: 'Plumb nutzt den Bewegungssensor deiner AirPods, um zu merken, wenn dein Kopf zur Seite kippt, und spielt einen leisen Ton im Ohr, zu dem du dich neigst.',
+    soon: 'Bald im App Store', get: 'Im App Store laden',
+    meta: 'Kostenlos · iPhone + AirPods',
+    storyTitle: 'Gemacht für meine eigene Angewohnheit',
+    storyBody: 'Ich habe den Kopf ständig nach rechts geneigt, ohne es zu merken – auf jedem Foto war es zu sehen. Haltungs-Apps achten nur auf vorne und hinten, also habe ich eine gebaut, die links und rechts erkennt.',
+    howTitle: 'So funktioniert’s',
+    s1t: 'AirPods einsetzen', s1p: '3 Sekunden stillhalten. Plumb lernt, wie deine AirPods heute sitzen.',
+    s2t: 'Neigen, Ton hören', s2p: 'Länger als 2 Sekunden über deinem Winkel? Ein leiser Ton erklingt im Ohr auf der Seite, zu der du dich neigst.',
+    s3t: 'Aufrichten', s3p: 'Wieder gerade, und es ist still. Der Verlauf zeigt, zu welcher Seite du neigst.',
+    shotsTitle: 'In der App',
+    featsTitle: 'Leise von Grund auf',
+    f1t: 'Keine Kamera', f1p: 'Nur der Bewegungssensor, der schon in deinen AirPods steckt.',
+    f2t: 'Keine Datensammlung', f2p: 'Kein Konto, kein Tracking. Dein Verlauf bleibt auf deinem iPhone.',
+    f3t: 'Misst auch bei ausgeschaltetem Display', f3p: 'iPhone sperren und weiterarbeiten. Der Sperrbildschirm zeigt, dass gemessen wird.',
+    f4t: 'Funktioniert beim Gehen', f4p: 'Bei großen Bewegungen pausiert die Messung statt Fehlalarme auszulösen.',
+    faqTitle: 'Fragen',
+    q1: 'Welche AirPods funktionieren?', a1: 'AirPods mit Kopferfassung: AirPods Pro, AirPods Max und AirPods (3. Generation) oder neuer. Auch einige Beats-Modelle mit Kopferfassung.',
+    q2: 'Erkennt die App einen nach vorne geneigten Kopf?', a2: 'Plumb misst die seitliche Neigung nach links und rechts. Beim Einrichten wird Nicken nach vorne und hinten herausgerechnet, damit es nicht als Neigung zählt.',
+    q3: 'Kann ich dabei Musik hören?', a3: 'Ja. Der Ton wird leise über das gelegt, was du gerade hörst.',
+    q4: 'Was kostet es?', a4: 'Kostenlos, ohne Werbung und ohne In-App-Käufe.',
+    finalTitle: 'Gerade, ohne daran zu denken.',
+    privacy: 'Datenschutz', support: 'Support',
+  },
+  pt: {
+    name: 'Português',
+    title: 'Plumb · Alertas de inclinação da cabeça com AirPods',
+    heroTitle: 'Inclinou a cabeça?<br>Você ouve naquele ouvido.',
+    heroLead: 'O Plumb usa o sensor de movimento dos seus AirPods para perceber quando sua cabeça pende para um lado e toca um aviso suave no ouvido para o qual você está inclinando.',
+    soon: 'Em breve na App Store', get: 'Baixar na App Store',
+    meta: 'Grátis · iPhone + AirPods',
+    storyTitle: 'Feito para o meu próprio hábito',
+    storyBody: 'Eu inclinava a cabeça para a direita sem perceber — aparecia em todas as fotos. Os apps de postura só olham para frente e para trás, então criei um que olha de um lado para o outro.',
+    howTitle: 'Como funciona',
+    s1t: 'Coloque os AirPods', s1p: 'Fique parado por 3 segundos. O Plumb aprende como seus AirPods estão encaixados hoje.',
+    s2t: 'Inclinou, ouviu', s2p: 'Passou do seu ângulo por 2 segundos? Um som suave toca no ouvido do lado para o qual você inclina.',
+    s3t: 'Endireite a cabeça', s3p: 'Voltou ao nível e o som para. O histórico mostra para que lado você costuma inclinar.',
+    shotsTitle: 'Por dentro do app',
+    featsTitle: 'Discreto por natureza',
+    f1t: 'Sem câmera', f1p: 'Só o sensor de movimento que já existe nos seus AirPods.',
+    f2t: 'Nada é coletado', f2p: 'Sem conta, sem rastreamento. Seu histórico fica no seu iPhone.',
+    f3t: 'Continua medindo com a tela apagada', f3p: 'Bloqueie o iPhone e continue trabalhando. A tela bloqueada mostra que está medindo.',
+    f4t: 'Funciona enquanto você anda', f4p: 'Movimentos grandes pausam a medição em vez de gerar alarmes falsos.',
+    faqTitle: 'Perguntas',
+    q1: 'Quais AirPods funcionam?', a1: 'AirPods com rastreamento da cabeça: AirPods Pro, AirPods Max e AirPods (3ª geração) ou mais recentes. Alguns Beats com rastreamento da cabeça também.',
+    q2: 'Detecta a cabeça projetada para frente?', a2: 'O Plumb mede a inclinação lateral, para a esquerda e para a direita. Na configuração, os movimentos para frente e para trás são separados para não contarem como inclinação.',
+    q3: 'Posso ouvir música ao mesmo tempo?', a3: 'Sim. O aviso toca baixinho por cima do que você estiver ouvindo.',
+    q4: 'Quanto custa?', a4: 'É grátis, sem anúncios e sem compras no app.',
+    finalTitle: 'Postura reta, sem precisar pensar.',
+    privacy: 'Privacidade', support: 'Suporte',
+  },
+  ru: {
+    name: 'Русский',
+    title: 'Plumb · Напоминания о наклоне головы с AirPods',
+    heroTitle: 'Наклонили голову —<br>услышите в этом ухе.',
+    heroLead: 'Plumb использует датчик движения в AirPods, чтобы заметить, когда голова наклоняется в сторону, и тихо подаёт сигнал в то ухо, к которому вы наклоняетесь.',
+    soon: 'Скоро в App Store', get: 'Загрузить в App Store',
+    meta: 'Бесплатно · iPhone + AirPods',
+    storyTitle: 'Сделано из-за моей привычки',
+    storyBody: 'Я постоянно наклонял голову вправо и не замечал этого — это было видно на каждом фото. Приложения для осанки следят только за наклоном вперёд и назад, поэтому я сделал то, что следит за наклоном влево и вправо.',
+    howTitle: 'Как это работает',
+    s1t: 'Вставьте AirPods', s1p: 'Замрите на 3 секунды. Plumb запомнит, как AirPods сидят сегодня.',
+    s2t: 'Наклон — сигнал', s2p: 'Дольше 2 секунд за пределом вашего угла? В ухе с той стороны прозвучит мягкий сигнал.',
+    s3t: 'Выпрямитесь', s3p: 'Вернулись в ровное положение — тишина. История покажет, в какую сторону вы чаще наклоняетесь.',
+    shotsTitle: 'Внутри приложения',
+    featsTitle: 'Тихо и по делу',
+    f1t: 'Без камеры', f1p: 'Только датчик движения, который уже есть в AirPods.',
+    f2t: 'Ничего не собирается', f2p: 'Без аккаунта и отслеживания. История хранится только на вашем iPhone.',
+    f3t: 'Измеряет при выключенном экране', f3p: 'Заблокируйте iPhone и продолжайте работать. На экране блокировки видно, что измерение идёт.',
+    f4t: 'Работает на ходу', f4p: 'При сильных движениях проверка ставится на паузу вместо ложных сигналов.',
+    faqTitle: 'Вопросы',
+    q1: 'Какие AirPods подходят?', a1: 'AirPods с отслеживанием положения головы: AirPods Pro, AirPods Max и AirPods (3-го поколения) и новее. Также некоторые модели Beats с этой функцией.',
+    q2: 'Определяет ли наклон головы вперёд?', a2: 'Plumb измеряет боковой наклон влево и вправо. При настройке кивки вперёд и назад отделяются, чтобы не считаться наклоном.',
+    q3: 'Можно слушать музыку одновременно?', a3: 'Да. Сигнал тихо звучит поверх того, что вы слушаете.',
+    q4: 'Сколько стоит?', a4: 'Бесплатно, без рекламы и встроенных покупок.',
+    finalTitle: 'Ровно — без лишних усилий.',
+    privacy: 'Конфиденциальность', support: 'Поддержка',
+  },
+  hi: {
+    name: 'हिन्दी',
+    title: 'Plumb · AirPods से सिर झुकने की चेतावनी',
+    heroTitle: 'सिर देर तक झुका रहा?<br>उसी कान में सुनाई देगा।',
+    heroLead: 'Plumb आपके AirPods के मोशन सेंसर से पहचानता है कि आपका सिर एक तरफ़ झुक रहा है, और जिस तरफ़ आप झुके हैं उसी कान में हल्की आवाज़ बजाता है।',
+    soon: 'जल्द ही App Store पर', get: 'App Store से डाउनलोड करें',
+    meta: 'मुफ़्त · iPhone + AirPods',
+    storyTitle: 'मेरी अपनी आदत के लिए बनाया',
+    storyBody: 'मैं बिना जाने अपना सिर दाईं ओर झुकाए रखता था — हर फ़ोटो में यह दिखता था। पोस्चर ऐप्स ज़्यादातर सिर्फ़ आगे-पीछे देखते हैं, इसलिए मैंने ऐसा ऐप बनाया जो दाएँ-बाएँ झुकाव पकड़ता है।',
+    howTitle: 'यह कैसे काम करता है',
+    s1t: 'AirPods लगाएँ', s1p: '3 सेकंड स्थिर रहें। Plumb सीख लेता है कि आज आपके AirPods कैसे लगे हैं।',
+    s2t: 'झुके, तो आवाज़', s2p: 'आपके तय कोण से 2 सेकंड से ज़्यादा झुके रहे? जिस तरफ़ झुके हैं उस कान में हल्की आवाज़ बजेगी।',
+    s3t: 'सिर सीधा करें', s3p: 'सीधा होते ही आवाज़ बंद। इतिहास बताता है कि आप किस तरफ़ ज़्यादा झुकते हैं।',
+    shotsTitle: 'ऐप के अंदर',
+    featsTitle: 'शांत, बस ज़रूरत पर',
+    f1t: 'कैमरा नहीं', f1p: 'सिर्फ़ AirPods में पहले से मौजूद मोशन सेंसर।',
+    f2t: 'कोई डेटा इकट्ठा नहीं', f2p: 'कोई अकाउंट या ट्रैकिंग नहीं। आपका इतिहास आपके iPhone पर ही रहता है।',
+    f3t: 'स्क्रीन बंद होने पर भी मापता है', f3p: 'iPhone लॉक करके काम करते रहें। लॉक स्क्रीन पर दिखता है कि माप चल रहा है।',
+    f4t: 'चलते समय भी', f4p: 'बड़ी हलचल में गलत चेतावनी देने के बजाय जाँच रुक जाती है।',
+    faqTitle: 'सवाल',
+    q1: 'कौन-से AirPods चलेंगे?', a1: 'हेड ट्रैकिंग वाले AirPods: AirPods Pro, AirPods Max और AirPods (तीसरी पीढ़ी) या नए। हेड ट्रैकिंग वाले कुछ Beats मॉडल भी।',
+    q2: 'क्या यह आगे झुकी गर्दन पकड़ता है?', a2: 'Plumb दाएँ-बाएँ झुकाव मापता है। सेटअप के दौरान आगे-पीछे सिर हिलाने को अलग कर दिया जाता है, ताकि वह झुकाव न गिना जाए।',
+    q3: 'क्या साथ में संगीत सुन सकते हैं?', a3: 'हाँ। आवाज़ आप जो सुन रहे हैं उसके ऊपर हल्के से बजती है।',
+    q4: 'कीमत?', a4: 'मुफ़्त है, बिना विज्ञापन और बिना इन-ऐप ख़रीद के।',
+    finalTitle: 'बिना सोचे, सीधा।',
+    privacy: 'गोपनीयता', support: 'सहायता',
+  },
+};
+
+// Screenshots only exist in Korean and English; every other language shows the English set.
+const SHOTS = (lang) => [1, 2, 3, 4].map((n) => `store/screenshots/${lang === 'ko' ? 'ko' : 'en'}-${n}.png`);
+const LINKS = { privacy: 'docs/privacy/', support: 'docs/support/' };
+const APPLE = '<svg viewBox="0 0 17 20" fill="currentColor" aria-hidden="true"><path d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM11.6 3c.7-.9 1.2-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>';
+
+function detect() {
+  const fromUrl = new URLSearchParams(location.search).get('lang');
+  if (fromUrl && L[fromUrl]) return fromUrl;
+  try { const saved = localStorage.getItem('plumb.lang'); if (saved && L[saved]) return saved; } catch (e) {}
+  for (const tag of navigator.languages || [navigator.language || 'en']) {
+    const code = tag.toLowerCase().split('-')[0];
+    if (code === 'zh') return 'zh-Hans';
+    if (L[code]) return code;
+  }
+  return 'en';
+}
+
+function apply(lang) {
+  const s = L[lang];
+  document.documentElement.lang = lang;
+  document.title = s.title;
+  document.querySelectorAll('[data-i]').forEach((el) => {
+    const v = s[el.dataset.i] ?? L.en[el.dataset.i];
+    if (el.dataset.i === 'heroTitle') el.innerHTML = v; else el.textContent = v;
+  });
+  document.querySelectorAll('[data-href]').forEach((el) => { el.href = LINKS[el.dataset.href]; });
+  document.querySelectorAll('[data-cta]').forEach((el) => {
+    el.classList.toggle('soon', !APP_STORE_URL);
+    el.innerHTML = APPLE + '<span></span>';
+    el.lastChild.textContent = APP_STORE_URL ? s.get : s.soon;
+    if (APP_STORE_URL) el.href = APP_STORE_URL; else { el.removeAttribute('href'); el.setAttribute('aria-disabled', 'true'); }
+  });
+  document.getElementById('shots').innerHTML = SHOTS(lang).map((src) => `<img src="${src}" alt="" loading="lazy">`).join('');
+  document.getElementById('lang').value = lang;
+}
+
+const select = document.getElementById('lang');
+select.innerHTML = Object.entries(L).map(([code, s]) => `<option value="${code}">${s.name}</option>`).join('');
+select.addEventListener('change', () => {
+  try { localStorage.setItem('plumb.lang', select.value); } catch (e) {}
+  apply(select.value);
+});
+apply(detect());
+</script>
+</body>
+</html>
