@@ -1,0 +1,77 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Silent pre-launch reel (1080×1920): transparent overlay composited over two Higgsfield clips.
+     render(t) is pure. Text stays inside Instagram's safe area (clear of the top bar, the right-hand
+     buttons and the caption block at the bottom). -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
+.abs { position: absolute; left: 40px; right: 70px; }
+#top { position: absolute; left: 0; right: 0; top: 0; height: 380px; background: linear-gradient(rgba(0,0,0,.72), transparent); }
+#dim { position: absolute; inset: 0; background: rgba(0,0,0,.78); }
+.line { font-weight: 600; font-size: 36px; line-height: 1.3; letter-spacing: -1.3px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
+#l1, #l2, #l3 { top: 132px; }
+#ding { position: absolute; font-weight: 600; font-size: 26px; letter-spacing: -0.5px; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+#cta { top: 250px; }
+#cta .k { font-size: 18px; color: #A8A8A8; letter-spacing: -0.3px; }
+#cta .h { font-weight: 600; font-size: 44px; letter-spacing: -1.8px; line-height: 1.2; margin-top: 10px; }
+#cta .kw { display: inline-block; margin-top: 26px; padding: 14px 26px; border: 1.5px solid #F2F2F2; border-radius: 14px; font-weight: 600; font-size: 30px; letter-spacing: -0.8px; }
+#cta .s { margin-top: 26px; font-size: 17px; color: #BDBDBD; line-height: 1.6; letter-spacing: -0.3px; }
+#cta .brand { margin-top: 44px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 20px; }
+#cta .brand img { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #3a3a3a; }
+</style></head>
+<body>
+<div id="top"></div>
+<div id="dim"></div>
+<div id="l1" class="abs line">저는 항상 고개를<br>오른쪽으로 꺾고 다닙니다.</div>
+<div id="l2" class="abs line">본인은 모릅니다.</div>
+<div id="l3" class="abs line">기울면, 그쪽 귀로<br>알려주는 앱을 만들었습니다.</div>
+<div id="rings"></div>
+<div id="ding">띵</div>
+<div id="cta" class="abs">
+  <div class="k">곧 출시</div>
+  <div class="h">출시 알림 받기</div>
+  <div class="kw">댓글에 "알림"</div>
+  <div class="s">출시일에 답글로 링크를 드립니다.<br>팔로우하면 출시 소식이 피드에 뜹니다.</div>
+  <div class="brand"><img src="../../assets/icon.png">Plumb</div>
+</div>
+<script>
+// Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, straightens) 3–8 s · CTA over clip 1, dimmed, 8–13 s.
+const P = new URLSearchParams(location.search);
+// Ear position in clip 2 (540×960 overlay space) and the moment the cue shows; tuned once the clip is in.
+const EAR_X = +(P.get('earx') || 300), EAR_Y = +(P.get('eary') || 470), CUE = +(P.get('cue') || 3.9);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+function render(t) {
+  $('top').style.opacity = t < 8 ? 1 : 0;
+  $('l1').style.opacity = fade(t, 0.15, 1.75);
+  $('l2').style.opacity = fade(t, 1.75, 3.0);
+  $('l3').style.opacity = fade(t, CUE + 1.0, 8.0);
+
+  let rings = '';
+  for (const start of [CUE, CUE + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+  $('ding').style.opacity = fade(t, CUE, CUE + 1.3, 0.2);
+  $('ding').style.left = `${EAR_X + 34}px`; $('ding').style.top = `${EAR_Y - 70}px`;
+
+  $('dim').style.opacity = clamp((t - 8.0) / 0.4) ;
+  $('cta').style.opacity = clamp((t - 8.2) / 0.4);
+  $('cta').style.transform = `translateY(${(1 - ease((t - 8.2) / 0.6)) * 24}px)`;
+}
+window.render = render;
+render(+(P.get('t') || 0));
+</script>
+</body></html>
