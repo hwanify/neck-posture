@@ -14,7 +14,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 #dim { position: absolute; inset: 0; background: rgba(0,0,0,.78); }
 .line { font-weight: 600; font-size: 36px; line-height: 1.3; letter-spacing: -1.3px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
 #l1, #l2, #l3 { top: 132px; }
-#ding { position: absolute; font-weight: 600; font-size: 26px; letter-spacing: -0.5px; }
+#ding { position: absolute; font-weight: 600; font-size: 34px; letter-spacing: -0.5px; }
 .ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
 #cta { top: 250px; }
 #cta .k { font-size: 18px; color: #A8A8A8; letter-spacing: -0.3px; }
@@ -43,7 +43,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 // Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, straightens) 3–8 s · CTA over clip 1, dimmed, 8–13 s.
 const P = new URLSearchParams(location.search);
 // Ear position in clip 2 (540×960 overlay space) and the moment the cue shows; tuned once the clip is in.
-const EAR_X = +(P.get('earx') || 300), EAR_Y = +(P.get('eary') || 470), CUE = +(P.get('cue') || 3.9);
+const EAR_X = +(P.get('earx') || 345), EAR_Y = +(P.get('eary') || 440), CUE = +(P.get('cue') || 3.25);
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
 const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
