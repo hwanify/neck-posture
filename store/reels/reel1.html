@@ -1,8 +1,8 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
-<!-- Silent pre-launch reel (1080×1920): transparent overlay composited over two Higgsfield clips.
-     render(t) is pure. Text stays inside Instagram's safe area (clear of the top bar, the right-hand
-     buttons and the caption block at the bottom). -->
+<!-- Pre-launch reel (1080×1920): overlay composited over two Higgsfield clips, then the app screen and
+     logo on black. render(t) is pure. Text stays inside Instagram's safe area (clear of the top bar,
+     the right-hand buttons and the caption block at the bottom). -->
 <style>
 @font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
 @font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
@@ -10,50 +10,60 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
 .abs { position: absolute; left: 40px; right: 70px; }
-#top { position: absolute; left: 0; right: 0; top: 0; height: 380px; background: linear-gradient(rgba(0,0,0,.72), transparent); }
-#dim { position: absolute; inset: 0; background: rgba(0,0,0,.78); }
-.line { font-weight: 600; font-size: 36px; line-height: 1.3; letter-spacing: -1.3px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
-#l1, #l2, #l3 { top: 132px; }
+#top { position: absolute; left: 0; right: 0; top: 0; height: 400px; background: linear-gradient(rgba(0,0,0,.72), transparent); }
+#black { position: absolute; inset: 0; background: #000; }
+.line { font-weight: 600; font-size: 34px; line-height: 1.32; letter-spacing: -1.2px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
+#l1, #l2 { top: 132px; }
 #ding { position: absolute; font-weight: 600; font-size: 34px; letter-spacing: -0.5px; }
 .ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
-#cta { top: 250px; }
-#cta .k { font-size: 18px; color: #A8A8A8; letter-spacing: -0.3px; }
-#cta .h { font-weight: 600; font-size: 44px; letter-spacing: -1.8px; line-height: 1.2; margin-top: 10px; }
-#cta .kw { display: inline-block; margin-top: 26px; padding: 14px 26px; border: 1.5px solid #F2F2F2; border-radius: 14px; font-weight: 600; font-size: 30px; letter-spacing: -0.8px; }
-#cta .s { margin-top: 26px; font-size: 17px; color: #BDBDBD; line-height: 1.6; letter-spacing: -0.3px; }
-#cta .brand { margin-top: 44px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 20px; }
-#cta .brand img { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #3a3a3a; }
+/* App screen: the App Store screenshot cropped to its phone frame, with a live level line drawn over
+   the static one. */
+#phone { position: absolute; left: 50%; top: 250px; width: 300px; height: 528px; margin-left: -150px; overflow: hidden; }
+#phone img { width: 356px; margin-left: -28px; margin-top: -191px; display: block; }
+#cover { position: absolute; left: 50px; top: 228px; width: 200px; height: 100px; background: #000; }
+#lvl { position: absolute; left: 65px; top: 257px; width: 170px; height: 12px; }
+#lvl .hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1px; background: #3a3a3a; }
+#lvl .ln { position: absolute; left: 10px; right: 10px; top: 4.5px; height: 2.5px; border-radius: 2px; background: #F2F2F2; }
+#lvl .dot { position: absolute; left: 50%; top: 1px; width: 10px; height: 10px; margin-left: -5px; border-radius: 5px; background: #F2F2F2; }
+#num { position: absolute; left: 0; right: 0; top: 280px; text-align: center; font-weight: 500; font-size: 26px; letter-spacing: -0.8px; font-variant-numeric: tabular-nums; }
+#t1 { top: 110px; }
+#end { position: absolute; left: 0; right: 0; top: 290px; text-align: center; }
+#end img { width: 132px; height: 132px; border-radius: 30px; border: 1.5px solid #3a3a3a; display: block; margin: 0 auto; }
+#end .t { margin-top: 40px; font-weight: 600; font-size: 34px; letter-spacing: -1.2px; line-height: 1.32; }
+#end .s { margin-top: 18px; font-size: 25px; color: #DADADA; letter-spacing: -0.5px; line-height: 1.5; padding: 0 40px; }
 </style></head>
 <body>
 <div id="top"></div>
-<div id="dim"></div>
-<div id="l1" class="abs line">저는 항상 고개를<br>오른쪽으로 꺾고 다닙니다.</div>
-<div id="l2" class="abs line">본인은 모릅니다.</div>
-<div id="l3" class="abs line">기울면, 그쪽 귀로<br>알려주는 앱을 만들었습니다.</div>
+<div id="l1" class="abs line">저는 제가 고개를<br>기울이고 있는 줄<br>몰랐습니다.</div>
+<div id="l2" class="abs line">그래서 에어팟으로<br>고개 기울기를 알려주는<br>앱을 만들었습니다.</div>
 <div id="rings"></div>
 <div id="ding">띵</div>
-<div id="cta" class="abs">
-  <div class="k">곧 출시</div>
-  <div class="h">출시 알림 받기</div>
-  <div class="kw">댓글에 "알림"</div>
-  <div class="s">출시일에 답글로 링크를 드립니다.<br>팔로우하면 출시 소식이 피드에 뜹니다.</div>
-  <div class="brand"><img src="../../assets/icon.png">Plumb</div>
-</div>
+<div id="black"></div>
+<div id="phone"><img src="../screenshots/ko-1.png"><div id="cover"></div>
+  <div id="lvl"><div class="hz"></div><div class="ln"></div><div class="dot"></div></div><div id="num"></div></div>
+<div id="t1" class="abs line">PLUMB,<br>곧 출시됩니다.</div>
+<div id="end"><img src="../../assets/icon.png">
+  <div class="t">PLUMB, 곧 출시됩니다.</div>
+  <div class="s">사용해 보고 싶다면<br>댓글에 ‘PLUMB’를 남겨주세요!</div></div>
 <script>
-// Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, straightens) 3–8 s · CTA over clip 1, dimmed, 8–13 s.
+// Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, cue, straightens) 3–8 s ·
+// app screen 8–10.6 s · logo 10.6–13 s.
 const P = new URLSearchParams(location.search);
-// Ear position in clip 2 (540×960 overlay space) and the moment the cue shows; tuned once the clip is in.
+// Ear position in clip 2 (540×960 overlay space) and the moment the cue shows.
 const EAR_X = +(P.get('earx') || 345), EAR_Y = +(P.get('eary') || 440), CUE = +(P.get('cue') || 3.25);
+const APP = 8.0, LOGO = 10.6;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
 const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
 const $ = (id) => document.getElementById(id);
 
+// Angle shown in the app: leaning, then straightening to level.
+const appAngle = (t) => (t < APP + 0.6 ? 9 : 9 * (1 - ease((t - APP - 0.6) / 1.0)));
+
 function render(t) {
-  $('top').style.opacity = t < 8 ? 1 : 0;
-  $('l1').style.opacity = fade(t, 0.15, 1.75);
-  $('l2').style.opacity = fade(t, 1.75, 3.0);
-  $('l3').style.opacity = fade(t, CUE + 1.0, 8.0);
+  $('top').style.opacity = t < APP ? 1 : 0;
+  $('l1').style.opacity = fade(t, 0.15, 3.0);
+  $('l2').style.opacity = fade(t, 3.05, APP);
 
   let rings = '';
   for (const start of [CUE, CUE + 0.35]) {
@@ -65,11 +75,18 @@ function render(t) {
   }
   $('rings').innerHTML = rings;
   $('ding').style.opacity = fade(t, CUE, CUE + 1.3, 0.2);
-  $('ding').style.left = `${EAR_X + 34}px`; $('ding').style.top = `${EAR_Y - 70}px`;
+  $('ding').style.left = `${EAR_X + 34}px`; $('ding').style.top = `${EAR_Y - 74}px`;
 
-  $('dim').style.opacity = clamp((t - 8.0) / 0.4) ;
-  $('cta').style.opacity = clamp((t - 8.2) / 0.4);
-  $('cta').style.transform = `translateY(${(1 - ease((t - 8.2) / 0.6)) * 24}px)`;
+  $('black').style.opacity = clamp((t - APP + 0.25) / 0.25);
+  const ph = fade(t, APP, LOGO, 0.35);
+  $('phone').style.opacity = ph; $('t1').style.opacity = ph;
+  $('phone').style.transform = `translateY(${(1 - ease((t - APP) / 0.5)) * 40}px)`;
+  const a = appAngle(t);
+  $('lvl').querySelector('.ln').style.transform = `rotate(${a}deg)`;
+  $('num').textContent = `${Math.round(a)}°`;
+
+  $('end').style.opacity = clamp((t - LOGO - 0.1) / 0.4);
+  $('end').style.transform = `translateY(${(1 - ease((t - LOGO - 0.1) / 0.6)) * 24}px)`;
 }
 window.render = render;
 render(+(P.get('t') || 0));
