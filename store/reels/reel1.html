@@ -14,7 +14,6 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 #black { position: absolute; inset: 0; background: #000; }
 .line { font-weight: 600; font-size: 34px; line-height: 1.32; letter-spacing: -1.2px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
 #l1, #l2 { top: 132px; }
-#ding { position: absolute; font-weight: 600; font-size: 34px; letter-spacing: -0.5px; }
 .ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
 /* App screen: the App Store screenshot cropped to its phone frame, with a live level line drawn over
    the static one. */
@@ -26,25 +25,26 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 #lvl .ln { position: absolute; left: 10px; right: 10px; top: 4.5px; height: 2.5px; border-radius: 2px; background: #F2F2F2; }
 #lvl .dot { position: absolute; left: 50%; top: 1px; width: 10px; height: 10px; margin-left: -5px; border-radius: 5px; background: #F2F2F2; }
 #num { position: absolute; left: 0; right: 0; top: 280px; text-align: center; font-weight: 500; font-size: 26px; letter-spacing: -0.8px; font-variant-numeric: tabular-nums; }
-#t1 { top: 110px; }
-#end { position: absolute; left: 0; right: 0; top: 290px; text-align: center; }
+#t1 { position: absolute; left: 0; right: 0; top: 110px; text-align: center; }
+#end { position: absolute; left: 0; right: 0; top: 250px; text-align: center; }
 #end img { width: 132px; height: 132px; border-radius: 30px; border: 1.5px solid #3a3a3a; display: block; margin: 0 auto; }
 #end .t { margin-top: 40px; font-weight: 600; font-size: 34px; letter-spacing: -1.2px; line-height: 1.32; }
 #end .s { margin-top: 18px; font-size: 25px; color: #DADADA; letter-spacing: -0.5px; line-height: 1.5; padding: 0 40px; }
+#end .s2 { margin-top: 26px; font-size: 21px; color: #9A9A9A; letter-spacing: -0.4px; }
 </style></head>
 <body>
 <div id="top"></div>
 <div id="l1" class="abs line">저는 제 고개가<br>기울어진 줄 몰랐습니다.</div>
 <div id="l2" class="abs line">그래서 만들었습니다.</div>
 <div id="rings"></div>
-<div id="ding">띵</div>
 <div id="black"></div>
 <div id="phone"><img src="../screenshots/ko-1.png"><div id="cover"></div>
   <div id="lvl"><div class="hz"></div><div class="ln"></div><div class="dot"></div></div><div id="num"></div></div>
-<div id="t1" class="abs line">에어팟으로 고개 기울기를<br>알려주는 앱.</div>
+<div id="t1" class="line">에어팟으로 고개 기울기를<br>알려주는 앱.</div>
 <div id="end"><img src="../../assets/icon.png">
   <div class="t">PLUMB</div>
-  <div class="s">곧 출시됩니다.</div></div>
+  <div class="s">에어팟으로 고개 기울기를<br>알려주는 앱.</div>
+  <div class="s2">곧 출시됩니다.</div></div>
 <script>
 // Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, cue, straightens) 3–8 s ·
 // app screen 8–10.6 s · logo 10.6–13 s.
@@ -74,13 +74,11 @@ function render(t) {
     }
   }
   $('rings').innerHTML = rings;
-  $('ding').style.opacity = fade(t, CUE, CUE + 1.3, 0.2);
-  $('ding').style.left = `${EAR_X + 34}px`; $('ding').style.top = `${EAR_Y - 74}px`;
 
   $('black').style.opacity = clamp((t - APP + 0.25) / 0.25);
   const ph = fade(t, APP, LOGO, 0.35);
   $('phone').style.opacity = ph;
-  $('t1').style.opacity = clamp((t - APP) / 0.35);
+  $('t1').style.opacity = ph;
   $('phone').style.transform = `translateY(${(1 - ease((t - APP) / 0.5)) * 40}px)`;
   const a = appAngle(t);
   $('lvl').querySelector('.ln').style.transform = `rotate(${a}deg)`;
