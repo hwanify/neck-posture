@@ -26,11 +26,13 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 #lvl .dot { position: absolute; left: 50%; top: 1px; width: 10px; height: 10px; margin-left: -5px; border-radius: 5px; background: #F2F2F2; }
 #num { position: absolute; left: 0; right: 0; top: 280px; text-align: center; font-weight: 500; font-size: 26px; letter-spacing: -0.8px; font-variant-numeric: tabular-nums; }
 #t1 { position: absolute; left: 0; right: 0; top: 110px; text-align: center; }
-#end { position: absolute; left: 0; right: 0; top: 250px; text-align: center; }
+#end { position: absolute; left: 0; right: 0; top: 200px; text-align: center; }
 #end img { width: 132px; height: 132px; border-radius: 30px; border: 1.5px solid #3a3a3a; display: block; margin: 0 auto; }
 #end .t { margin-top: 40px; font-weight: 600; font-size: 34px; letter-spacing: -1.2px; line-height: 1.32; }
 #end .s { margin-top: 18px; font-size: 25px; color: #DADADA; letter-spacing: -0.5px; line-height: 1.5; padding: 0 40px; }
-#end .s2 { margin-top: 26px; font-size: 21px; color: #9A9A9A; letter-spacing: -0.4px; }
+#end .cta { margin-top: 46px; }
+#end .s2 { font-weight: 600; font-size: 27px; letter-spacing: -0.8px; }
+#end .s3 { margin-top: 12px; font-size: 21px; color: #A8A8A8; letter-spacing: -0.4px; line-height: 1.5; }
 </style></head>
 <body>
 <div id="top"></div>
@@ -44,10 +46,11 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <div id="end"><img src="../../assets/icon.png">
   <div class="t">PLUMB</div>
   <div class="s">에어팟으로 고개 기울기를<br>알려주는 앱.</div>
-  <div class="s2">곧 출시됩니다.</div></div>
+  <div class="cta"><div class="s2">곧 출시됩니다.</div>
+  <div class="s3">출시 알림을 받고 싶으면<br>댓글에 ‘알림’을 남겨주세요.</div></div></div>
 <script>
 // Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, cue, straightens) 3–8 s ·
-// app screen 8–10.6 s · logo 10.6–13 s.
+// app screen 8–10.6 s · logo 10.6–14.5 s (reservation line from 11.6 s).
 const P = new URLSearchParams(location.search);
 // Ear position in clip 2 (540×960 overlay space) and the moment the cue shows.
 const EAR_X = +(P.get('earx') || 345), EAR_Y = +(P.get('eary') || 440), CUE = +(P.get('cue') || 3.25);
@@ -86,6 +89,9 @@ function render(t) {
 
   $('end').style.opacity = clamp((t - LOGO - 0.1) / 0.4);
   $('end').style.transform = `translateY(${(1 - ease((t - LOGO - 0.1) / 0.6)) * 24}px)`;
+  const c = $('end').querySelector('.cta');
+  c.style.opacity = clamp((t - LOGO - 1.0) / 0.4);
+  c.style.transform = `translateY(${(1 - ease((t - LOGO - 1.0) / 0.6)) * 14}px)`;
 }
 window.render = render;
 render(+(P.get('t') || 0));
