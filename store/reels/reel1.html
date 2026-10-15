@@ -34,17 +34,17 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 </style></head>
 <body>
 <div id="top"></div>
-<div id="l1" class="abs line">저는 제가 고개를<br>기울이고 있는 줄<br>몰랐습니다.</div>
-<div id="l2" class="abs line">그래서 에어팟으로<br>고개 기울기를 알려주는<br>앱을 만들었습니다.</div>
+<div id="l1" class="abs line">저는 제 고개가<br>기울어진 줄 몰랐습니다.</div>
+<div id="l2" class="abs line">그래서 만들었습니다.</div>
 <div id="rings"></div>
 <div id="ding">띵</div>
 <div id="black"></div>
 <div id="phone"><img src="../screenshots/ko-1.png"><div id="cover"></div>
   <div id="lvl"><div class="hz"></div><div class="ln"></div><div class="dot"></div></div><div id="num"></div></div>
-<div id="t1" class="abs line">PLUMB,<br>곧 출시됩니다.</div>
+<div id="t1" class="abs line">에어팟으로 고개 기울기를<br>알려주는 앱.</div>
 <div id="end"><img src="../../assets/icon.png">
-  <div class="t">PLUMB, 곧 출시됩니다.</div>
-  <div class="s">사용해 보고 싶다면<br>댓글에 ‘알림’을 남겨주세요!</div></div>
+  <div class="t">PLUMB</div>
+  <div class="s">곧 출시됩니다.</div></div>
 <script>
 // Timeline: clip 1 (head tilted) 0–3 s · clip 2 (ear close-up, cue, straightens) 3–8 s ·
 // app screen 8–10.6 s · logo 10.6–13 s.
@@ -79,7 +79,8 @@ function render(t) {
 
   $('black').style.opacity = clamp((t - APP + 0.25) / 0.25);
   const ph = fade(t, APP, LOGO, 0.35);
-  $('phone').style.opacity = ph; $('t1').style.opacity = ph;
+  $('phone').style.opacity = ph;
+  $('t1').style.opacity = clamp((t - APP) / 0.35);
   $('phone').style.transform = `translateY(${(1 - ease((t - APP) / 0.5)) * 40}px)`;
   const a = appAngle(t);
   $('lvl').querySelector('.ln').style.transform = `rotate(${a}deg)`;
