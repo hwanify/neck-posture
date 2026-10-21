@@ -4,7 +4,7 @@ export type { MotionSample };
 export type SensorLocation = MotionSample['sensorLocation'];
 export type TiltDirection = 'left' | 'right';
 export type PostureState = 'good' | 'tilting' | 'alerted' | 'paused';
-export type PauseReason = 'moving' | 'walking' | 'disconnected' | 'notCalibrated';
+export type PauseReason = 'moving' | 'walking' | 'outOfRange' | 'disconnected' | 'notCalibrated';
 
 export type PostureSettings = {
   /** Tilt (deg) that starts the "tilting" timer. */

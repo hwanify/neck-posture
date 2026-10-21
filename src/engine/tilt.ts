@@ -48,6 +48,19 @@ export function pitchDeg(gravity: Vector3, neutral: Vector3, pitchAxis: Vector3)
   return Math.atan2(dot(gravity, pitchAxis), dot(gravity, neutral)) * RAD_TO_DEG;
 }
 
+/**
+ * How far the head is from the calibrated posture: the forward/back nod (when the calibration knows
+ * its nod axis) and the total angle in any direction. Far from it — lying down, or bent right over —
+ * gravity lines up with the front-back axis and the sideways angle stops meaning anything.
+ */
+export function poseDeviation(gravity: Vector3, calibration: Calibration): { pitchDeg: number | null; totalDeg: number } {
+  const g = normalize(gravity);
+  const n = calibration.neutralGravity;
+  const totalDeg = Math.acos(Math.max(-1, Math.min(1, dot(g, n)))) * RAD_TO_DEG;
+  const pitch = calibration.pitchAxis ? pitchDeg(g, n, calibration.pitchAxis) : null;
+  return { pitchDeg: pitch, totalDeg };
+}
+
 /** Same calibration with left/right swapped, for when the user tilted the wrong way while calibrating. */
 export function flipCalibration(calibration: Calibration): Calibration {
   return {

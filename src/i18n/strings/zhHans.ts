@@ -20,6 +20,7 @@ export const zhHans: Strings = {
   'state.paused': '已暂停',
   'pause.moving': '正在移动',
   'pause.walking': '正在步行',
+  'pause.outOfRange': '超出测量范围',
   'pause.disconnected': '无 AirPods 信号',
   'pause.notCalibrated': '需要校准',
   'angle.left': '左 {deg}°',

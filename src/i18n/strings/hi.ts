@@ -20,6 +20,7 @@ export const hi: Strings = {
   'state.paused': 'रुका हुआ',
   'pause.moving': 'हिल रहे हैं',
   'pause.walking': 'चल रहे हैं',
+  'pause.outOfRange': 'माप सीमा से बाहर',
   'pause.disconnected': 'AirPods सिग्नल नहीं',
   'pause.notCalibrated': 'कैलिब्रेशन ज़रूरी',
   'angle.left': 'बा {deg}°',

@@ -4,7 +4,8 @@ import { PostureEngine } from '../postureEngine';
 import { PostureStateMachine } from '../postureStateMachine';
 import { SessionStats } from '../sessionStats';
 import { DEFAULT_POSTURE_SETTINGS, type PostureEvent } from '../types';
-import { CALIBRATION as calibration, sample, stream } from './helpers';
+import { normalize, projectOntoPlane } from '../vector';
+import { CALIBRATION as calibration, gravityFor, sample, stream } from './helpers';
 // Fixed values (not the app defaults) so the timings below stay readable.
 const settings = { ...DEFAULT_POSTURE_SETTINGS, enterDeg: 10, exitDeg: 7, holdSec: 5, cooldownSec: 30 };
 
@@ -141,5 +142,55 @@ describe('SessionStats', () => {
     expect(summary.rightTiltSec).toBe(0);
     expect(summary.timeline).toHaveLength(6);
     expect(summary.timeline[2]).toBeLessThan(-14);
+  });
+});
+
+describe('Out of range (lying down, bent far over)', () => {
+  // Same frame as CALIBRATION, plus the nod axis the 5-step calibration measures.
+  const withPitch = {
+    ...calibration,
+    pitchAxis: normalize(projectOntoPlane(gravityFor(0, 10), calibration.neutralGravity)),
+  };
+
+  it('pauses instead of judging when bent far forward or lying back', () => {
+    const engine = new PostureEngine(withPitch, settings);
+    for (const nod of [55, -80]) {
+      const { last, events } = run(engine, stream(0, 8, () => 20, 25, () => nod));
+      expect(last.pauseReason).toBe('outOfRange');
+      expect(last.state).toBe('paused');
+      expect(events).toEqual([]);
+    }
+  });
+
+  it('pauses when lying on one side, even without a nod axis', () => {
+    const engine = new PostureEngine(calibration, settings);
+    const { last, events } = run(engine, stream(0, 8, () => 85));
+    expect(last.pauseReason).toBe('outOfRange');
+    expect(events).toEqual([]);
+  });
+
+  it('still measures sideways tilt while nodding a normal amount', () => {
+    const engine = new PostureEngine(withPitch, settings);
+    const { last, events } = run(engine, stream(0, 6, () => 15, 25, () => 30));
+    expect(last.pauseReason).toBeNull();
+    // A whole-head lean seen through a 30° nod reads a little larger (atan(tan 15° / cos 30°) ≈ 17°).
+    expect(last.angle).toBeGreaterThan(14);
+    expect(last.angle).toBeLessThan(18);
+    expect(events.map((e) => e.type)).toEqual(['alert']);
+  });
+
+  it('resumes once back inside the range, without carrying the out-of-range angles over', () => {
+    const engine = new PostureEngine(withPitch, settings);
+    run(engine, stream(0, 3, () => 80, 25, () => 70));
+    const { last } = run(engine, stream(3, 1, () => 0));
+    expect(last.pauseReason).toBeNull();
+    expect(Math.abs(last.angle)).toBeLessThan(1);
+  });
+
+  it('does not flicker at the edge: stays paused until 5° back inside', () => {
+    const engine = new PostureEngine(withPitch, settings);
+    run(engine, stream(0, 1, () => 0, 25, () => 52));
+    expect(run(engine, stream(1, 1, () => 0, 25, () => 47)).last.pauseReason).toBe('outOfRange');
+    expect(run(engine, stream(2, 1, () => 0, 25, () => 43)).last.pauseReason).toBeNull();
   });
 });

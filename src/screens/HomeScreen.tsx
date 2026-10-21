@@ -26,10 +26,15 @@ export function HomeScreen() {
   const live = !check && s.calibration && snapshot && state !== 'paused';
   const angle = live ? snapshot.angle : 0;
   const abs = Math.round(Math.abs(angle));
-  // While judging pauses for a big head movement (or walking), say so instead of showing 0°.
+  // While judging pauses (big head movement, walking, lying down or bent far over), say so instead of
+  // showing 0°.
   const pauseReason = !check && s.calibration ? snapshot?.pauseReason : null;
   const pauseText =
-    pauseReason === 'moving' ? t('home.bigMovement') : pauseReason === 'walking' ? t('pause.walking') : null;
+    pauseReason === 'moving'
+      ? t('home.bigMovement')
+      : pauseReason === 'walking' || pauseReason === 'outOfRange'
+        ? t(`pause.${pauseReason}`)
+        : null;
   const now = useNow(s.session !== null);
   const today = useTodaySummary();
 

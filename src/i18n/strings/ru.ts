@@ -20,6 +20,7 @@ export const ru: Strings = {
   'state.paused': 'Пауза',
   'pause.moving': 'Движение',
   'pause.walking': 'Ходьба',
+  'pause.outOfRange': 'Вне диапазона',
   'pause.disconnected': 'Нет сигнала AirPods',
   'pause.notCalibrated': 'Нужна калибровка',
   'angle.left': 'Л {deg}°',

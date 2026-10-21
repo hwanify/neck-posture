@@ -20,6 +20,7 @@ export const ja: Strings = {
   'state.paused': '一時停止中',
   'pause.moving': '移動中',
   'pause.walking': '歩行中',
+  'pause.outOfRange': '測定範囲外',
   'pause.disconnected': 'AirPodsの信号なし',
   'pause.notCalibrated': '調整が必要',
   'angle.left': '左 {deg}°',

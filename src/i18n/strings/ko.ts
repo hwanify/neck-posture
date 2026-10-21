@@ -20,6 +20,7 @@ export const ko: Strings = {
   'state.paused': '일시정지',
   'pause.moving': '움직이는 중',
   'pause.walking': '걷는 중',
+  'pause.outOfRange': '측정 범위 밖',
   'pause.disconnected': 'AirPods 신호 없음',
   'pause.notCalibrated': '자세 보정 필요',
   'angle.left': '좌 {deg}°',

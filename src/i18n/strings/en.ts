@@ -22,6 +22,7 @@ export const en = {
   'state.paused': 'Paused',
   'pause.moving': 'Moving',
   'pause.walking': 'Walking',
+  'pause.outOfRange': 'Out of range',
   'pause.disconnected': 'No AirPods signal',
   'pause.notCalibrated': 'Calibration needed',
   'angle.left': 'L {deg}°',

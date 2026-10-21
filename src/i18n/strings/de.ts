@@ -20,6 +20,7 @@ export const de: Strings = {
   'state.paused': 'Pausiert',
   'pause.moving': 'In Bewegung',
   'pause.walking': 'Beim Gehen',
+  'pause.outOfRange': 'Außerhalb des Bereichs',
   'pause.disconnected': 'Kein AirPods-Signal',
   'pause.notCalibrated': 'Einrichtung nötig',
   'angle.left': 'L {deg}°',
