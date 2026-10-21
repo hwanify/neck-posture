@@ -1,0 +1,95 @@
+# Builds the iOS app on a GitHub-hosted Mac with `eas build --local`, then sends it to TestFlight.
+# Same signing credentials, OTA channel and build numbering as "iOS Build", but the build runs here
+# instead of on EAS servers, so it doesn't use the Expo plan's monthly build count. (macOS runners
+# are free for public repositories.)
+# Run it from GitHub: Actions → "iOS Build (GitHub Mac)" → Run workflow.
+name: iOS Build (GitHub Mac)
+
+on:
+  workflow_dispatch:
+    inputs:
+      submit:
+        description: 'Send to TestFlight when the build finishes'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ios-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      EAS: npx --yes eas-cli@24.12.1
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      EXPO_APPLE_TEAM_TYPE: ${{ vars.APPLE_TEAM_TYPE || 'INDIVIDUAL' }}
+      ASC_APP_ID: ${{ vars.ASC_APP_ID || '6820913429' }}
+      SUBMIT: ${{ inputs.submit }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Check secrets
+        run: |
+          for name in EXPO_TOKEN EXPO_ASC_KEY_ID EXPO_ASC_ISSUER_ID EXPO_APPLE_TEAM_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing secret for $name — see docs/IPHONE_SETUP.md"
+              exit 1
+            fi
+          done
+
+      - name: Write App Store Connect API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          if [ -z "$ASC_API_KEY_P8" ]; then echo "::error::Missing secret ASC_API_KEY_P8"; exit 1; fi
+          printf '%s\n' "$ASC_API_KEY_P8" > "$RUNNER_TEMP/asc_api_key.p8"
+          echo "EXPO_ASC_API_KEY_PATH=$RUNNER_TEMP/asc_api_key.p8" >> "$GITHUB_ENV"
+
+      # Use the newest Xcode on the runner; Expo SDKs need a recent one.
+      - name: Select Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+          pod --version
+          fastlane --version | tail -n 1
+
+      # The Live Activity widget target needs the team in the app config to sign the extension.
+      - name: Set Apple team
+        run: node -e "const f='app.json',c=require('./'+f);c.expo.ios.appleTeamId=process.env.EXPO_APPLE_TEAM_ID;require('fs').writeFileSync(f,JSON.stringify(c,null,2)+'\\n')"
+
+      - name: Link EAS project
+        run: |
+          $EAS init --non-interactive --force
+          $EAS update:configure --platform ios --non-interactive
+
+      # Signing credentials already live on EAS (made by "iOS Build"); the local build downloads them.
+      - name: Build
+        run: |
+          $EAS build --platform ios --profile production --local --non-interactive \
+            --output "$RUNNER_TEMP/plumb.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plumb-ipa
+          path: ${{ runner.temp }}/plumb.ipa
+          retention-days: 7
+
+      - name: Send to TestFlight
+        if: env.SUBMIT == 'true'
+        run: |
+          node scripts/ci-configure-submit.js
+          $EAS submit --platform ios --profile production --path "$RUNNER_TEMP/plumb.ipa" --non-interactive
+          echo "Uploaded to App Store Connect. It shows up in TestFlight once Apple finishes processing." >> "$GITHUB_STEP_SUMMARY"
