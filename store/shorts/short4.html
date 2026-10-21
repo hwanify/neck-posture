@@ -52,6 +52,11 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 // D 5.0–9.5 ear close-up: cue, hand to ear, sits up · E 9.5–11.3 upright at the desk ·
 // F 11.3–13.8 app screen · G 13.8–17.0 reserve card.
 const CUE = 5.25, PHONE = 11.3, END = 13.8;
+// ?end=launch: the after-launch ending (download from the profile link) instead of the reserve card.
+if (new URLSearchParams(location.search).get('end') === 'launch') {
+  document.querySelector('#end .soon').textContent = 'App Store 출시 · 무료';
+  document.querySelector('#end .ask').textContent = '프로필 링크에서 받기';
+}
 const EAR_X = 345, EAR_Y = 440;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
