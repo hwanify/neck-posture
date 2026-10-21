@@ -4,10 +4,17 @@
 # Updates reach builds with the same app version (runtimeVersion policy "appVersion"). After a native
 # change (modules/, app.json plugins, new native packages) bump "version" in app.json and run "iOS Build",
 # so the new JS never lands on a binary that lacks its native code.
+# To reach an older binary that is still in users' hands, set "app_version" to its version (e.g. 1.0.1);
+# only do that when the JS still runs on that binary's native code.
 name: OTA Update
 
 on:
   workflow_dispatch:
+    inputs:
+      app_version:
+        description: App version to publish for (blank = the version in app.json)
+        required: false
+        default: ''
 
 concurrency:
   group: ota-${{ github.ref }}
@@ -34,6 +41,13 @@ jobs:
         run: npm ci
       - if: env.EXPO_TOKEN != ''
         run: npm run typecheck && npm test
+      - name: Target an older app version
+        if: env.EXPO_TOKEN != '' && inputs.app_version != ''
+        env:
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          node -e "const f='app.json',j=require('./'+f);j.expo.version=process.env.APP_VERSION;require('fs').writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
+          echo "Publishing for app version $APP_VERSION"
       - name: Publish update
         if: env.EXPO_TOKEN != ''
         env:
