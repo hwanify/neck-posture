@@ -9,6 +9,7 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { t } from './src/i18n';
+import { applyUpdateAtLaunch, shouldCheckForUpdateAtLaunch } from './src/services/launchUpdate';
 import { monitor, useMonitor } from './src/state/monitor';
 import { type, useAppFonts } from './src/ui/fonts';
 import { TabIcon } from './src/ui/TabIcon';
@@ -32,10 +33,16 @@ function Root() {
   const palette = useSvgPalette();
   const fontsReady = useAppFonts();
   const [tab, setTab] = useState<TabKey>('home');
+  // A fresh install starts on the code built into the app; pick up a newer OTA update first.
+  const [updating, setUpdating] = useState(shouldCheckForUpdateAtLaunch);
 
   useEffect(() => {
+    if (updating) {
+      void applyUpdateAtLaunch().finally(() => setUpdating(false));
+      return;
+    }
     void monitor.init();
-  }, []);
+  }, [updating]);
 
   // "측정 종료" on the Lock Screen card opens plumb://stop.
   useEffect(() => {
@@ -56,7 +63,7 @@ function Root() {
     if (checking) setTab('home');
   }, [checking]);
 
-  if (!s.loaded || !fontsReady) {
+  if (updating || !s.loaded || !fontsReady) {
     return (
       <View style={[styles.fill, styles.center]}>
         <ActivityIndicator />
