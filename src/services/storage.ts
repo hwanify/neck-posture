@@ -52,7 +52,38 @@ const KEYS = {
   calibration: 'baromok.calibration.v1',
   sessions: 'baromok.sessions.v1',
   onboarded: 'baromok.onboarded.v1',
+  defaultsVersion: 'baromok.defaultsVersion',
 };
+
+/**
+ * Bump when the recommended alert settings change and existing users should get them too. On the
+ * next launch their alert angle, hold time, interval, walking and sound settings are reset to the
+ * defaults once; everything else they chose (language, ear, background mode, …) is kept.
+ */
+const DEFAULTS_VERSION = 1;
+
+function withCurrentDefaults(settings: AppSettings): AppSettings {
+  const p = DEFAULT_SETTINGS.posture;
+  const f = DEFAULT_SETTINGS.feedback;
+  return {
+    ...settings,
+    posture: {
+      ...settings.posture,
+      enterDeg: p.enterDeg,
+      exitDeg: p.exitDeg,
+      holdSec: p.holdSec,
+      cooldownSec: p.cooldownSec,
+      measureWhileWalking: p.measureWhileWalking,
+    },
+    feedback: {
+      ...settings.feedback,
+      sound: f.sound,
+      haptic: f.haptic,
+      recoveryChime: f.recoveryChime,
+      volume: f.volume,
+    },
+  };
+}
 
 const MAX_SESSIONS = 1000;
 
@@ -69,6 +100,20 @@ const writeJson = (key: string, value: unknown) => AsyncStorage.setItem(key, JSO
 
 export async function loadSettings(): Promise<AppSettings> {
   const saved = await readJson<Partial<AppSettings>>(KEYS.settings);
+  const settings = mergeSaved(saved);
+  const applied = Number((await AsyncStorage.getItem(KEYS.defaultsVersion).catch(() => null)) ?? 0);
+  if (applied >= DEFAULTS_VERSION) return settings;
+  const next = saved ? withCurrentDefaults(settings) : settings;
+  try {
+    if (saved) await saveSettings(next);
+    await AsyncStorage.setItem(KEYS.defaultsVersion, String(DEFAULTS_VERSION));
+  } catch {
+    // Try again next launch.
+  }
+  return next;
+}
+
+function mergeSaved(saved: Partial<AppSettings> | null): AppSettings {
   return {
     posture: { ...DEFAULT_SETTINGS.posture, ...saved?.posture },
     feedback: { ...DEFAULT_SETTINGS.feedback, ...saved?.feedback },
