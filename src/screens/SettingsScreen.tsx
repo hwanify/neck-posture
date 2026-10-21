@@ -104,7 +104,7 @@ export function SettingsScreen() {
           title={t('settings.holdTime')}
           value={posture.holdSec}
           step={1}
-          min={2}
+          min={1}
           max={60}
           format={(n) => t('common.seconds', { n })}
           onChange={(holdSec) => setPosture({ holdSec })}

@@ -1,13 +1,12 @@
-# Publishes JS-only changes over the air to the installed TestFlight app.
+# Publishes JS-only changes over the air to the App Store and TestFlight apps (channel "production").
+# Manual only: the app is live, so an update goes out when someone runs this workflow on purpose,
+# never on a push.
 # Updates reach builds with the same app version (runtimeVersion policy "appVersion"). After a native
 # change (modules/, app.json plugins, new native packages) bump "version" in app.json and run "iOS Build",
 # so the new JS never lands on a binary that lacks its native code.
 name: OTA Update
 
 on:
-  push:
-    branches: [main, 'claude/**']
-    paths-ignore: ['docs/**', '**/*.md']
   workflow_dispatch:
 
 concurrency:

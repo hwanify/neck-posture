@@ -20,7 +20,7 @@ AirPods의 헤드 트래킹 센서로 **목이 좌우로 기울어진 것**을 �
 - [x] 감지 엔진: 2단계 자세 보정, 중력 기반 좌우 기울기, 필터·움직임/보행 게이트, 상태 머신 (Jest 테스트)
 - [x] 화면: 온보딩, 홈(실시간 시각화·측정), 자세 보정, 기록(좌우 편향·타임라인), 설정
 - [x] 백그라운드 감지(실험), 로컬 알림, 진동
-- [x] GitHub Actions → EAS Build → TestFlight, push 시 OTA 업데이트
+- [x] GitHub Actions → EAS Build → TestFlight, 수동 실행 OTA 업데이트
 - [x] Expo Go 미리보기 (push 시 자동 배포, AirPods 대신 iPhone 모션 센서 사용)
 - [ ] 실기기 검증: 센서 수신 빈도, 백그라운드 유지 시간, 기본 임계값 튜닝
 
