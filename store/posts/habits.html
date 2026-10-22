@@ -12,6 +12,8 @@ html, body { margin: 0; width: 540px; height: 675px; background: #000; overflow:
 .n { position: absolute; left: 44px; top: 56px; font-size: 15px; color: #8E8E8E; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 .h { position: absolute; left: 44px; right: 44px; font-weight: 600; font-size: 36px; line-height: 1.3; letter-spacing: -1.5px; }
 .b { position: absolute; left: 44px; right: 44px; font-size: 18px; line-height: 1.6; color: #A8A8A8; letter-spacing: -0.4px; }
+.photo { position: absolute; inset: 0; background: #111 center / cover no-repeat; }
+.shade { position: absolute; left: 0; right: 0; bottom: 0; height: 380px; background: linear-gradient(transparent, rgba(0,0,0,.9) 55%); }
 .fig { position: absolute; left: 50%; top: 270px; width: 400px; height: 325px; margin-left: -200px; }
 .brand { position: absolute; left: 44px; bottom: 26px; font-size: 13px; color: #555; font-weight: 500; }
 .page { position: absolute; right: 30px; bottom: 26px; font-size: 13px; color: #555; letter-spacing: 0.5px; }
@@ -98,17 +100,29 @@ const HABITS = [
   },
 ];
 
-HABITS.forEach((h, i) => {
-  document.getElementById(`s${i + 2}`).innerHTML = `
-    <div class="n">0${i + 1}</div>
-    <div class="h" style="top:92px">${h.title}</div>
-    <div class="b" style="top:200px">${h.body}</div>
-    <div class="fig">${h.fig}</div>
-    <div class="brand">Plumb</div><div class="page">${i + 2} / 7</div>`;
-});
+// With a photo at habits/photos/h{n}.jpg the slide is the photo with the text over its lower part;
+// without one it falls back to the line figure.
+const drawHabit = (i, photo) => {
+  const h = HABITS[i];
+  document.getElementById(`s${i + 2}`).innerHTML = photo
+    ? `<div class="photo" style="background-image:url(${photo})"></div><div class="shade"></div>
+      <div class="n" style="top:auto;bottom:250px;color:#BDBDBD">0${i + 1}</div>
+      <div class="h" style="top:auto;bottom:140px;text-shadow:0 2px 14px rgba(0,0,0,.5)">${h.title}</div>
+      <div class="b" style="top:auto;bottom:62px;color:#CFCFCF">${h.body}</div>
+      <div class="page">${i + 2} / 7</div>`
+    : `<div class="n">0${i + 1}</div>
+      <div class="h" style="top:92px">${h.title}</div>
+      <div class="b" style="top:200px">${h.body}</div>
+      <div class="fig">${h.fig}</div>
+      <div class="brand">Plumb</div><div class="page">${i + 2} / 7</div>`;
+};
+const load = (src) => new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(src); img.onerror = () => resolve(null); img.src = src; });
 
 const s = new URLSearchParams(location.search).get('s') || '1';
-document.getElementById('s' + s).classList.add('on');
-document.body.dataset.ready = '1';
+Promise.all(HABITS.map((_, i) => load(`habits/photos/h${i + 1}.jpg`))).then((photos) => {
+  photos.forEach((photo, i) => drawHabit(i, photo));
+  document.getElementById('s' + s).classList.add('on');
+  document.body.dataset.ready = '1';
+});
 </script>
 </body></html>
