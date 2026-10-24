@@ -68,7 +68,7 @@ const INTROS = [
   ['', '기울면, 귀로 알려주는 앱'],
   ['제가 만든 앱', '고개 기울기 알림'],
 ];
-const pick = INTROS[(+(new URLSearchParams(location.search).get('intro')) || 1) - 1] || INTROS[0];
+const pick = INTROS[(+(new URLSearchParams(location.search).get('intro')) || 3) - 1] || INTROS[2];
 document.querySelector('#intro .l1').textContent = pick[0];
 document.querySelector('#intro .l1').style.display = pick[0] ? 'block' : 'none';
 document.querySelector('#intro .l2').textContent = pick[1];
