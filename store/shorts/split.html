@@ -1,0 +1,100 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Split-screen short (1080×1920): both halves start from the same tilted shot; the top stays tilted
+     ("Plumb 없이"), the bottom hears the cue and straightens up ("Plumb 켜고"). Then the launch card.
+     Transparent overlay composited over the stacked footage; render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
+.abs { position: absolute; left: 0; right: 0; text-align: center; }
+#divider { position: absolute; left: 0; right: 0; top: 479px; height: 2px; background: #F2F2F2; }
+#band { position: absolute; left: 0; right: 0; top: 432px; height: 96px; background: rgba(0,0,0,.82); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#bandMain { font-weight: 600; font-size: 27px; letter-spacing: -1px; }
+#bandSub { font-size: 16px; color: #BDBDBD; margin-top: 4px; letter-spacing: -0.3px; }
+.label { position: absolute; left: 22px; padding: 7px 14px; border-radius: 20px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.25); font-weight: 500; font-size: 16px; letter-spacing: -0.3px; }
+.meter { position: absolute; right: 22px; width: 130px; text-align: right; }
+.meter .deg { font-weight: 500; font-size: 40px; letter-spacing: -1.2px; font-variant-numeric: tabular-nums; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+.meter .lv { position: relative; height: 10px; margin-top: 2px; }
+.meter .hz { position: absolute; left: 0; right: 0; top: 4.5px; height: 1.5px; background: rgba(255,255,255,.4); }
+.meter .ln { position: absolute; left: 12px; right: 12px; top: 3.5px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+.meter .dot { position: absolute; left: 50%; top: 0; width: 10px; height: 10px; margin-left: -5px; border-radius: 5px; background: #F2F2F2; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+#black { position: absolute; inset: 0; background: #000; }
+#end { top: 250px; }
+#icon { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#end .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#end .soon { display: inline-block; margin-top: 34px; padding: 9px 20px; border-radius: 30px; border: 1.5px solid #4a4a4a; font-size: 17px; font-weight: 500; color: #CFCFCF; }
+#end .ask { margin-top: 30px; font-weight: 600; font-size: 27px; letter-spacing: -0.9px; }
+</style></head>
+<body>
+<div id="divider"></div>
+<div class="label" id="labTop" style="top:22px">Plumb 없이</div>
+<div class="label" id="labBot" style="top:552px">Plumb 켜고</div>
+<div class="meter" id="mTop" style="top:16px"><div class="deg"></div><div class="lv"><div class="hz"></div><div class="ln"></div><div class="dot"></div></div></div>
+<div class="meter" id="mBot" style="top:546px"><div class="deg"></div><div class="lv"><div class="hz"></div><div class="ln"></div><div class="dot"></div></div></div>
+<div id="rings"></div>
+<div id="band"><div id="bandMain"></div><div id="bandSub"></div></div>
+<div id="black"></div>
+<div id="end" class="abs"><img id="icon" src="../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">에어팟이 고개 기울기를 알려줘요</div>
+  <div class="soon">App Store 출시 · 무료</div>
+  <div class="cta"><div class="ask">프로필 링크에서 받기</div></div></div>
+<script>
+// Footage (both halves): 0–2.5 the same laptop shot, tilted. Top keeps going tilted to 7.5.
+// Bottom cuts at 2.5 to the ear close-up: cue at 2.75, hand to ear, sits up 4.9–6.1.
+// Launch card 7.5–10.5.
+const CUE = 2.75, SPLIT_END = 7.5;
+// Ear in the bottom half (the close-up is cropped to rows 400–1360 of a 1080×1920 frame).
+const EAR_X = 345, EAR_Y = 720;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+const topAngle = (t) => 12 + 0.6 * Math.sin(t * 1.3);
+const botAngle = (t) => (t < 4.9 ? 12 + 0.6 * Math.sin(t * 1.3) : 12 * (1 - ease((t - 4.9) / 1.2)));
+
+function meter(id, a) {
+  const m = $(id);
+  m.querySelector('.deg').textContent = `${Math.round(a)}°`;
+  m.querySelector('.ln').style.transform = `rotate(${-a}deg)`;
+}
+
+function render(t) {
+  const split = t < SPLIT_END;
+  for (const id of ['divider', 'labTop', 'labBot', 'mTop', 'mBot', 'band']) $(id).style.opacity = split ? 1 : 0;
+  meter('mTop', topAngle(t));
+  meter('mBot', botAngle(t));
+
+  const lines = [
+    [0.0, CUE, '아래 사람만 고개를 세웁니다', '이유는?'],
+    [CUE, 4.9, '에어팟이 귀에서 "띵" 하고 알려줘서', ''],
+    [4.9, SPLIT_END, '기울면, 그쪽 귀로 알려주는 앱', ''],
+  ];
+  const l = lines.find(([s, e]) => t >= s && t < e);
+  $('bandMain').textContent = l ? l[2] : ''; $('bandSub').textContent = l ? l[3] : '';
+  $('bandSub').style.display = l && l[3] ? 'block' : 'none';
+
+  let rings = '';
+  for (const start of [CUE, CUE + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 16 + 96 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+
+  $('black').style.opacity = clamp((t - SPLIT_END + 0.2) / 0.2);
+  $('end').style.opacity = clamp((t - SPLIT_END - 0.1) / 0.5);
+  $('end').style.transform = `translateY(${(1 - ease((t - SPLIT_END - 0.1) / 0.6)) * 30}px)`;
+  $('end').querySelector('.cta').style.opacity = clamp((t - SPLIT_END - 0.9) / 0.4);
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
