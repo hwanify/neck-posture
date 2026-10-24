@@ -1,7 +1,7 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
 <!-- Transparent overlay for short2 (1080×1920), composited over the Higgsfield clips by render-short2.sh.
-     render(t) is pure; ?end=launch shows the App Store end card, otherwise the pre-launch one. -->
+     render(t) is pure; ?end=launch shows the App Store end card, otherwise the pre-launch one; ?lang=en for English. -->
 <style>
 @font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
 @font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
@@ -50,8 +50,39 @@ const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
 const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
 const $ = (id) => document.getElementById(id);
-const launch = new URLSearchParams(location.search).get('end') === 'launch';
-$('cta').textContent = launch ? 'App Store에서 무료' : '곧 App Store 출시';
+const Q = new URLSearchParams(location.search);
+const launch = Q.get('end') === 'launch';
+const EN = Q.get('lang') === 'en';
+const T = EN
+  ? {
+      hook: 'Is your head tilting<br>without you noticing?',
+      caps: [
+        ['Studying, working', 'your head slowly drifts to one side'],
+        ['A "ding" in your right ear', 'after 2 seconds tilted, it lets you know'],
+        ['Straighten up and it goes quiet', 'tilt again and it tells you again'],
+        ['Even while walking', 'it keeps measuring with the screen off'],
+        ['No camera, just your AirPods', 'your data stays on your iPhone'],
+      ],
+      tag: 'Your AirPods tell you when your head tilts',
+      cta: launch ? 'Free on the App Store' : 'Coming soon to the App Store',
+      shot: '../screenshots/en-1.png',
+    }
+  : {
+      hook: '나도 모르게<br>고개가 기울어 있다면',
+      caps: [
+        ['공부할 때, 일할 때', '고개는 조금씩 한쪽으로 기울어요'],
+        ['오른쪽 귀에서 "띵"', '기울어진 채 2초가 지나면 알려줘요'],
+        ['고개를 세우면 조용해져요', '다시 기울면 또 알려줘요'],
+        ['걸을 때도', '화면을 꺼도 계속 재요'],
+        ['카메라 없이, 에어팟 센서로', '기록은 내 아이폰에만 저장돼요'],
+      ],
+      tag: '에어팟이 고개 기울기를 알려줘요',
+      cta: launch ? 'App Store에서 무료' : '곧 App Store 출시',
+      shot: '../screenshots/ko-1.png',
+    };
+$('cta').textContent = T.cta;
+document.querySelector('#end .tag').textContent = T.tag;
+document.querySelector('#phone img').src = T.shot;
 
 // Head angle following the footage (his right shoulder = leans left on screen).
 function angleAt(t) {
@@ -72,7 +103,7 @@ function render(t) {
   $('top').style.opacity = fade(t, -1, 2.6, 0.4);
   $('bottom').style.opacity = onFootage ? 1 : 0;
 
-  $('hook').innerHTML = '나도 모르게<br>고개가 기울어 있다면';
+  $('hook').innerHTML = T.hook;
   $('hook').style.opacity = fade(t, -1, 2.4, 0.35);
 
   const a = angleAt(t);
@@ -81,13 +112,7 @@ function render(t) {
   $('ln').style.transform = `rotate(${-a}deg)`;
   $('num').textContent = `${Math.round(a)}°`;
 
-  const caps = [
-    [2.4, 4.9, '공부할 때, 일할 때', '고개는 조금씩 한쪽으로 기울어요'],
-    [4.9, 6.9, '오른쪽 귀에서 "띵"', '기울어진 채 2초가 지나면 알려줘요'],
-    [6.9, 8.7, '고개를 세우면 조용해져요', '다시 기울면 또 알려줘요'],
-    [8.7, 12.2, '걸을 때도', '화면을 꺼도 계속 재요'],
-    [12.5, 14.7, '카메라 없이, 에어팟 센서로', '기록은 내 아이폰에만 저장돼요'],
-  ];
+  const caps = [[2.4, 4.9], [4.9, 6.9], [6.9, 8.7], [8.7, 12.2], [12.5, 14.7]].map(([a, b], i) => [a, b, ...T.caps[i]]);
   const c = caps.find(([s, e]) => t >= s && t < e);
   $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
   const o = c ? fade(t, c[0], c[1], 0.25) : 0;
