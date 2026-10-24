@@ -1,0 +1,132 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Launch short (1080×1920) "하루 동안 내 고개": three moments of the day with a clock time and the angle,
+     then the ear cue, a calm "after" shot, the app and the launch card.
+     Transparent overlay composited over the Higgsfield clips; render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
+.abs { position: absolute; left: 0; right: 0; text-align: center; }
+.shade { position: absolute; left: 0; right: 0; }
+#top { top: 0; height: 330px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
+#bottom { bottom: 0; height: 420px; background: linear-gradient(transparent, rgba(0,0,0,.85) 45%); }
+#black { position: absolute; inset: 0; background: #000; }
+#hook { top: 120px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
+#clock { top: 250px; font-weight: 500; font-size: 26px; letter-spacing: 1px; font-variant-numeric: tabular-nums; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+#cap { top: 806px; font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
+#sub { top: 845px; font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
+#level { position: absolute; left: 50%; top: 690px; width: 300px; height: 12px; margin-left: -150px; }
+#hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1.5px; background: rgba(255,255,255,.35); }
+#ln { position: absolute; left: 50%; top: 4.5px; width: 240px; margin-left: -120px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+#dot { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 6px; background: #F2F2F2; }
+#num { top: 714px; font-weight: 500; font-size: 46px; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+#phone { position: absolute; left: 50%; top: 150px; width: 300px; height: 600px; margin-left: -150px; overflow: hidden; }
+#phone img { width: 356px; margin-left: -28px; margin-top: -191px; display: block; }
+#end { top: 250px; }
+#icon { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#end .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#end .soon { display: inline-block; margin-top: 34px; padding: 9px 20px; border-radius: 30px; border: 1.5px solid #4a4a4a; font-size: 17px; font-weight: 500; color: #CFCFCF; }
+#end .ask { margin-top: 30px; font-weight: 600; font-size: 27px; letter-spacing: -0.9px; }
+</style></head>
+<body>
+<div id="top" class="shade"></div>
+<div id="bottom" class="shade"></div>
+<div id="black"></div>
+<div id="hook" class="abs">하루 종일,<br>내 고개는</div>
+<div id="clock" class="abs"></div>
+<div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
+<div id="num" class="abs"></div>
+<div id="rings"></div>
+<div id="phone"><img src="../screenshots/ko-1.png"></div>
+<div id="cap" class="abs"></div>
+<div id="sub" class="abs"></div>
+<div id="end" class="abs"><img id="icon" src="../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">에어팟이 고개 기울기를 알려줘요</div>
+  <div class="soon">App Store 출시 · 무료</div>
+  <div class="cta"><div class="ask">프로필 링크에서 받기</div></div></div>
+<script>
+// Footage: A 0–2.2 walking · B 2.2–4.4 laptop · C 4.4–6.6 studying (all tilted) ·
+// D 6.6–10.6 ear close-up: cue, hand to ear, sits up · E 10.6–12.4 upright at the desk ·
+// F 12.4–14.9 app screen · G 14.9–17.9 launch card.
+const CUE = 6.85, PHONE = 12.4, END = 14.9;
+const EAR_X = 345, EAR_Y = 440;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+const MOMENTS = [
+  [0.0, 2.2, '08:40', '출근길'],
+  [2.2, 4.4, '14:00', '일할 때'],
+  [4.4, 6.6, '22:30', '공부할 때'],
+];
+
+// Head angle per cut, following the footage (his right shoulder = leans left on screen).
+function angleAt(t) {
+  if (t < 2.2) return 8;
+  if (t < 4.4) return 11 + 1.0 * ((t - 2.2) / 2.2);
+  if (t < 6.6) return 10 + 5 * ease((t - 4.4) / 2.2);
+  if (t < 8.9) return 14;                                   // close-up, cue at 6.85
+  if (t < 10.2) return 14 * (1 - ease((t - 8.9) / 1.3));   // sits up
+  return 0;
+}
+
+function render(t) {
+  const onFootage = t < PHONE;
+  $('black').style.opacity = clamp((t - PHONE + 0.25) / 0.25);
+  $('top').style.opacity = t < 6.6 ? 1 : 0;
+  $('bottom').style.opacity = onFootage ? 1 : 0;
+  $('hook').style.opacity = t < 6.6 ? 1 : 0;
+
+  const m = MOMENTS.find(([s, e]) => t >= s && t < e);
+  $('clock').textContent = m ? m[2] : '';
+  $('clock').style.opacity = m ? 1 : 0;
+
+  const a = angleAt(t);
+  const lv = fade(t, -1, PHONE - 0.2, 0.4);
+  $('level').style.opacity = lv; $('num').style.opacity = lv;
+  $('ln').style.transform = `rotate(${-a}deg)`;
+  $('num').textContent = `${Math.round(a)}°`;
+
+  const caps = [
+    ...MOMENTS.map(([s, e, , label]) => [s, e, label, '']),
+    [6.6, 8.9, '기울면, 그쪽 귀에서 "띵"', '에어팟이 알려줍니다'],
+    [8.9, 10.6, '바로 세우면 조용해집니다', ''],
+    [10.6, 12.3, '하루 종일, 신경 쓰지 않아도', ''],
+    [12.5, 14.8, '카메라 없이, 에어팟 센서로', '화면을 꺼도 계속 잽니다'],
+  ];
+  const c = caps.find(([s, e]) => t >= s && t < e);
+  $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
+  // Hard cuts in the opener; soft fades afterwards.
+  const o = !c ? 0 : c[0] < 6.6 ? 1 : fade(t, c[0], c[1], 0.25);
+  $('cap').style.opacity = o; $('sub').style.opacity = o;
+  const low = t >= PHONE;
+  $('cap').style.top = low ? '790px' : '806px'; $('sub').style.top = low ? '829px' : '845px';
+
+  let rings = '';
+  for (const start of [CUE, CUE + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+
+  $('phone').style.opacity = fade(t, PHONE + 0.1, END, 0.4);
+  $('phone').style.transform = `translateY(${(1 - ease((t - PHONE - 0.1) / 0.6)) * 50}px)`;
+  $('end').style.opacity = clamp((t - END - 0.1) / 0.5);
+  $('end').style.transform = `translateY(${(1 - ease((t - END - 0.1) / 0.6)) * 30}px)`;
+  const cta = $('end').querySelector('.cta');
+  cta.style.opacity = clamp((t - END - 0.9) / 0.4);
+  cta.style.transform = `translateY(${(1 - ease((t - END - 0.9) / 0.6)) * 14}px)`;
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
