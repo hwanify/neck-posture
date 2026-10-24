@@ -34,6 +34,27 @@ const P = new URLSearchParams(location.search);
 const C = +(P.get('c') || 1), F = P.get('f') || 'sq';
 // ?notext=1: the image only (no copy, logo or angle numbers), for placements that prefer clean images.
 const NOTEXT = P.get('notext') === '1';
+// ?lang=en: English copy and the English app screenshot.
+const EN = P.get('lang') === 'en';
+const T = EN
+  ? {
+      sub: 'No camera, just your AirPods · Free on the App Store',
+      c1k: 'When your head tilts', c1h: 'A soft cue plays<br>in that ear',
+      c2k: 'At work, while studying', c2h: 'Is your head<br>leaning to one side?',
+      c3k: 'Measured by your AirPods', c3h: 'Head tilt<br>alerts', c3hOne: 'Head tilt alerts',
+      c3s: 'A cue in the ear you lean toward<br>No camera · Screen off · Free',
+      c3sOne: 'A cue in the ear you lean toward · No camera · Free',
+      shot: '../../screenshots/en-1.png',
+    }
+  : {
+      sub: '카메라 없이, 에어팟만으로 · App Store 무료',
+      c1k: '고개가 기울면', c1h: '그쪽 귀에서<br>"띵" 하고 알려줍니다',
+      c2k: '일할 때, 공부할 때', c2h: '나도 모르게<br>고개가 기울어 있다면',
+      c3k: '에어팟으로 재는', c3h: '고개 기울기<br>알림 앱', c3hOne: '고개 기울기 알림 앱',
+      c3s: '기울면 그쪽 귀에서 알려줍니다<br>카메라 없이 · 화면 꺼도 · 무료',
+      c3sOne: '기울면 그쪽 귀에서 알려줍니다 · 카메라 없이 · 무료',
+      shot: '../../screenshots/ko-1.png',
+    };
 const SIZE = { land: [1200, 628], sq: [1200, 1200], port: [1200, 1500] }[F];
 const [W, H] = SIZE;
 const U = Math.min(W, H) / 100; // 1 unit = 1% of the short side
@@ -83,7 +104,7 @@ function level(cx, cy, width, deg, label) {
 }
 
 const pad = 7 * U;
-const SUB = '카메라 없이, 에어팟만으로 · App Store 무료';
+const SUB = T.sub;
 
 if (C === 1) {
   // Ear close-up with the cue rings.
@@ -93,22 +114,22 @@ if (C === 1) {
     stage.insertAdjacentHTML('beforeend', `<div class="ring" style="left:${ex}px;top:${ey}px;width:${2 * r * U}px;height:${2 * r * U}px;opacity:${o}"></div>`);
   if (F === 'land') {
     shade('background:linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.75) 38%, transparent 62%)');
-    place(text({ kicker: '고개가 기울면', head: '그쪽 귀에서<br>"띵" 하고 알려줍니다', sub: SUB }), `left:${pad}px;top:50%;transform:translateY(-50%);width:48%`);
+    place(text({ kicker: T.c1k, head: T.c1h, sub: SUB }), `left:${pad}px;top:50%;transform:translateY(-50%);width:48%`);
   } else {
     shade('background:linear-gradient(transparent 35%, rgba(0,0,0,.88) 72%)');
-    place(text({ kicker: '고개가 기울면', head: '그쪽 귀에서<br>"띵" 하고 알려줍니다', sub: SUB }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
+    place(text({ kicker: T.c1k, head: T.c1h, sub: SUB }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
   }
 } else if (C === 2) {
   // Laptop shot with the angle.
   const at = photo('src/laptop.jpg', 1080, 1920, 650, F === 'land' ? 820 : 980);
   if (F === 'land') {
     shade('background:linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.7) 40%, transparent 65%)');
-    place(text({ kicker: '일할 때, 공부할 때', head: '나도 모르게<br>고개가 기울어 있다면', sub: SUB }), `left:${pad}px;top:50%;transform:translateY(-50%);width:50%`);
+    place(text({ kicker: T.c2k, head: T.c2h, sub: SUB }), `left:${pad}px;top:50%;transform:translateY(-50%);width:50%`);
     level(W * 0.78, H * 0.80, 30 * U, 12, '12°');
   } else {
     shade('background:linear-gradient(rgba(0,0,0,.55), transparent 30%, transparent 45%, rgba(0,0,0,.9) 75%)');
     level(W / 2, pad + 5 * U, 46 * U, 12, '12°');
-    place(text({ kicker: '일할 때, 공부할 때', head: '나도 모르게<br>고개가 기울어 있다면', sub: SUB }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
+    place(text({ kicker: T.c2k, head: T.c2h, sub: SUB }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
   }
 } else {
   // The app itself.
@@ -117,7 +138,7 @@ if (C === 1) {
     // App Store screenshot cropped to its phone frame.
     const iw = w * 1.186;
     stage.insertAdjacentHTML('beforeend', `<div id="phone" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">
-      <img src="../../screenshots/ko-1.png" style="width:${iw}px;margin-left:${-iw * 0.078}px;margin-top:${-iw * 0.537}px"></div>`);
+      <img src="${T.shot}" style="width:${iw}px;margin-left:${-iw * 0.078}px;margin-top:${-iw * 0.537}px"></div>`);
   };
   if (NOTEXT) {
     // Just the phone, centred.
@@ -125,11 +146,11 @@ if (C === 1) {
     shot(W / 2 - pw / 2, F === 'land' ? H * 0.08 : pad, pw, F === 'land' ? H : H - pad);
   } else if (F === 'land') {
     shot(W * 0.62, H * 0.1, H * 0.62, H * 1.0);
-    place(text({ kicker: '에어팟으로 재는', head: '고개 기울기<br>알림 앱', sub: '기울면 그쪽 귀에서 알려줍니다<br>카메라 없이 · 화면 꺼도 · 무료' }), `left:${pad}px;top:50%;transform:translateY(-50%);width:52%`);
+    place(text({ kicker: T.c3k, head: T.c3h, sub: T.c3s }), `left:${pad}px;top:50%;transform:translateY(-50%);width:52%`);
   } else {
     const pw = F === 'sq' ? 34 * U : 42 * U;
     shot(W / 2 - pw / 2, pad, pw, F === 'sq' ? H * 0.5 : H * 0.55);
-    place(text({ kicker: '에어팟으로 재는', head: '고개 기울기 알림 앱', sub: '기울면 그쪽 귀에서 알려줍니다 · 카메라 없이 · 무료', align: 'center' }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
+    place(text({ kicker: T.c3k, head: T.c3hOne, sub: T.c3sOne, align: 'center' }), `left:${pad}px;right:${pad}px;bottom:${pad}px`);
   }
 }
 
