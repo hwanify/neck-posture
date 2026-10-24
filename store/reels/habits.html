@@ -1,0 +1,154 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Reel (1080×1920): five habit photos, then the ear cue and the upright shot from the Higgsfield clips,
+     then the launch card. Photo segments are drawn here (opaque); the clip segments show the footage
+     composited underneath. render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
+.abs { position: absolute; left: 0; right: 0; text-align: center; }
+#photos { position: absolute; inset: 0; background: #000; overflow: hidden; }
+.ph { position: absolute; inset: 0; opacity: 0; }
+.ph .bg { position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(28px) brightness(.45); }
+.ph .fg { position: absolute; left: 0; right: 0; top: 145px; height: 670px; background: center / cover no-repeat; }
+#topShade { position: absolute; left: 0; right: 0; top: 0; height: 330px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
+#bottomShade { position: absolute; left: 0; right: 0; bottom: 0; height: 420px; background: linear-gradient(transparent, rgba(0,0,0,.85) 45%); }
+#hook { top: 112px; font-weight: 600; font-size: 38px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.55); }
+#hookSub { top: 222px; font-size: 18px; color: #D0D0D0; letter-spacing: -0.4px; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+#num { top: 60px; font-size: 16px; color: #BDBDBD; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+#title { top: 84px; font-weight: 600; font-size: 32px; line-height: 1.3; letter-spacing: -1.2px; text-shadow: 0 2px 14px rgba(0,0,0,.6); }
+#cap { top: 806px; font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
+#sub { top: 845px; font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
+#level { position: absolute; left: 50%; top: 840px; width: 300px; height: 12px; margin-left: -150px; }
+#hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1.5px; background: rgba(255,255,255,.35); }
+#ln { position: absolute; left: 50%; top: 4.5px; width: 240px; margin-left: -120px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+#dot { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 6px; background: #F2F2F2; }
+#deg { top: 862px; font-weight: 500; font-size: 34px; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+#black { position: absolute; inset: 0; background: #000; }
+#end { top: 250px; }
+#icon { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#end .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#end .soon { display: inline-block; margin-top: 34px; padding: 9px 20px; border-radius: 30px; border: 1.5px solid #4a4a4a; font-size: 17px; font-weight: 500; color: #CFCFCF; }
+#end .ask { margin-top: 30px; font-weight: 600; font-size: 27px; letter-spacing: -0.9px; }
+</style></head>
+<body>
+<div id="photos"></div>
+<div id="topShade"></div>
+<div id="bottomShade"></div>
+<div id="hook" class="abs">고개가 한쪽으로<br>기우는 습관 5가지</div>
+<div id="hookSub" class="abs">몇 개나 해당되시나요?</div>
+<div id="num" class="abs"></div>
+<div id="title" class="abs"></div>
+<div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
+<div id="deg" class="abs"></div>
+<div id="rings"></div>
+<div id="cap" class="abs"></div>
+<div id="sub" class="abs"></div>
+<div id="black"></div>
+<div id="end" class="abs"><img id="icon" src="../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">에어팟이 고개 기울기를 알려줘요</div>
+  <div class="soon">App Store 출시 · 무료</div>
+  <div class="cta"><div class="ask">프로필 링크에서 받기</div></div></div>
+<script>
+// Timeline: hook 0–2.0 over photo 3 · five habit photos 2.0–12.0 (2 s each) ·
+// ear close-up 12.0–14.8 (cue at 12.25) · upright at the desk 14.8–16.4 · launch card 16.4–19.4.
+const HABITS = [
+  { title: '모니터가 정면에 없을 때', deg: 9 },
+  { title: '가방을 한쪽 어깨로만 멜 때', deg: 7 },
+  { title: '전화를 어깨에 끼고 받을 때', deg: 16 },
+  { title: '소파 팔걸이에 기대 있을 때', deg: 13 },
+  { title: '한 손으로만 폰을 볼 때', deg: 8 },
+];
+const HABITS_AT = 2.0, PER = 2.0, CLIP = 12.0, CUE = 12.25, UPRIGHT = 14.8, END = 16.4;
+const EAR_X = 345, EAR_Y = 440;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+$('photos').innerHTML = HABITS.map((_, i) =>
+  `<div class="ph" id="ph${i}"><div class="bg" style="background-image:url(../posts/habits/photos/h${i + 1}.jpg)"></div>
+   <div class="fg" style="background-image:url(../posts/habits/photos/h${i + 1}.jpg)"></div></div>`).join('');
+
+// Which photo shows at t: photo 3 under the hook, then 1..5 in turn.
+const photoAt = (t) => (t < HABITS_AT ? 2 : Math.min(4, Math.floor((t - HABITS_AT) / PER)));
+
+function angleAt(t) {
+  if (t < HABITS_AT) return 16 * ease(t / 1.6);
+  if (t < CLIP) {
+    const i = photoAt(t), local = (t - HABITS_AT - i * PER) / PER;
+    return HABITS[i].deg * ease(Math.min(1, local * 2.5));
+  }
+  if (t < 13.6) return 14;
+  if (t < 14.8) return 14 * (1 - ease((t - 13.6) / 1.1));
+  return 0;
+}
+
+function render(t) {
+  const onPhotos = t < CLIP;
+  $('photos').style.opacity = onPhotos ? 1 : 0;
+  const cur = photoAt(t);
+  HABITS.forEach((_, i) => {
+    const el = $(`ph${i}`);
+    el.style.opacity = onPhotos && i === cur ? 1 : 0;
+    const start = i === 2 && t < HABITS_AT ? 0 : HABITS_AT + i * PER;
+    const zoom = 1 + 0.06 * clamp((t - start) / (t < HABITS_AT ? HABITS_AT : PER));
+    el.querySelector('.fg').style.transform = `scale(${zoom})`;
+  });
+  $('topShade').style.opacity = t < END ? 1 : 0;
+  $('bottomShade').style.opacity = t < END ? 1 : 0;
+
+  const hookOn = t < HABITS_AT;
+  $('hook').style.opacity = hookOn ? fade(t, -1, HABITS_AT - 0.05, 0.2) : 0;
+  $('hookSub').style.opacity = hookOn ? fade(t, 0.4, HABITS_AT - 0.05, 0.25) : 0;
+
+  const inHabits = t >= HABITS_AT && t < CLIP;
+  $('num').textContent = inHabits ? `0${cur + 1} / 05` : '';
+  $('title').textContent = inHabits ? HABITS[cur].title : '';
+  $('num').style.opacity = $('title').style.opacity = inHabits ? 1 : 0;
+
+  const a = angleAt(t);
+  const lv = t < UPRIGHT + 1.5 ? 1 : 0;
+  $('level').style.opacity = lv; $('deg').style.opacity = lv;
+  $('level').style.top = t >= CLIP ? '690px' : '840px';
+  $('deg').style.top = t >= CLIP ? '712px' : '862px';
+  $('ln').style.transform = `rotate(${-a}deg)`;
+  $('deg').textContent = `${Math.round(a)}°`;
+
+  const caps = [
+    [CLIP, 13.7, '기울면, 그쪽 귀에서 "띵"', '에어팟이 알려줍니다'],
+    [13.7, UPRIGHT, '바로 세우면 조용해집니다', ''],
+    [UPRIGHT, END, '하루 종일, 신경 쓰지 않아도', ''],
+  ];
+  const c = caps.find(([s, e]) => t >= s && t < e);
+  $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
+  const o = c ? fade(t, c[0], c[1], 0.2) : 0;
+  $('cap').style.opacity = o; $('sub').style.opacity = o;
+
+  let rings = '';
+  for (const start of [CUE, CUE + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+
+  $('black').style.opacity = clamp((t - END + 0.25) / 0.25);
+  $('end').style.opacity = clamp((t - END - 0.1) / 0.5);
+  $('end').style.transform = `translateY(${(1 - ease((t - END - 0.1) / 0.6)) * 30}px)`;
+  const cta = $('end').querySelector('.cta');
+  cta.style.opacity = clamp((t - END - 0.9) / 0.4);
+}
+window.render = render;
+// Wait for the photos before the first frame is captured.
+Promise.all(HABITS.map((_, i) => new Promise((r) => { const im = new Image(); im.onload = im.onerror = r; im.src = `../posts/habits/photos/h${i + 1}.jpg`; })))
+  .then(() => { render(0); document.body.dataset.ready = '1'; });
+</script>
+</body></html>
