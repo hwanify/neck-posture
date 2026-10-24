@@ -32,6 +32,8 @@ html, body { margin: 0; background: #000; overflow: hidden; font-family: P, sans
 <script>
 const P = new URLSearchParams(location.search);
 const C = +(P.get('c') || 1), F = P.get('f') || 'sq';
+// ?notext=1: the image only (no copy, logo or angle numbers), for placements that prefer clean images.
+const NOTEXT = P.get('notext') === '1';
 const SIZE = { land: [1200, 628], sq: [1200, 1200], port: [1200, 1500] }[F];
 const [W, H] = SIZE;
 const U = Math.min(W, H) / 100; // 1 unit = 1% of the short side
@@ -66,17 +68,18 @@ function text({ kicker, head, sub, align = 'left' }) {
 }
 
 function place(html, css) {
+  if (NOTEXT) return;
   stage.insertAdjacentHTML('beforeend', `<div id="text" style="${css}">${html}</div>`);
 }
 
-function shade(css) { stage.insertAdjacentHTML('beforeend', `<div id="shade" style="${css}"></div>`); }
+function shade(css) { if (NOTEXT) return; stage.insertAdjacentHTML('beforeend', `<div id="shade" style="${css}"></div>`); }
 
 function level(cx, cy, width, deg, label) {
   const h = 20;
   stage.insertAdjacentHTML('beforeend', `
     <div class="level" style="left:${cx - width / 2}px;top:${cy - h / 2}px;width:${width}px;height:${h}px">
       <div class="hz"></div><div class="ln" style="transform:rotate(${-deg}deg)"></div><div class="dot"></div></div>
-    <div class="deg" style="left:${cx - 120}px;width:240px;top:${cy + 2.2 * U}px;font-size:${8 * U}px">${label}</div>`);
+    <div class="deg" style="left:${cx - 120}px;width:240px;top:${cy + 2.2 * U}px;font-size:${8 * U}px">${NOTEXT ? '' : label}</div>`);
 }
 
 const pad = 7 * U;
@@ -116,7 +119,11 @@ if (C === 1) {
     stage.insertAdjacentHTML('beforeend', `<div id="phone" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">
       <img src="../../screenshots/ko-1.png" style="width:${iw}px;margin-left:${-iw * 0.078}px;margin-top:${-iw * 0.537}px"></div>`);
   };
-  if (F === 'land') {
+  if (NOTEXT) {
+    // Just the phone, centred.
+    const pw = F === 'land' ? H * 0.5 : F === 'sq' ? 42 * U : 50 * U;
+    shot(W / 2 - pw / 2, F === 'land' ? H * 0.08 : pad, pw, F === 'land' ? H : H - pad);
+  } else if (F === 'land') {
     shot(W * 0.62, H * 0.1, H * 0.62, H * 1.0);
     place(text({ kicker: '에어팟으로 재는', head: '고개 기울기<br>알림 앱', sub: '기울면 그쪽 귀에서 알려줍니다<br>카메라 없이 · 화면 꺼도 · 무료' }), `left:${pad}px;top:50%;transform:translateY(-50%);width:52%`);
   } else {
