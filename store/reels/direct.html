@@ -43,8 +43,8 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <div id="top"></div>
 <div id="bottom"></div>
 <div id="intro" class="abs"><img src="../../assets/icon.png">
-  <div class="l1">에어팟으로 고개 기울기를 알려주는</div>
-  <div class="l2">앱을 만들었습니다</div></div>
+  <div class="l1"></div>
+  <div class="l2"></div></div>
 <div id="head" class="abs"></div>
 <div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
 <div id="num" class="abs"></div>
@@ -61,6 +61,17 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <script>
 // Footage: 0–4.0 laptop shot (dimmed under the intro for 0–2.0) · 4.0–6.8 ear close-up (cue 4.25,
 // sits up 5.6–6.6) · 6.8–9.3 app + facts on black · 9.3–12.3 App Store card.
+// Opening lines, picked with ?intro=1..4 (small line above, big line).
+const INTROS = [
+  ['', '앱 만들었습니다'],
+  ['', '이거 제가 만들었습니다'],
+  ['', '기울면, 귀로 알려주는 앱'],
+  ['제가 만든 앱', '고개 기울기 알림'],
+];
+const pick = INTROS[(+(new URLSearchParams(location.search).get('intro')) || 1) - 1] || INTROS[0];
+document.querySelector('#intro .l1').textContent = pick[0];
+document.querySelector('#intro .l1').style.display = pick[0] ? 'block' : 'none';
+document.querySelector('#intro .l2').textContent = pick[1];
 const INTRO = 2.0, CUE = 4.25, APP = 6.8, END = 9.3;
 const EAR_X = 345, EAR_Y = 440;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
