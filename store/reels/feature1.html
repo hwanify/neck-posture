@@ -1,6 +1,6 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
-<!-- Reel "Plumb 기능 #1" (1080×1920): the cue plays only in the ear on the tilted side (stereo audio).
+<!-- Reel (1080×1920): the cue plays only in the ear on the tilted side (stereo audio).
      Desk shot tilting → ear close-up with the right-ear cue and the app angle in a small phone →
      the opposite-ear setting with a left-ear cue → App Store card.
      Transparent overlay composited over the footage; render(t) is pure. -->
@@ -13,9 +13,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 .abs { position: absolute; left: 0; right: 0; text-align: center; }
 #top { position: absolute; left: 0; right: 0; top: 0; height: 330px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 440px; background: linear-gradient(transparent, rgba(0,0,0,.85) 45%); }
-#series { top: 92px; font-size: 16px; color: #BDBDBD; letter-spacing: 0.5px; }
 #hook { top: 118px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
-#hookSub { top: 176px; font-size: 20px; color: #D8D8D8; letter-spacing: -0.4px; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
 #cap { top: 806px; font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
 #sub { top: 845px; font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
 #level { position: absolute; left: 50%; top: 690px; width: 300px; height: 12px; margin-left: -150px; }
@@ -57,9 +55,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <body>
 <div id="top"></div>
 <div id="bottom"></div>
-<div id="series" class="abs">Plumb 기능 #1</div>
-<div id="hook" class="abs">이어폰 끼고 보세요</div>
-<div id="hookSub" class="abs">소리가 한쪽 귀에서만 납니다</div>
+<div id="hook" class="abs">오른쪽으로 기울면<br>오른쪽 귀에서 "띵"</div>
 <div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
 <div id="num" class="abs"></div>
 <div id="rings"></div>
@@ -77,7 +73,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
   <div><span class="ask">App Store에서 무료</span></div>
   <div class="s">'Plumb' 검색 · 링크는 프로필에</div></div>
 <script>
-// Footage: A 0–3.54 desk, tilting to his right (mirrored) · freeze to 4.0 · B 4.0–9.04 ear close-up
+// Footage: A 0–3.54 desk, tilting to his right (screen left) · freeze to 4.0 · B 4.0–9.04 ear close-up
 // (cue 4.25, hand to ear, sits up ~6.7–7.5) · C 9.04–12.34 back at the desk, upright · D 12.34–15.3 card.
 // Audio: right-ear cue at CUE_R, recovery chime at GOOD, left-ear cue at CUE_L, end chime.
 const B = 4.0, CUE_R = 4.25, GOOD = 7.4, C = 9.04, SWITCH = 9.9, CUE_L = 10.9, END = 12.34;
@@ -102,13 +98,13 @@ function render(t) {
 
   // Hook from the first frame.
   const h = fade(t, -1, 2.4, 0.25);
-  $('series').style.opacity = h; $('hook').style.opacity = h; $('hookSub').style.opacity = h;
+  $('hook').style.opacity = h;
 
   // A: the big level under him while he tilts.
   const lvA = t < B ? 1 : 0;
   const a = angleAt(t);
   $('level').style.opacity = $('num').style.opacity = lvA;
-  $('ln').style.transform = `rotate(${-a}deg)`;   // mirrored footage: he leans to his right = screen left
+  $('ln').style.transform = `rotate(${-a}deg)`;   // he leans to his right = screen left
   $('num').textContent = `${Math.round(a)}°`;
 
   // B: the app angle in a small phone.
@@ -133,8 +129,8 @@ function render(t) {
   $('sTilt').classList.toggle('on', k < 0.5); $('sOpp').classList.toggle('on', k >= 0.5);
 
   const caps = [
-    [2.4, B, '고개가 오른쪽으로 기울면', ''],
-    [B, 6.6, '오른쪽 귀에서만 "띵"', '기운 쪽 귀로 알려줘요'],
+    [2.4, B, '공부하다 보면 저도 모르게', ''],
+    [B, 6.6, '화면 안 봐도 어느 쪽인지 알아요', '기운 쪽 귀에서만 소리가 나요'],
     [6.6, C, '고개를 세우면 조용해져요', ''],
     [C, END, '반대쪽 귀로 바꿀 수도 있어요', '오른쪽으로 기울면 왼쪽 귀에서'],
   ];
