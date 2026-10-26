@@ -2,7 +2,7 @@
 <html><head><meta charset="utf-8">
 <!-- Reel (1080×1920): the cue plays only in the ear on the tilted side (stereo audio).
      Desk shot tilting → ear close-up with the right-ear cue and the app angle in a small phone →
-     the opposite-ear setting with a left-ear cue → App Store card.
+     back at the desk, upright → App Store card.
      Transparent overlay composited over the footage; render(t) is pure. -->
 <style>
 @font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
@@ -38,14 +38,6 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 .ear { width: 64px; height: 64px; border-radius: 32px; border: 1.5px solid rgba(255,255,255,.35); background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 22px; color: #8E8E8E; }
 .ear.on { background: #F2F2F2; color: #000; border-color: #F2F2F2; box-shadow: 0 0 28px rgba(255,255,255,.55); }
 #earsMid { position: absolute; left: 64px; right: 64px; top: 22px; text-align: center; font-size: 14px; color: #BDBDBD; }
-/* Settings card (the app's 알림 방향 row). */
-#card { position: absolute; left: 50%; top: 250px; width: 420px; margin-left: -210px; padding: 20px 22px; border-radius: 22px; background: rgba(10,10,10,.92); border: 1.5px solid #333; }
-#card .k { font-size: 14px; color: #8E8E8E; margin-bottom: 14px; }
-#card .row { display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 500; }
-#seg { position: relative; display: flex; border-radius: 18px; background: #1E1E1E; padding: 4px; }
-#seg div { position: relative; z-index: 1; width: 92px; text-align: center; padding: 8px 0; font-size: 17px; font-weight: 500; color: #8E8E8E; }
-#seg div.on { color: #000; font-weight: 600; }
-#knob { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 92px; border-radius: 14px; background: #F2F2F2; z-index: 0; }
 #black { position: absolute; inset: 0; background: #000; }
 #end { top: 250px; }
 #end img { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
@@ -65,8 +57,6 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <div id="mini"><div class="bar"><span>9:41</span><span>● AirPods</span></div>
   <div class="lv"><div class="hz"></div><div class="ln"></div><div class="dt"></div></div>
   <div class="deg"></div><div class="stop">측정 종료</div></div>
-<div id="card"><div class="k">설정 · 알림</div>
-  <div class="row"><span>알림 방향</span><div id="seg"><span id="knob"></span><div id="sTilt">기운 쪽</div><div id="sOpp">반대쪽</div></div></div></div>
 <div id="ears"><div class="ear" id="eL">L</div><div id="earsMid"></div><div class="ear" id="eR">R</div></div>
 <div id="cap" class="abs"></div>
 <div id="sub" class="abs"></div>
@@ -78,8 +68,8 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <script>
 // Footage: A 0–3.54 desk, tilting to his right (screen left) · freeze to 4.0 · B 4.0–9.04 ear close-up
 // (cue 4.25, hand to ear, sits up ~6.7–7.5) · C 9.04–12.34 back at the desk, upright · D 12.34–15.3 card.
-// Audio: right-ear cue at CUE_R, recovery chime at GOOD, left-ear cue at CUE_L, end chime.
-const B = 4.0, CUE_R = 4.25, GOOD = 7.4, C = 9.04, SWITCH = 9.9, CUE_L = 10.9, END = 12.34;
+// Audio: right-ear cue at CUE_R, recovery chime at GOOD, end chime.
+const B = 4.0, CUE_R = 4.25, GOOD = 7.4, C = 9.04, END = 12.34;
 const EAR_X = 351, EAR_Y = 432;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
@@ -111,31 +101,22 @@ function render(t) {
   $('num').textContent = `${Math.round(a)}°`;
 
   // B: the app angle in a small phone.
-  const mini = fade(t, B + 0.1, C, 0.3);
+  const mini = fade(t, B + 0.1, END, 0.3);
   $('mini').style.opacity = mini;
   $('mini').style.transform = `translateX(${(1 - ease((t - B - 0.1) / 0.4)) * -30}px)`;
   $('mini').querySelector(".ln").style.transform = `rotate(${-a}deg)`;
   $('mini').querySelector('.deg').textContent = `${Math.round(a)}°`;
 
-  // Ear indicator in B and C.
-  const ears = t >= B && t < END ? 1 : 0;
-  $('ears').style.opacity = ears;
+  // Ear indicator in B.
+  $('ears').style.opacity = t >= B && t < C ? 1 : 0;
   $('eR').classList.toggle('on', flash(t, CUE_R));
-  $('eL').classList.toggle('on', flash(t, CUE_L));
-  $('earsMid').textContent = flash(t, CUE_R) || flash(t, CUE_L) ? '띵' : '';
-
-  // C: the setting flips to 반대쪽.
-  $('card').style.opacity = fade(t, C + 0.1, END, 0.3);
-  $('card').style.transform = `translateY(${(1 - ease((t - C - 0.1) / 0.4)) * 20}px)`;
-  const k = ease((t - SWITCH) / 0.3);
-  $('knob').style.transform = `translateX(${k * 92}px)`;
-  $('sTilt').classList.toggle('on', k < 0.5); $('sOpp').classList.toggle('on', k >= 0.5);
+  $('earsMid').textContent = flash(t, CUE_R) ? '띵' : '';
 
   const caps = [
     [2.4, B, '공부하다 보면 저도 모르게 기울어요', ''],
     [B, 6.6, '기운 쪽 귀에서 "띵"', '화면 안 봐도 어느 쪽인지 알아요'],
     [6.6, C, '고개를 세우면 조용해져요', ''],
-    [C, END, '반대쪽 귀로 바꿀 수도 있어요', '오른쪽으로 기울면 왼쪽 귀에서'],
+    [C, END, '카메라 없이, 에어팟만으로', '화면을 꺼도 계속 알려줘요'],
   ];
   const c = caps.find(([s, e]) => t >= s && t < e);
   $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
