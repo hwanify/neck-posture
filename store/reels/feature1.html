@@ -13,7 +13,9 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 .abs { position: absolute; left: 0; right: 0; text-align: center; }
 #top { position: absolute; left: 0; right: 0; top: 0; height: 330px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 440px; background: linear-gradient(transparent, rgba(0,0,0,.85) 45%); }
-#hook { top: 118px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
+#hookTag { top: 84px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 500; color: #D8D8D8; letter-spacing: -0.3px; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+#hookTag img { width: 26px; height: 26px; border-radius: 6px; border: 1px solid #3a3a3a; }
+#hook { top: 124px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
 #cap { top: 806px; font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
 #sub { top: 845px; font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
 #level { position: absolute; left: 50%; top: 690px; width: 300px; height: 12px; margin-left: -150px; }
@@ -55,7 +57,8 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <body>
 <div id="top"></div>
 <div id="bottom"></div>
-<div id="hook" class="abs">오른쪽으로 기울면<br>오른쪽 귀에서 "띵"</div>
+<div id="hookTag" class="abs"><img src="../../assets/icon.png">에어팟 고개 기울기 알림 앱</div>
+<div id="hook" class="abs">고개가 기울면<br>에어팟이 알려줍니다</div>
 <div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
 <div id="num" class="abs"></div>
 <div id="rings"></div>
@@ -98,7 +101,7 @@ function render(t) {
 
   // Hook from the first frame.
   const h = fade(t, -1, 2.4, 0.25);
-  $('hook').style.opacity = h;
+  $('hook').style.opacity = h; $('hookTag').style.opacity = h;
 
   // A: the big level under him while he tilts.
   const lvA = t < B ? 1 : 0;
@@ -129,8 +132,8 @@ function render(t) {
   $('sTilt').classList.toggle('on', k < 0.5); $('sOpp').classList.toggle('on', k >= 0.5);
 
   const caps = [
-    [2.4, B, '공부하다 보면 저도 모르게', ''],
-    [B, 6.6, '화면 안 봐도 어느 쪽인지 알아요', '기운 쪽 귀에서만 소리가 나요'],
+    [2.4, B, '공부하다 보면 저도 모르게 기울어요', ''],
+    [B, 6.6, '기운 쪽 귀에서 "띵"', '화면 안 봐도 어느 쪽인지 알아요'],
     [6.6, C, '고개를 세우면 조용해져요', ''],
     [C, END, '반대쪽 귀로 바꿀 수도 있어요', '오른쪽으로 기울면 왼쪽 귀에서'],
   ];
