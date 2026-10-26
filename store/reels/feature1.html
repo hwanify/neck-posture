@@ -1,0 +1,163 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Reel "Plumb 기능 #1" (1080×1920): the cue plays only in the ear on the tilted side (stereo audio).
+     Desk shot tilting → ear close-up with the right-ear cue and the app angle in a small phone →
+     the opposite-ear setting with a left-ear cue → App Store card.
+     Transparent overlay composited over the footage; render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
+.abs { position: absolute; left: 0; right: 0; text-align: center; }
+#top { position: absolute; left: 0; right: 0; top: 0; height: 330px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
+#bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 440px; background: linear-gradient(transparent, rgba(0,0,0,.85) 45%); }
+#series { top: 92px; font-size: 16px; color: #BDBDBD; letter-spacing: 0.5px; }
+#hook { top: 118px; font-weight: 600; font-size: 40px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
+#hookSub { top: 176px; font-size: 20px; color: #D8D8D8; letter-spacing: -0.4px; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+#cap { top: 806px; font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
+#sub { top: 845px; font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
+#level { position: absolute; left: 50%; top: 690px; width: 300px; height: 12px; margin-left: -150px; }
+#hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1.5px; background: rgba(255,255,255,.35); }
+#ln { position: absolute; left: 50%; top: 4.5px; width: 240px; margin-left: -120px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+#dot { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 6px; background: #F2F2F2; }
+#num { top: 714px; font-weight: 500; font-size: 46px; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+/* Small phone showing the app's angle. */
+#mini { position: absolute; left: 26px; top: 236px; width: 136px; height: 250px; border-radius: 24px; background: #000; border: 1.5px solid #3a3a3a; overflow: hidden; }
+#mini .bar { position: absolute; left: 14px; right: 14px; top: 12px; display: flex; justify-content: space-between; font-size: 9px; color: #8E8E8E; }
+#mini .lv { position: absolute; left: 14px; right: 14px; top: 112px; height: 8px; }
+#mini .hz { position: absolute; left: 0; right: 0; top: 3.5px; height: 1px; background: #3A3A3A; }
+#mini .ln { position: absolute; left: 8px; right: 8px; top: 3px; height: 2px; border-radius: 1px; background: #F2F2F2; }
+#mini .dt { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; margin-left: -4px; border-radius: 4px; background: #F2F2F2; }
+#mini .deg { position: absolute; left: 0; right: 0; top: 128px; text-align: center; font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+#mini .stop { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 24px; border-radius: 12px; background: #F2F2F2; color: #000; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+/* Left / right ear indicator. */
+#ears { position: absolute; left: 50%; top: 716px; width: 220px; margin-left: -110px; display: flex; justify-content: space-between; }
+.ear { width: 64px; height: 64px; border-radius: 32px; border: 1.5px solid rgba(255,255,255,.35); background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 22px; color: #8E8E8E; }
+.ear.on { background: #F2F2F2; color: #000; border-color: #F2F2F2; box-shadow: 0 0 28px rgba(255,255,255,.55); }
+#earsMid { position: absolute; left: 64px; right: 64px; top: 22px; text-align: center; font-size: 14px; color: #BDBDBD; }
+/* Settings card (the app's 알림 방향 row). */
+#card { position: absolute; left: 50%; top: 250px; width: 420px; margin-left: -210px; padding: 20px 22px; border-radius: 22px; background: rgba(10,10,10,.92); border: 1.5px solid #333; }
+#card .k { font-size: 14px; color: #8E8E8E; margin-bottom: 14px; }
+#card .row { display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 500; }
+#seg { position: relative; display: flex; border-radius: 18px; background: #1E1E1E; padding: 4px; }
+#seg div { position: relative; z-index: 1; width: 92px; text-align: center; padding: 8px 0; font-size: 17px; font-weight: 500; color: #8E8E8E; }
+#seg div.on { color: #000; font-weight: 600; }
+#knob { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 92px; border-radius: 14px; background: #F2F2F2; z-index: 0; }
+#black { position: absolute; inset: 0; background: #000; }
+#end { top: 250px; }
+#end img { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#end .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#end .ask { display: inline-block; margin-top: 40px; padding: 14px 28px; border-radius: 30px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 20px; letter-spacing: -0.4px; }
+#end .s { margin-top: 16px; font-size: 16px; color: #8E8E8E; }
+</style></head>
+<body>
+<div id="top"></div>
+<div id="bottom"></div>
+<div id="series" class="abs">Plumb 기능 #1</div>
+<div id="hook" class="abs">이어폰 끼고 보세요</div>
+<div id="hookSub" class="abs">소리가 한쪽 귀에서만 납니다</div>
+<div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
+<div id="num" class="abs"></div>
+<div id="rings"></div>
+<div id="mini"><div class="bar"><span>9:41</span><span>● AirPods</span></div>
+  <div class="lv"><div class="hz"></div><div class="ln"></div><div class="dt"></div></div>
+  <div class="deg"></div><div class="stop">측정 종료</div></div>
+<div id="card"><div class="k">설정 · 알림</div>
+  <div class="row"><span>알림 방향</span><div id="seg"><span id="knob"></span><div id="sTilt">기운 쪽</div><div id="sOpp">반대쪽</div></div></div></div>
+<div id="ears"><div class="ear" id="eL">L</div><div id="earsMid"></div><div class="ear" id="eR">R</div></div>
+<div id="cap" class="abs"></div>
+<div id="sub" class="abs"></div>
+<div id="black"></div>
+<div id="end" class="abs"><img src="../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">기울면, 그쪽 귀로 알려줘요</div>
+  <div><span class="ask">App Store에서 무료</span></div>
+  <div class="s">'Plumb' 검색 · 링크는 프로필에</div></div>
+<script>
+// Footage: A 0–3.54 desk, tilting to his right (mirrored) · freeze to 4.0 · B 4.0–9.04 ear close-up
+// (cue 4.25, hand to ear, sits up ~6.7–7.5) · C 9.04–12.34 back at the desk, upright · D 12.34–15.3 card.
+// Audio: right-ear cue at CUE_R, recovery chime at GOOD, left-ear cue at CUE_L, end chime.
+const B = 4.0, CUE_R = 4.25, GOOD = 7.4, C = 9.04, SWITCH = 9.9, CUE_L = 10.9, END = 12.34;
+const EAR_X = 351, EAR_Y = 432;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+function angleAt(t) {
+  if (t < 1.8) return 0.5;
+  if (t < 3.5) return 0.5 + 11.5 * ease((t - 1.8) / 1.7);
+  if (t < 6.7) return 12 + 0.5 * Math.sin(t * 1.4);
+  if (t < 7.5) return 12 * (1 - ease((t - 6.7) / 0.8));
+  return 0;
+}
+const flash = (t, at) => t >= at && t < at + 0.9;
+
+function render(t) {
+  const footage = t < END;
+  $('top').style.opacity = $('bottom').style.opacity = footage ? 1 : 0;
+
+  // Hook from the first frame.
+  const h = fade(t, -1, 2.4, 0.25);
+  $('series').style.opacity = h; $('hook').style.opacity = h; $('hookSub').style.opacity = h;
+
+  // A: the big level under him while he tilts.
+  const lvA = t < B ? 1 : 0;
+  const a = angleAt(t);
+  $('level').style.opacity = $('num').style.opacity = lvA;
+  $('ln').style.transform = `rotate(${-a}deg)`;   // mirrored footage: he leans to his right = screen left
+  $('num').textContent = `${Math.round(a)}°`;
+
+  // B: the app angle in a small phone.
+  const mini = fade(t, B + 0.1, C, 0.3);
+  $('mini').style.opacity = mini;
+  $('mini').style.transform = `translateX(${(1 - ease((t - B - 0.1) / 0.4)) * -30}px)`;
+  $('mini').querySelector(".ln").style.transform = `rotate(${-a}deg)`;
+  $('mini').querySelector('.deg').textContent = `${Math.round(a)}°`;
+
+  // Ear indicator in B and C.
+  const ears = t >= B && t < END ? 1 : 0;
+  $('ears').style.opacity = ears;
+  $('eR').classList.toggle('on', flash(t, CUE_R));
+  $('eL').classList.toggle('on', flash(t, CUE_L));
+  $('earsMid').textContent = flash(t, CUE_R) || flash(t, CUE_L) ? '띵' : '';
+
+  // C: the setting flips to 반대쪽.
+  $('card').style.opacity = fade(t, C + 0.1, END, 0.3);
+  $('card').style.transform = `translateY(${(1 - ease((t - C - 0.1) / 0.4)) * 20}px)`;
+  const k = ease((t - SWITCH) / 0.3);
+  $('knob').style.transform = `translateX(${k * 92}px)`;
+  $('sTilt').classList.toggle('on', k < 0.5); $('sOpp').classList.toggle('on', k >= 0.5);
+
+  const caps = [
+    [2.4, B, '고개가 오른쪽으로 기울면', ''],
+    [B, 6.6, '오른쪽 귀에서만 "띵"', '기운 쪽 귀로 알려줘요'],
+    [6.6, C, '고개를 세우면 조용해져요', ''],
+    [C, END, '반대쪽 귀로 바꿀 수도 있어요', '오른쪽으로 기울면 왼쪽 귀에서'],
+  ];
+  const c = caps.find(([s, e]) => t >= s && t < e);
+  $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
+  const o = c ? fade(t, c[0], c[1], 0.2) : 0;
+  $('cap').style.opacity = o; $('sub').style.opacity = o;
+
+  let rings = '';
+  for (const start of [CUE_R, CUE_R + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+
+  $('black').style.opacity = clamp((t - END + 0.2) / 0.2);
+  $('end').style.opacity = clamp((t - END - 0.1) / 0.4);
+  $('end').style.transform = `translateY(${(1 - ease((t - END - 0.1) / 0.6)) * 24}px)`;
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
