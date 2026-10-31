@@ -4,7 +4,7 @@
      Same footage and timing; the copy and layout are reworked for Meta ads:
      - all text sits inside the Reels-ad safe zone (not in the top 14%, bottom 35% or 6% sides),
      - the copy states what the app does instead of asserting anything about the viewer,
-     - no health or posture-correction claims; AI-generated footage is labelled,
+     - no health or posture-correction claims (AI use is disclosed in Ads Manager, not on screen),
      - the end card has no "profile link" CTA (the ad's own install button does that job).
      Transparent overlay composited over the Higgsfield clips; render(t) is pure. -->
 <style>
@@ -14,7 +14,6 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
 .abs { position: absolute; left: 32px; right: 32px; text-align: center; }
-#ai { position: absolute; left: 32px; top: 136px; font-size: 11px; color: rgba(255,255,255,.7); letter-spacing: -0.2px; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
 .shade { position: absolute; left: 0; right: 0; }
 #top { top: 0; height: 360px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
 #bottom { bottom: 0; height: 600px; background: linear-gradient(transparent, rgba(0,0,0,.6) 40%, rgba(0,0,0,.75)); }
@@ -42,7 +41,6 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 <div id="bottom" class="shade"></div>
 <div id="black"></div>
 <div id="hook" class="abs">나도 모르게 기우는 고개,<br>에어팟이 알려줍니다</div>
-<div id="ai">AI로 생성한 영상</div>
 <div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
 <div id="num" class="abs"></div>
 <div id="rings"></div>
@@ -80,7 +78,6 @@ function render(t) {
   $('top').style.opacity = fade(t, -1, 3.4, 0.4);
   $('bottom').style.opacity = onFootage ? 1 : 0;
   $('hook').style.opacity = fade(t, -1, 3.3, 0.3);
-  $('ai').style.opacity = t < END ? 1 : 0;
 
   const a = angleAt(t);
   const lv = fade(t, -1, PHONE - 0.2, 0.4);
