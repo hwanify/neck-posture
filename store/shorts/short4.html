@@ -57,7 +57,10 @@ if (new URLSearchParams(location.search).get('end') === 'launch') {
   document.querySelector('#end .soon').textContent = 'App Store 출시 · 무료';
   document.querySelector('#end .ask').textContent = '프로필 링크에서 받기';
 }
-const EAR_X = 345, EAR_Y = 440;
+// ?ear=x,y and ?sit=t retime the close-up for other footage (e.g. the female version).
+const Q = new URLSearchParams(location.search);
+const [EAR_X, EAR_Y] = (Q.get('ear') || '345,440').split(',').map(Number);
+const SIT = +(Q.get('sit') || 7.3);
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
 const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
@@ -68,8 +71,8 @@ function angleAt(t) {
   if (t < 1.8) return 11 + 1.0 * (t / 1.8);                // laptop, already tilted
   if (t < 3.4) return 13 + 2.0 * ease((t - 1.8) / 1.6);    // studying, sinking further
   if (t < 5.0) return 9;                                    // walking
-  if (t < 7.3) return 14;                                   // close-up, cue at 5.25
-  if (t < 8.6) return 14 * (1 - ease((t - 7.3) / 1.3));    // sits up
+  if (t < SIT) return 14;                                   // close-up, cue at 5.25
+  if (t < SIT + 1.3) return 14 * (1 - ease((t - SIT) / 1.3)); // sits up
   return 0;
 }
 
@@ -90,8 +93,8 @@ function render(t) {
     [0.0, 1.8, '일할 때', ''],
     [1.8, 3.4, '공부할 때', ''],
     [3.4, 5.0, '걸을 때도', ''],
-    [5.0, 7.2, '오른쪽 귀에서 "띵"', '기울어진 채 2초가 지나면 알려줘요'],
-    [7.2, 9.5, '고개를 세우면 조용해져요', ''],
+    [5.0, SIT - 0.1, '오른쪽 귀에서 "띵"', '기울어진 채 2초가 지나면 알려줘요'],
+    [SIT - 0.1, 9.5, '고개를 세우면 조용해져요', ''],
     [9.5, 11.2, '하루 종일, 신경 쓰지 않아도', ''],
     [11.4, 13.7, '카메라 없이, 에어팟 센서로', '화면을 꺼도 계속 재요'],
   ];
