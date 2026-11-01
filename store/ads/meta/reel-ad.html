@@ -55,7 +55,9 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 // Footage: A 0–1.8 laptop · B 1.8–3.4 desk, studying · C 3.4–5.0 walking (all tilted) ·
 // D 5.0–9.5 ear close-up: cue, hand to ear, sits up · E 9.5–11.3 upright at the desk ·
 // F 11.3–13.8 app screen · G 13.8–17.0 reserve card.
-const CUE = 5.25, PHONE = 11.3, END = 13.8;
+// ?noE=1 drops E: the app screen follows straight after he sits up.
+const CUT_E = new URLSearchParams(location.search).get('noE') ? 1.8 : 0;
+const CUE = 5.25, PHONE = 11.3 - CUT_E, END = 13.8 - CUT_E;
 // ?ear=x,y and ?sit=t retime the close-up for other footage (e.g. the female version).
 const Q = new URLSearchParams(location.search);
 const [EAR_X, EAR_Y] = (Q.get('ear') || '345,440').split(',').map(Number);
@@ -99,8 +101,8 @@ function render(t) {
     [3.4, 5.0, OPEN[2], ''],
     [5.0, SIT - 0.1, '오른쪽 귀에서 "띵"', '기울어진 채 2초가 지나면 알려줘요'],
     [SIT - 0.1, 9.5, '고개를 세우면 조용해져요', ''],
-    [9.5, 11.2, '공부할 때도, 일할 때도', ''],
-    [11.4, 13.7, '카메라 없이, 에어팟 센서로', '화면을 꺼도 계속 재요'],
+    [9.5, PHONE - 0.1, '공부할 때도, 일할 때도', ''],
+    [PHONE + 0.1, END - 0.1, '카메라 없이, 에어팟 센서로', '화면을 꺼도 계속 재요'],
   ];
   const c = caps.find(([s, e]) => t >= s && t < e);
   $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
