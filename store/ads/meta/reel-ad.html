@@ -61,6 +61,7 @@ const Q = new URLSearchParams(location.search);
 const [EAR_X, EAR_Y] = (Q.get('ear') || '345,440').split(',').map(Number);
 const SIT = +(Q.get('sit') || 7.3);
 // ?open=a|b|c: captions for the three opening cuts.
+const RAMP = Q.get('ramp') ? Q.get('ramp').split(',').map(Number) : null;
 const OPEN = (Q.get('open') || '일할 때|공부할 때|걸을 때도').split('|');
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
@@ -69,6 +70,8 @@ const $ = (id) => document.getElementById(id);
 
 // Head angle per cut, following the footage (his right shoulder = leans left on screen).
 function angleAt(t) {
+  // ?ramp=a,b: the first cut starts upright and tilts between a and b seconds.
+  if (t < 1.8 && RAMP) return 1 + 11 * ease((t - RAMP[0]) / (RAMP[1] - RAMP[0]));
   if (t < 1.8) return 11 + 1.0 * (t / 1.8);                // laptop, already tilted
   if (t < 3.4) return 13 + 2.0 * ease((t - 1.8) / 1.6);    // studying, sinking further
   if (t < 5.0) return 9;                                    // walking
