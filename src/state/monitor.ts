@@ -27,6 +27,7 @@ import {
 } from '../services/feedback';
 import { endLiveActivity, startLiveActivity } from '../services/liveActivity';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
+import { maybeAskForReview } from '../services/reviewPrompt';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
 
@@ -455,6 +456,7 @@ class MonitorController {
     if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
     this.set({ sessions });
+    void maybeAskForReview(summary, sessions);
     return summary;
   }
 
