@@ -1,0 +1,113 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- English reel / Reels ad (9:16, rendered at 1440×2560): "The most underrated thing your AirPods can do".
+     One desk shot where her head slowly tilts, the ear close-up with the chime, the app, the end card.
+     Same safe-zone layout as reel-ad.html. Transparent overlay over the footage; render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; }
+.abs { position: absolute; left: 32px; right: 32px; text-align: center; }
+.shade { position: absolute; left: 0; right: 0; }
+#top { top: 0; height: 360px; background: linear-gradient(rgba(0,0,0,.75), transparent); }
+#bottom { bottom: 0; height: 600px; background: linear-gradient(transparent, rgba(0,0,0,.6) 40%, rgba(0,0,0,.75)); }
+#black { position: absolute; inset: 0; background: #000; }
+#hook { top: 160px; font-weight: 600; font-size: 36px; line-height: 1.3; letter-spacing: -1.5px; text-shadow: 0 2px 16px rgba(0,0,0,.5); }
+#cap { top: 572px; text-shadow: 0 2px 12px rgba(0,0,0,.7); font-weight: 500; font-size: 23px; letter-spacing: -0.6px; }
+#sub { top: 604px; text-shadow: 0 2px 10px rgba(0,0,0,.7); font-size: 16px; color: #BDBDBD; letter-spacing: -0.3px; }
+#level { position: absolute; left: 50%; top: 486px; width: 300px; height: 12px; margin-left: -150px; }
+#hz { position: absolute; left: 0; right: 0; top: 5.5px; height: 1.5px; background: rgba(255,255,255,.35); }
+#ln { position: absolute; left: 50%; top: 4.5px; width: 240px; margin-left: -120px; height: 3px; border-radius: 2px; background: #F2F2F2; }
+#dot { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 6px; background: #F2F2F2; }
+#num { top: 506px; text-shadow: 0 2px 12px rgba(0,0,0,.6); font-weight: 500; font-size: 46px; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+.ring { position: absolute; border: 2.5px solid #F2F2F2; border-radius: 50%; }
+#phone { position: absolute; left: 50%; top: 150px; width: 250px; height: 370px; margin-left: -125px; overflow: hidden; border-radius: 26px; }
+#phone img { width: 297px; margin-left: -23px; margin-top: -159px; display: block; }
+#end { top: 170px; }
+#icon { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#end .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#end .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#end .soon { display: inline-block; margin-top: 34px; padding: 9px 20px; border-radius: 30px; border: 1.5px solid #4a4a4a; font-size: 17px; font-weight: 500; color: #CFCFCF; }
+#end .ask { display: inline-block; margin-top: 30px; padding: 14px 30px; border-radius: 30px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 20px; letter-spacing: -0.4px; }
+</style></head>
+<body>
+<div id="top" class="shade"></div>
+<div id="bottom" class="shade"></div>
+<div id="black"></div>
+<div id="hook" class="abs">The most underrated thing<br>your AirPods can do</div>
+<div id="level"><div id="hz"></div><div id="ln"></div><div id="dot"></div></div>
+<div id="num" class="abs"></div>
+<div id="rings"></div>
+<div id="phone"><img src="../../screenshots/en-1.png"></div>
+<div id="cap" class="abs"></div>
+<div id="sub" class="abs"></div>
+<div id="end" class="abs"><img id="icon" src="../../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">Your AirPods tell you when your head tilts</div>
+  <div class="soon">iPhone · AirPods Pro, Max, 3rd gen or later</div>
+  <div class="cta"><div class="ask">Free on the App Store</div></div></div>
+<script>
+// Footage: A 0–5.0 at the desk, upright, tilting from ~3.0 · B 5.0–9.4 ear close-up: chime 5.25,
+// hand to ear, sits up from 7.8 · C 9.4–12.3 app screen · D 12.3–15 end card.
+const CUE = 5.25, SIT = 7.8, PHONE = 9.4, END = 12.3;
+const EAR_X = 228, EAR_Y = 370;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+function angleAt(t) {
+  if (t < 3.0) return 0.5;
+  if (t < 5.0) return 0.5 + 11.5 * ease((t - 3.0) / 1.8);
+  if (t < SIT) return 12;
+  if (t < SIT + 1.1) return 12 * (1 - ease((t - SIT) / 1.1));
+  return 0;
+}
+
+function render(t) {
+  const onFootage = t < PHONE;
+  $('black').style.opacity = clamp((t - PHONE + 0.25) / 0.25);
+  $('top').style.opacity = fade(t, -1, 2.6, 0.4);
+  $('bottom').style.opacity = onFootage ? 1 : 0;
+  $('hook').style.opacity = fade(t, -1, 2.5, 0.3);
+
+  const a = angleAt(t);
+  const lv = fade(t, -1, PHONE - 0.2, 0.4);
+  $('level').style.opacity = lv; $('num').style.opacity = lv;
+  $('ln').style.transform = `rotate(${-a}deg)`;
+  $('num').textContent = `${Math.round(a)}°`;
+
+  const caps = [
+    [2.5, 5.0, 'Your head tilts without you noticing', ''],
+    [5.0, SIT - 0.1, 'A soft chime in your right ear', 'after 2 seconds tilted'],
+    [SIT - 0.1, PHONE - 0.1, 'Straighten up and it goes quiet', ''],
+    [PHONE + 0.1, END - 0.1, 'No camera, just your AirPods', 'Works with your screen off'],
+  ];
+  const c = caps.find(([s, e]) => t >= s && t < e);
+  $('cap').textContent = c ? c[2] : ''; $('sub').textContent = c ? c[3] : '';
+  const o = c ? fade(t, c[0], c[1], 0.25) : 0;
+  $('cap').style.opacity = o; $('sub').style.opacity = o;
+
+  let rings = '';
+  for (const start of [CUE, CUE + 0.35]) {
+    const p = (t - start) / 1.1;
+    if (p > 0 && p < 1) {
+      const r = 20 + 120 * p;
+      rings += `<div class="ring" style="left:${EAR_X - r}px;top:${EAR_Y - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - p) * 0.9}"></div>`;
+    }
+  }
+  $('rings').innerHTML = rings;
+
+  $('phone').style.opacity = fade(t, PHONE + 0.1, END, 0.4);
+  $('phone').style.transform = `translateY(${(1 - ease((t - PHONE - 0.1) / 0.6)) * 50}px)`;
+  $('end').style.opacity = clamp((t - END - 0.1) / 0.5);
+  $('end').style.transform = `translateY(${(1 - ease((t - END - 0.1) / 0.6)) * 30}px)`;
+  const cta = $('end').querySelector('.cta');
+  cta.style.opacity = clamp((t - END - 0.9) / 0.4);
+  cta.style.transform = `translateY(${(1 - ease((t - END - 0.9) / 0.6)) * 14}px)`;
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
