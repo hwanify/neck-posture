@@ -83,9 +83,12 @@ html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow:
 <div id="cam"><canvas width="400" height="400"></canvas></div>
 <div id="cap"><span></span></div>
 <script>
-// Face cam: the 5 s clip at 0.75× = 6.72 s (tilts 2.0–2.7, chime 3.47, hand to ear, upright by 5.45).
-// 0–6.7 app home screen · 6.7 screen off → lock screen with the Live Activity · 9.0 app name.
-const CAM_END = 6.72, CHIME = 3.47, LOCK = 6.7, NAME = 9.0, FPS = 30;
+// Face cam: the 5 s clip at 0.75× = 6.6 s (tilts 2.0–2.7, chime 3.47, hand to ear, upright by 5.45),
+// then its last 1.6 s played backwards so she keeps moving. One fixed line on top, the app name at the end.
+// ?lock=1 adds the screen-off → lock screen part (6.7–9.0) and moves the app name to 9.0.
+const LOCK_ON = new URLSearchParams(location.search).get('lock') === '1';
+const CAM_END = 6.72, CHIME = 3.47, FPS = 30;
+const LOCK = LOCK_ON ? 6.7 : 99, NAME = LOCK_ON ? 9.0 : 6.6;
 const START_ELAPSED = 12 * 60 + 41;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
@@ -107,12 +110,8 @@ function angleAt(t) {
 }
 
 const CAPS = [
-  [0, 2.0, '에어팟으로 이런 것도 됨'],
-  [2.0, CHIME - 0.05, '고개 기울이면 숫자 올라가고'],
-  [CHIME - 0.05, 5.0, '귀에서 띵'],
-  [5.0, LOCK, '바로 세우면 조용해짐'],
-  [LOCK, NAME, '화면 꺼도 계속 됨'],
-  [NAME, 99, '앱 이름: Plumb (앱스토어 무료)'],
+  [0, NAME, '에어팟으로 고개 기울기 재는 앱'],
+  [NAME, 99, 'Plumb · App Store'],
 ];
 
 function render(t) {
@@ -132,7 +131,9 @@ function render(t) {
   const camOn = t < LOCK;
   $('cam').style.opacity = camOn ? 1 : 0;
   if (camOn && frames.length) {
-    const img = frames[Math.min(frames.length - 1, Math.floor(t * FPS))];
+    // Forward through the clip, then back over its last 48 frames.
+    const last = frames.length - 1, i = Math.floor(t * FPS);
+    const img = frames[i <= last ? i : Math.max(last - 48, last - (i - last))];
     ctx.drawImage(img, 0, 0, 400, 400);
   }
 
