@@ -84,7 +84,7 @@ html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow:
 <div id="cap"><span></span></div>
 <script>
 // Face cam: the 5 s clip at 0.75× = 6.6 s (tilts 2.0–2.7, chime 3.47, hand to ear, upright by 5.45),
-// then its last 1.6 s played backwards so she keeps moving. One fixed line on top, the app name at the end.
+// then its last second played back and forth so she keeps moving. One fixed line on top, the app name at the end.
 // ?lock=1 adds the screen-off → lock screen part (6.7–9.0) and moves the app name to 9.0.
 const LOCK_ON = new URLSearchParams(location.search).get('lock') === '1';
 const CAM_END = 6.72, CHIME = 3.47, FPS = 30;
@@ -111,7 +111,7 @@ function angleAt(t) {
 
 const CAPS = [
   [0, NAME, '고개가 기울면, 에어팟이 알려주는 앱'],
-  [NAME, 99, 'Plumb · App Store'],
+  [NAME, 99, '프로필 링크에서 받기<br>App Store에서 \'Plumb\' 검색'],
 ];
 
 function render(t) {
@@ -131,14 +131,15 @@ function render(t) {
   const camOn = t < LOCK;
   $('cam').style.opacity = camOn ? 1 : 0;
   if (camOn && frames.length) {
-    // Forward through the clip, then back over its last 48 frames.
+    // Forward through the clip, then back and forth over its last 20 frames (she is upright there).
     const last = frames.length - 1, i = Math.floor(t * FPS);
-    const img = frames[i <= last ? i : Math.max(last - 48, last - (i - last))];
+    const k = (i - last) % 40;
+    const img = frames[i <= last ? i : last - (k <= 20 ? k : 40 - k)];
     ctx.drawImage(img, 0, 0, 400, 400);
   }
 
   const c = CAPS.find(([s, e]) => t >= s && t < e);
-  $('cap').querySelector('span').textContent = c ? c[2] : '';
+  $('cap').querySelector('span').innerHTML = c ? c[2] : '';
   $('cap').style.top = t >= LOCK ? '300px' : '150px';
 }
 window.render = render;
