@@ -1,0 +1,152 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- UGC-style reel (1080×1920): looks like a screen recording of Plumb with a round front-camera
+     face cam. The app screen is drawn from the app's own styles (HomeScreen, Live Activity), the
+     face cam plays pre-extracted frames (?fc=<dir>/ with f0000.jpg…) on a canvas. Opaque; render(t)
+     is pure once the frames are loaded. -->
+<style>
+@font-face { font-family: P; font-weight: 300; src: url(../../../assets/fonts/Pretendard-Light.otf); }
+@font-face { font-family: P; font-weight: 400; src: url(../../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
+.screen { position: absolute; inset: 0; background: #000; }
+/* Status bar + Dynamic Island */
+.sb { position: absolute; left: 0; right: 0; top: 0; height: 54px; }
+.sb .time { position: absolute; left: 44px; top: 19px; font-weight: 600; font-size: 16px; letter-spacing: -0.3px; }
+.sb .bat { position: absolute; right: 38px; top: 21px; width: 26px; height: 12px; border: 1.3px solid #F2F2F2; border-radius: 4px; padding: 1.5px; }
+.sb .bat i { display: block; height: 100%; width: 70%; background: #F2F2F2; border-radius: 1.5px; }
+.sb .sig { position: absolute; right: 74px; top: 21px; display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.sb .sig i { width: 3px; background: #F2F2F2; border-radius: 1px; }
+.island { position: absolute; left: 50%; top: 11px; width: 124px; height: 36px; margin-left: -62px; border-radius: 18px; background: #000; box-shadow: 0 0 0 1px #111; }
+/* Plumb home screen (HomeScreen styles) */
+#home .top { position: absolute; left: 24px; right: 24px; top: 66px; display: flex; justify-content: space-between; font-weight: 500; font-size: 13px; color: #8E8E8E; letter-spacing: -0.2px; }
+#home .top .dot { display: inline-block; width: 6px; height: 6px; border-radius: 3px; background: #F2F2F2; margin-right: 6px; vertical-align: 1px; }
+#levelBox { position: absolute; left: 50%; top: 400px; width: 240px; height: 9px; margin-left: -120px; }
+#levelBox .hz { position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: #4A4A4A; opacity: .6; }
+#levelBox .ln { position: absolute; left: 30px; width: 180px; top: 3.75px; height: 1.5px; border-radius: 1px; background: #F2F2F2; }
+#levelBox .dt { position: absolute; left: 50%; top: 0; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 4.5px; background: #F2F2F2; }
+#angle { position: absolute; left: 0; right: 0; top: 432px; text-align: center; font-weight: 500; font-size: 36px; letter-spacing: -1px; line-height: 44px; font-variant-numeric: tabular-nums; }
+#stats { position: absolute; left: 24px; right: 24px; top: 812px; display: flex; }
+#stats .st { flex: 1; text-align: center; }
+#stats .v { font-weight: 500; font-size: 15px; letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
+#stats .l { font-weight: 500; font-size: 11px; color: #8E8E8E; margin-top: 3px; }
+#stopBtn { position: absolute; left: 24px; right: 24px; top: 868px; height: 52px; border-radius: 26px; background: #F2F2F2; color: #000; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+/* Lock screen with the Live Activity */
+#lock { background: linear-gradient(170deg, #5b6b7d 0%, #2c3540 45%, #12161b 100%); }
+#lock .date { position: absolute; left: 0; right: 0; top: 108px; text-align: center; font-weight: 500; font-size: 19px; color: #e6e6e6; }
+#lock .clock { position: absolute; left: 0; right: 0; top: 128px; text-align: center; font-weight: 600; font-size: 104px; letter-spacing: -3px; color: #ececec; font-variant-numeric: tabular-nums; }
+#la { position: absolute; left: 14px; right: 14px; top: 700px; height: 80px; border-radius: 24px; background: #000; display: flex; align-items: center; padding: 0 20px; gap: 14px; }
+#la .mark { position: relative; width: 46px; height: 32px; }
+#la .mark .hz { position: absolute; left: 3px; right: 3px; top: 15.5px; height: 1px; background: #4A4A4A; }
+#la .mark .ln { position: absolute; left: 3px; right: 3px; top: 15px; height: 2px; border-radius: 1px; background: #F2F2F2; transform: rotate(-9deg); }
+#la .mark .dt { position: absolute; left: 50%; top: 13px; width: 6px; height: 6px; margin-left: -3px; border-radius: 3px; background: #F2F2F2; }
+#la .t1 { font-weight: 600; font-size: 16px; }
+#la .t2 { font-weight: 500; font-size: 14px; color: #8E8E8E; font-variant-numeric: tabular-nums; margin-top: 2px; }
+#la .btn { margin-left: auto; background: #F2F2F2; color: #000; font-weight: 600; font-size: 14px; padding: 8px 16px; border-radius: 20px; }
+#lock .bottom { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; }
+#lock .bottom i { width: 140px; height: 5px; border-radius: 3px; background: #ddd; }
+#off { position: absolute; inset: 0; background: #000; }
+/* Face cam */
+#cam { position: absolute; left: 318px; top: 548px; width: 196px; height: 196px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 6px 24px rgba(0,0,0,.6); }
+#cam canvas { width: 196px; height: 196px; display: block; }
+/* Instagram-style caption */
+#cap { position: absolute; left: 40px; right: 40px; top: 150px; text-align: center; }
+#cap span { display: inline; background: #fff; color: #000; font-weight: 600; font-size: 21px; line-height: 1.75; padding: 5px 12px; border-radius: 8px; -webkit-box-decoration-break: clone; box-decoration-break: clone; letter-spacing: -0.5px; }
+#photos { display: none; }
+</style></head>
+<body>
+<div id="photos"></div>
+<div id="home" class="screen">
+  <div class="top"><span>11월 6일 금요일</span><span><span class="dot"></span>AirPods</span></div>
+  <div id="levelBox"><div class="hz"></div><div class="ln"></div><div class="dt"></div></div>
+  <div id="angle"></div>
+  <div id="stats">
+    <div class="st"><div class="v">86%</div><div class="l">바른 자세</div></div>
+    <div class="st"><div class="v" id="alerts">2</div><div class="l">알림</div></div>
+    <div class="st"><div class="v" id="elapsed"></div><div class="l">경과</div></div>
+  </div>
+  <div id="stopBtn">측정 종료</div>
+</div>
+<div id="lock" class="screen">
+  <div class="date">11월 6일 금요일</div>
+  <div class="clock">11:16</div>
+  <div id="la"><div class="mark"><div class="hz"></div><div class="ln"></div><div class="dt"></div></div>
+    <div><div class="t1">측정 중</div><div class="t2" id="laTimer"></div></div><div class="btn">측정 종료</div></div>
+  <div class="bottom"><i></i></div>
+</div>
+<div id="off"></div>
+<div class="sb"><div class="time">11:16</div><div class="island"></div>
+  <div class="sig"><i style="height:4px"></i><i style="height:6px"></i><i style="height:9px"></i><i style="height:12px"></i></div>
+  <div class="bat"><i></i></div></div>
+<div id="cam"><canvas width="400" height="400"></canvas></div>
+<div id="cap"><span></span></div>
+<script>
+// Face cam: the 5 s clip at 0.75× = 6.72 s (tilts 2.0–2.7, chime 3.47, hand to ear, upright by 5.45).
+// 0–6.7 app home screen · 6.7 screen off → lock screen with the Live Activity · 9.0 app name.
+const CAM_END = 6.72, CHIME = 3.47, LOCK = 6.7, NAME = 9.0, FPS = 30;
+const START_ELAPSED = 12 * 60 + 41;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const $ = (id) => document.getElementById(id);
+const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+const Q = new URLSearchParams(location.search);
+const FC = Q.get('fc');
+const N = +(Q.get('n') || Math.round(CAM_END * FPS));
+const frames = [];
+const ctx = document.querySelector('#cam canvas').getContext('2d');
+
+function angleAt(t) {
+  if (t < 2.0) return 0;
+  if (t < 2.7) return 16 * ease((t - 2.0) / 0.7);
+  if (t < 5.0) return 16;
+  if (t < 5.45) return 16 * (1 - ease((t - 5.0) / 0.45));
+  return 0;
+}
+
+const CAPS = [
+  [0, 2.0, '에어팟으로 이런 것도 됨'],
+  [2.0, CHIME - 0.05, '고개 기울이면 숫자 올라가고'],
+  [CHIME - 0.05, 5.0, '귀에서 띵'],
+  [5.0, LOCK, '바로 세우면 조용해짐'],
+  [LOCK, NAME, '화면 꺼도 계속 됨'],
+  [NAME, 99, '앱 이름: Plumb (앱스토어 무료)'],
+];
+
+function render(t) {
+  const a = angleAt(t);
+  $('levelBox').querySelector('.ln').style.transform = `rotate(${-a}deg)`;
+  $('angle').textContent = `${Math.round(a)}°`;
+  $('alerts').textContent = t >= CHIME ? '3' : '2';
+  $('elapsed').textContent = mmss(START_ELAPSED + t);
+  $('laTimer').textContent = mmss(START_ELAPSED + t);
+
+  // Screen off for a moment, then the lock screen.
+  const offA = clamp((t - LOCK) / 0.12), offB = clamp((t - LOCK - 0.45) / 0.25);
+  $('off').style.opacity = t < LOCK ? 0 : 1 - offB * (offA >= 1 ? 1 : 0);
+  $('home').style.display = t < LOCK + 0.2 ? 'block' : 'none';
+  $('lock').style.display = t >= LOCK + 0.2 ? 'block' : 'none';
+
+  const camOn = t < LOCK;
+  $('cam').style.opacity = camOn ? 1 : 0;
+  if (camOn && frames.length) {
+    const img = frames[Math.min(frames.length - 1, Math.floor(t * FPS))];
+    ctx.drawImage(img, 0, 0, 400, 400);
+  }
+
+  const c = CAPS.find(([s, e]) => t >= s && t < e);
+  $('cap').querySelector('span').textContent = c ? c[2] : '';
+  $('cap').style.top = t >= LOCK ? '300px' : '150px';
+}
+window.render = render;
+
+Promise.all(Array.from({ length: N }, (_, i) => new Promise((resolve) => {
+  const img = new Image();
+  img.onload = img.onerror = () => resolve();
+  img.src = `${FC}f${String(i).padStart(4, '0')}.jpg`;
+  frames[i] = img;
+}))).then(() => document.fonts.ready).then(() => { render(0); document.body.dataset.ready = '1'; });
+</script>
+</body></html>
