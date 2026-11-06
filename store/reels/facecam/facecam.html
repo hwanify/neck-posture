@@ -107,6 +107,29 @@ const $ = (id) => document.getElementById(id);
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 const Q = new URLSearchParams(location.search);
+// ?lang=en: English app UI and copy. ?cam=left: face cam on the left (TikTok's buttons sit on the right).
+const EN = Q.get('lang') === 'en';
+const T = EN
+  ? {
+      date: 'Friday, November 6', good: 'Good posture', alerts: 'Alerts', elapsed: 'Elapsed', stop: 'Stop',
+      top: 'The app that tells you<br>when your head tilts',
+      tag: 'Your AirPods tell you when your head tilts',
+      ask: 'Search "Plumb" on the App Store', small: 'Free · iPhone + AirPods',
+    }
+  : {
+      date: '11월 6일 금요일', good: '바른 자세', alerts: '알림', elapsed: '경과', stop: '측정 종료',
+      top: '고개가 기울면, 에어팟이 알려주는 앱',
+      tag: '고개가 기울면, 에어팟이 알려줘요',
+      ask: '프로필 링크에서 받기', small: "App Store에서 'Plumb' 검색 · 무료",
+    };
+document.querySelector('#home .top span').textContent = T.date;
+const statLabels = document.querySelectorAll('#stats .l');
+statLabels[0].textContent = T.good; statLabels[1].textContent = T.alerts; statLabels[2].textContent = T.elapsed;
+$('stopBtn').textContent = T.stop;
+document.querySelector('#endCard .tag').textContent = T.tag;
+document.querySelector('#endCard .ask').textContent = T.ask;
+document.querySelector('#endCard .s').textContent = T.small;
+if (Q.get('cam') === 'left') $('cam').style.left = '26px';
 const FC = Q.get('fc');
 const N = +(Q.get('n') || Math.round(CAM_END * FPS));
 const frames = [];
@@ -121,7 +144,7 @@ function angleAt(t) {
 }
 
 const CAPS = [
-  [0, NAME, '고개가 기울면, 에어팟이 알려주는 앱'],
+  [0, NAME, T.top],
   [NAME, 99, '프로필 링크에서 받기<br>App Store에서 \'Plumb\' 검색'],
 ];
 
