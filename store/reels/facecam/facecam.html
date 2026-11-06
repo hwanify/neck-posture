@@ -55,6 +55,14 @@ html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow:
 #cap { position: absolute; left: 40px; right: 40px; top: 150px; text-align: center; }
 #cap span { display: inline; background: #fff; color: #000; font-weight: 600; font-size: 21px; line-height: 1.75; padding: 5px 12px; border-radius: 8px; -webkit-box-decoration-break: clone; box-decoration-break: clone; letter-spacing: -0.5px; }
 #photos { display: none; }
+/* End card, as in the other reels */
+#endCard { position: absolute; inset: 0; background: #000; opacity: 0; }
+#endCard .in { position: absolute; left: 0; right: 0; top: 250px; text-align: center; }
+#endCard img { width: 120px; height: 120px; border-radius: 27px; display: block; margin: 0 auto; border: 1.5px solid #3a3a3a; }
+#endCard .name { font-weight: 600; font-size: 52px; letter-spacing: -2px; margin-top: 30px; }
+#endCard .tag { font-size: 19px; color: #8E8E8E; margin-top: 8px; letter-spacing: -0.4px; }
+#endCard .ask { margin-top: 40px; font-weight: 600; font-size: 22px; letter-spacing: -0.6px; }
+#endCard .s { margin-top: 10px; font-size: 17px; color: #BDBDBD; letter-spacing: -0.3px; }
 </style></head>
 <body>
 <div id="photos"></div>
@@ -82,9 +90,12 @@ html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow:
   <div class="bat"><i></i></div></div>
 <div id="cam"><canvas width="400" height="400"></canvas></div>
 <div id="cap"><span></span></div>
+<div id="endCard"><div class="in"><img src="../../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">고개가 기울면, 에어팟이 알려줘요</div>
+  <div class="ask">프로필 링크에서 받기</div><div class="s">App Store에서 'Plumb' 검색 · 무료</div></div></div>
 <script>
 // Face cam: the 5 s clip at 0.75× = 6.6 s (tilts 2.0–2.7, chime 3.47, hand to ear, upright by 5.45),
-// then its last second played back and forth so she keeps moving. One fixed line on top, the app name at the end.
+// then the end card. One fixed line on top.
 // ?lock=1 adds the screen-off → lock screen part (6.7–9.0) and moves the app name to 9.0.
 const LOCK_ON = new URLSearchParams(location.search).get('lock') === '1';
 const CAM_END = 6.72, CHIME = 3.47, FPS = 30;
@@ -131,16 +142,23 @@ function render(t) {
   const camOn = t < LOCK;
   $('cam').style.opacity = camOn ? 1 : 0;
   if (camOn && frames.length) {
-    // Forward through the clip, then back and forth over its last 20 frames (she is upright there).
+    // The clip once; the end card covers it from NAME on.
     const last = frames.length - 1, i = Math.floor(t * FPS);
-    const k = (i - last) % 40;
-    const img = frames[i <= last ? i : last - (k <= 20 ? k : 40 - k)];
+    const img = frames[Math.min(i, last)];
     ctx.drawImage(img, 0, 0, 400, 400);
   }
 
   const c = CAPS.find(([s, e]) => t >= s && t < e);
   $('cap').querySelector('span').innerHTML = c ? c[2] : '';
   $('cap').style.top = t >= LOCK ? '300px' : '150px';
+  $('cap').style.opacity = t < NAME ? 1 : 0;
+
+  // End card after the face cam.
+  // Black first, then the card fades in.
+  $('endCard').style.opacity = clamp((t - NAME) / 0.2);
+  const card = $('endCard').querySelector('.in');
+  card.style.opacity = clamp((t - NAME - 0.2) / 0.4);
+  card.style.transform = `translateY(${(1 - ease((t - NAME - 0.2) / 0.6)) * 24}px)`;
 }
 window.render = render;
 
