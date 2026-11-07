@@ -95,6 +95,11 @@ document.getElementById('hook').innerHTML = T.hook;
 document.querySelector('#end .tag').textContent = T.tag;
 document.querySelector('#end .soon').textContent = T.soon;
 document.querySelector('#end .ask').textContent = T.ask;
+// ?end=profile: organic-reel ending (profile link + App Store search) instead of the ad one.
+if (Q.get('end') === 'profile' && !EN) {
+  document.querySelector('#end .soon').textContent = "App Store에서 'Plumb' 검색 · 무료";
+  document.querySelector('#end .ask').textContent = '프로필 링크에서 받기';
+}
 document.querySelector('#phone img').src = T.shot;
 const OPEN = (Q.get('open') || T.open).split('|');
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -103,7 +108,18 @@ const fade = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));
 const $ = (id) => document.getElementById(id);
 
 // Head angle per cut, following the footage (his right shoulder = leans left on screen).
+// ?angles=a,b,c,d: steady angles for the three opening cuts and the close-up (subtle-tilt footage).
+const ANGLES = Q.get('angles') ? Q.get('angles').split(',').map(Number) : null;
+
 function angleAt(t) {
+  if (ANGLES) {
+    if (t < 1.8) return ANGLES[0];
+    if (t < 3.4) return ANGLES[1];
+    if (t < 5.0) return ANGLES[2];
+    if (t < SIT) return ANGLES[3];
+    if (t < SIT + 0.7) return ANGLES[3] * (1 - ease((t - SIT) / 0.7));
+    return 0;
+  }
   // ?ramp=a,b: the first cut starts upright and tilts between a and b seconds.
   if (t < 1.8 && RAMP) return 1 + 11 * ease((t - RAMP[0]) / (RAMP[1] - RAMP[0]));
   if (t < 1.8) return 11 + 1.0 * (t / 1.8);                // laptop, already tilted
