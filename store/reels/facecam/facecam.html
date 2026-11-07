@@ -113,12 +113,18 @@ html, body { margin: 0; width: 540px; height: 960px; background: #000; overflow:
 // then the end card. One fixed line on top.
 // ?lock=1 adds the screen-off → lock screen part (6.7–9.0) and moves the app name to 9.0.
 const LOCK_ON = new URLSearchParams(location.search).get('lock') === '1';
-const CAM_END = 6.72, CHIME = 3.47, FPS = 30;
+// ?clip=tilted: a 10 s portrait clip where she is subtly tilted from the start and straightens on
+// her own after the chime. ?chime, ?sit (straightening starts), ?tilt (deg), ?name (end card) and
+// ?face=x,y,size (face square in the 540×960 frames) fit it to the footage.
+const TILTED = new URLSearchParams(location.search).get('clip') === 'tilted';
+const QP = (k, d) => { const v = new URLSearchParams(location.search).get(k); return v === null ? d : +v; };
+const CAM_END = TILTED ? 10 : 6.72, CHIME = TILTED ? QP('chime', 4.0) : 3.47, FPS = 30;
+const SIT = QP('sit', 4.4), TILT = QP('tilt', 7);
 // ?intro=1 skips the first 0.67 s of the clip and opens on it full screen (0–2.0), shrinking into the
 // circle by 2.5. Times below are on the clip's timeline; SHIFT maps reel time onto it.
 const INTRO = new URLSearchParams(location.search).get('intro') === '1';
-const SHIFT = INTRO ? 0.67 : 0;
-const LOCK = LOCK_ON ? 6.7 : 99, NAME = (LOCK_ON ? 9.0 : 6.6) - SHIFT;
+const SHIFT = INTRO && !TILTED ? 0.67 : 0;
+const LOCK = LOCK_ON ? 6.7 : 99, NAME = TILTED ? QP('name', 7.5) : (LOCK_ON ? 9.0 : 6.6) - SHIFT;
 const SHRINK = 2.0, SHRUNK = 2.5;
 const START_ELAPSED = 12 * 60 + 41;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -163,6 +169,7 @@ const frames = [];
 const ctx = document.querySelector('#cam canvas').getContext('2d');
 
 function angleAt(t) {
+  if (TILTED) return t < SIT ? TILT : TILT * (1 - ease((t - SIT) / 0.6));
   if (t < 2.0) return 0;
   if (t < 2.7) return 16 * ease((t - 2.0) / 0.7);
   if (t < 5.0) return 16;
@@ -183,7 +190,14 @@ function drawBig(t, k) {
   box.style.left = `${x}px`; box.style.top = `${y}px`; box.style.width = `${w}px`; box.style.height = `${h}px`;
   box.style.borderRadius = `${L(0, CAM_SIZE / 2)}px`;
   box.style.boxShadow = k > 0.5 ? `0 0 0 ${3 * (k - 0.5) * 2}px rgba(255,255,255,.9), 0 6px 24px rgba(0,0,0,.6)` : 'none';
-  const sh = L(540, 420), sw = sh * (w / h), sx = 480 - sw / 2, sy = 0;
+  // Landscape 960×540 frames (first clip) or portrait 540×960 frames (?clip=tilted).
+  let sx, sy, sw, sh;
+  if (TILTED) {
+    const [fx, fy, fs] = (new URLSearchParams(location.search).get('face') || '270,330,300').split(',').map(Number);
+    sw = L(540, fs); sh = L(960, fs); sx = L(0, fx - fs / 2); sy = L(0, fy - fs / 2);
+  } else {
+    sh = L(540, 420); sw = sh * (w / h); sx = 480 - sw / 2; sy = 0;
+  }
   const cw = Math.round(w * 2), ch = Math.round(h * 2);
   if (bigCanvas.width !== cw || bigCanvas.height !== ch) { bigCanvas.width = cw; bigCanvas.height = ch; }
   const img = fullFrames[Math.min(fullFrames.length - 1, Math.floor(t * FPS))];
