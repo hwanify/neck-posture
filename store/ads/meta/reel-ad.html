@@ -91,7 +91,8 @@ const T = EN
       ask: 'App Store에서 무료',
       shot: '../../screenshots/ko-1.png',
     };
-document.getElementById('hook').innerHTML = T.hook;
+// ?hook=…: a different opening line ('|' breaks the line).
+document.getElementById('hook').innerHTML = Q.get('hook') ? Q.get('hook').split('|').join('<br>') : T.hook;
 document.querySelector('#end .tag').textContent = T.tag;
 document.querySelector('#end .soon').textContent = T.soon;
 document.querySelector('#end .ask').textContent = T.ask;
@@ -116,6 +117,7 @@ const LIFT = Q.get('lift') ? Q.get('lift').split(',').map(Number) : null;
 
 function angleAt(t) {
   if (ANGLES) {
+    if (t < 1.8 && RAMP) return 1 + (ANGLES[0] - 1) * ease((t - RAMP[0]) / (RAMP[1] - RAMP[0]));
     if (t < 1.8) return ANGLES[0];
     if (t < 3.4) return ANGLES[1];
     if (t < 5.0) return ANGLES[2];
