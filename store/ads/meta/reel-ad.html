@@ -110,12 +110,23 @@ const $ = (id) => document.getElementById(id);
 // Head angle per cut, following the footage (his right shoulder = leans left on screen).
 // ?angles=a,b,c,d: steady angles for the three opening cuts and the close-up (subtle-tilt footage).
 const ANGLES = Q.get('angles') ? Q.get('angles').split(',').map(Number) : null;
+// ?lift=a,b,m,c,d: in the close-up she half lifts her head (a→b, to m degrees), holds, then straightens
+// fully (c→d). The angle reaches 0 and the caption changes only when she is fully upright.
+const LIFT = Q.get('lift') ? Q.get('lift').split(',').map(Number) : null;
 
 function angleAt(t) {
   if (ANGLES) {
     if (t < 1.8) return ANGLES[0];
     if (t < 3.4) return ANGLES[1];
     if (t < 5.0) return ANGLES[2];
+    if (LIFT) {
+      const [a, b, m, c, d] = LIFT, top = ANGLES[3];
+      if (t < a) return top;
+      if (t < b) return top + (m - top) * ease((t - a) / (b - a));
+      if (t < c) return m;
+      if (t < d) return m * (1 - ease((t - c) / (d - c)));
+      return 0;
+    }
     if (t < SIT) return ANGLES[3];
     if (t < SIT + 0.7) return ANGLES[3] * (1 - ease((t - SIT) / 0.7));
     return 0;
@@ -147,8 +158,8 @@ function render(t) {
     [0.0, 1.8, OPEN[0], ''],
     [1.8, 3.4, OPEN[1], ''],
     [3.4, 5.0, OPEN[2], ''],
-    [5.0, SIT - 0.1, ...T.cue],
-    [SIT - 0.1, 9.5, T.quiet, ''],
+    [5.0, (LIFT ? LIFT[4] : SIT) - 0.1, ...T.cue],
+    [(LIFT ? LIFT[4] : SIT) - 0.1, 9.5, T.quiet, ''],
     [9.5, PHONE - 0.1, T.day, ''],
     [PHONE + 0.1, END - 0.1, ...T.app],
   ];
