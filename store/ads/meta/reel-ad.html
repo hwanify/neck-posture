@@ -190,7 +190,10 @@ function render(t) {
   cta.style.opacity = clamp((t - END - 0.9) / 0.4);
   cta.style.transform = `translateY(${(1 - ease((t - END - 0.9) / 0.6)) * 14}px)`;
 }
-window.render = render;
+// ?cut=s: the first shot ends at s instead of 5.0; everything after it moves earlier by 5.0 - s.
+const CUT = Q.get('cut') ? +Q.get('cut') : null;
+const renderAt = render;
+window.render = CUT === null ? renderAt : (t) => renderAt(t < CUT ? t : t + 5.0 - CUT);
 render(0);
 </script>
 </body></html>
