@@ -148,7 +148,8 @@ function render(t) {
   $('black').style.opacity = clamp((t - PHONE + 0.25) / 0.25);
   $('top').style.opacity = fade(t, -1, 3.4, 0.4);
   $('bottom').style.opacity = onFootage ? 1 : 0;
-  $('hook').style.opacity = fade(t, -1, 3.3, 0.3);
+  // ?hookEnd=: keep the opening line until the first cut (e.g. 5.0 when the first shot runs 0–5).
+  $('hook').style.opacity = fade(t, -1, +(Q.get('hookEnd') || 3.3), 0.3);
 
   const a = angleAt(t);
   const lv = fade(t, -1, PHONE - 0.2, 0.4);
