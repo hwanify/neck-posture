@@ -57,7 +57,9 @@ html, body { margin: 0; width: 540px; height: 960px; background: transparent; ov
 // F 11.3–13.8 app screen · G 13.8–17.0 reserve card.
 // ?noE=1 drops E: the app screen follows straight after he sits up.
 const CUT_E = new URLSearchParams(location.search).get('noE') ? 1.8 : 0;
-const CUE = 5.25, PHONE = 11.3 - CUT_E, END = 13.8 - CUT_E;
+// ?phone=t: the app screen starts at t (the end card 2.5 s later).
+const PHONE_AT = new URLSearchParams(location.search).get('phone');
+const CUE = 5.25, PHONE = PHONE_AT ? +PHONE_AT : 11.3 - CUT_E, END = PHONE + 2.5;
 // ?ear=x,y and ?sit=t retime the close-up for other footage (e.g. the female version).
 const Q = new URLSearchParams(location.search);
 const [EAR_X, EAR_Y] = (Q.get('ear') || '345,440').split(',').map(Number);
@@ -162,7 +164,7 @@ function render(t) {
     [1.8, 3.4, OPEN[1], ''],
     [3.4, 5.0, OPEN[2], ''],
     [5.0, (LIFT ? LIFT[4] : SIT) - 0.1, ...T.cue],
-    [(LIFT ? LIFT[4] : SIT) - 0.1, 9.5, T.quiet, ''],
+    [(LIFT ? LIFT[4] : SIT) - 0.1, Math.min(9.5, PHONE - 0.1), T.quiet, ''],
     [9.5, PHONE - 0.1, T.day, ''],
     [PHONE + 0.1, END - 0.1, ...T.app],
   ];
