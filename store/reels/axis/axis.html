@@ -13,8 +13,10 @@
 html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
 #shadeTop { display: none; }
 #shadeBot { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background: linear-gradient(transparent, rgba(0,0,0,.65) 35%, rgba(0,0,0,.65)); }
-#stamp { position: absolute; left: 36px; top: 500px; font-weight: 500; font-size: 13px; letter-spacing: 1.5px; color: rgba(242,242,242,.6); font-variant-numeric: tabular-nums; }
-#hook { position: absolute; left: 36px; right: 60px; top: 524px; font-weight: 600; font-size: 29px; line-height: 1.38; letter-spacing: -1px; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
+#stamp { position: absolute; left: 36px; top: 470px; font-weight: 500; font-size: 13px; letter-spacing: 1.5px; color: rgba(242,242,242,.6); font-variant-numeric: tabular-nums; }
+#hookSub { position: absolute; left: 36px; right: 60px; top: 580px; font-weight: 500; font-size: 20px; letter-spacing: -0.5px; color: #F2F2F2; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+#hookSub span { display: inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(242,242,242,.14); }
+#hook { position: absolute; left: 36px; right: 60px; top: 494px; font-weight: 600; font-size: 29px; line-height: 1.38; letter-spacing: -1px; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
 #cap { position: absolute; left: 36px; right: 60px; top: 524px; font-weight: 500; font-size: 22px; line-height: 1.4; letter-spacing: -0.6px; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
 svg { position: absolute; inset: 0; width: 540px; height: 960px; overflow: visible; }
 #end { position: absolute; inset: 0; background: #000; opacity: 0; }
@@ -39,6 +41,7 @@ svg { position: absolute; inset: 0; width: 540px; height: 960px; overflow: visib
 </svg>
 <div id="stamp"></div>
 <div id="hook">옆에서 보면 보이는데,<br>정작 본인은 모르는 고개</div>
+<div id="hookSub"><span>에어팟은 바로 알아챕니다</span></div>
 <div id="cap"></div>
 <div id="end"><div class="in"><img src="../../../assets/icon.png"><div class="name">Plumb</div>
   <div class="tag">고개가 기울면, 귀로 알려주는 앱</div><div class="rule"></div>
@@ -69,7 +72,7 @@ function angleAt(t) {
 }
 const EAR = [285, 349];
 const STAMPS = [[0, 3.4, '23:41'], [3.4, 5.0, '00:12'], [5.0, UP, '00:13'], [UP, END, '00:13']];
-const CAPS = [[3.4, 5.0, '쉬는 시간에도'], [5.0, UP, '띵.<br>기운 쪽 귀에서'], [UP, END, '고개를 세우면,<br>조용해집니다']];
+const CAPS = [[3.4, 5.0, '쉬는 시간에도,<br>에어팟은 재고 있어요'], [5.0, UP, '띵.<br>에어팟이 기운 쪽 귀에서'], [UP, END, '고개를 세우면,<br>조용해집니다']];
 
 function render(t) {
   const on = t < END;
@@ -108,6 +111,9 @@ function render(t) {
   $('stamp').textContent = s ? s[2] : '';
   $('stamp').style.opacity = s ? 1 : 0;
   $('hook').style.opacity = fade(t, -1, 3.4, 0.2);
+  // The AirPods line lands within the first 1.5 s, while the hook is still up.
+  $('hookSub').style.opacity = fade(t, 0.9, 3.4, 0.2);
+  $('hookSub').style.transform = `translateY(${(1 - ease((t - 0.9) / 0.35)) * 8}px)`;
   const c = CAPS.find(([a0, b0]) => t >= a0 && t < b0);
   $('cap').innerHTML = c ? c[2] : '';
   $('cap').style.opacity = c ? fade(t, c[0], c[1], 0.2) : 0;
