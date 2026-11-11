@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
 import { playTestCue } from '../services/feedback';
@@ -206,6 +206,16 @@ export function SettingsScreen() {
 
       <LanguageSection value={s.settings.language} />
 
+      <Section header={t('settings.privacy')} iconInset footer={t('settings.analyticsFooter')}>
+        <ToggleRow
+          icon="lock"
+          title={t('settings.analytics')}
+          value={s.settings.analytics}
+          onChange={(analytics) => void monitor.updateSettings((prev) => ({ ...prev, analytics }))}
+        />
+        {SUPPORT_EMAIL ? <Row icon="info" title={t('settings.sendFeedback')} onPress={sendFeedback} /> : null}
+      </Section>
+
       <Section header={t('settings.info')} iconInset>
         <Row icon="sensor" title={t('settings.sensor')} value={`${sourceLabel(s.sourceKind)} · ${s.sampleRateHz}Hz`} />
         <Row icon="info" title={t('settings.motionPermission')} value={t(`settings.auth.${s.authorization}`)} />
@@ -218,6 +228,16 @@ export function SettingsScreen() {
       </Text>
     </Screen>
   );
+}
+
+/** Contact address for "Send feedback" (app.json `extra.supportEmail`); the row is hidden without one. */
+const SUPPORT_EMAIL: string | undefined = Constants.expoConfig?.extra?.supportEmail || undefined;
+
+/** Opens Mail with the app and iOS version filled in; nothing is sent unless the user sends it. */
+function sendFeedback() {
+  const body = `\n\n\n---\nPlumb ${Constants.expoConfig?.version ?? ''} · ${Platform.OS} ${Platform.Version}`;
+  const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t('settings.feedbackSubject'))}&body=${encodeURIComponent(body)}`;
+  void Linking.openURL(url).catch(() => {});
 }
 
 function Pill({
