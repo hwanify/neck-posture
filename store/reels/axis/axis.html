@@ -68,8 +68,8 @@ function angleAt(t) {
 }
 const EAR = [285, 349];
 const STAMPS = [];
-// Text kept to the hook and one word at the chime.
-const CAPS = [[CHIME - 0.1, UP, '띵']];
+// One short line per shot.
+const CAPS = [[3.4, 5.0, '쉬는 시간에도'], [5.0, UP, '띵, 기운 쪽 귀에서'], [UP, END, '세우면 조용해져요']];
 
 function render(t) {
   const on = t < END;
