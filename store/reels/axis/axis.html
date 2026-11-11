@@ -1,0 +1,123 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Reel overlay (9:16, rendered at 1440×2560), a different look from reel-ad.html: instead of a level
+     line under the face, a dashed true-vertical and a solid head axis are drawn next to the head
+     with a small angle arc, standing beside the head; the chime shows as sound arcs at the ear; text is small, left-aligned, with
+     a time stamp. Head positions follow the observer-POV footage (store/ads/meta/plumb-reel-observer-ko.mp4).
+     Transparent overlay; render(t) is pure. -->
+<style>
+@font-face { font-family: P; font-weight: 400; src: url(../../../assets/fonts/Pretendard-Regular.otf); }
+@font-face { font-family: P; font-weight: 500; src: url(../../../assets/fonts/Pretendard-Medium.otf); }
+@font-face { font-family: P; font-weight: 600; src: url(../../../assets/fonts/Pretendard-SemiBold.otf); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 540px; height: 960px; background: transparent; overflow: hidden; font-family: P, sans-serif; color: #F2F2F2; word-break: keep-all; }
+#shadeTop { display: none; }
+#shadeBot { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background: linear-gradient(transparent, rgba(0,0,0,.65) 35%, rgba(0,0,0,.65)); }
+#stamp { position: absolute; left: 36px; top: 500px; font-weight: 500; font-size: 13px; letter-spacing: 1.5px; color: rgba(242,242,242,.6); font-variant-numeric: tabular-nums; }
+#hook { position: absolute; left: 36px; right: 60px; top: 524px; font-weight: 600; font-size: 29px; line-height: 1.38; letter-spacing: -1px; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
+#cap { position: absolute; left: 36px; right: 60px; top: 524px; font-weight: 500; font-size: 22px; line-height: 1.4; letter-spacing: -0.6px; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+svg { position: absolute; inset: 0; width: 540px; height: 960px; overflow: visible; }
+#end { position: absolute; inset: 0; background: #000; opacity: 0; }
+#end .in { position: absolute; left: 40px; right: 40px; top: 300px; }
+#end img { width: 64px; height: 64px; border-radius: 15px; border: 1px solid #333; display: block; }
+#end .name { margin-top: 26px; font-weight: 600; font-size: 46px; letter-spacing: -1.8px; }
+#end .tag { margin-top: 10px; font-size: 19px; color: #BDBDBD; letter-spacing: -0.4px; }
+#end .rule { margin: 34px 0 22px; width: 40px; height: 1.5px; background: #555; }
+#end .a { font-weight: 500; font-size: 18px; letter-spacing: -0.3px; }
+#end .b { margin-top: 8px; font-size: 16px; color: #8E8E8E; letter-spacing: -0.3px; }
+</style></head>
+<body>
+<div id="shadeTop"></div>
+<div id="shadeBot"></div>
+<svg id="g">
+  <line id="vert" stroke="rgba(242,242,242,.45)" stroke-width="1.5" stroke-dasharray="5 6"/>
+  <line id="axis" stroke="#F2F2F2" stroke-width="2.5" stroke-linecap="round"/>
+  <path id="arc" fill="none" stroke="#F2F2F2" stroke-width="1.5"/>
+  <circle id="pivot" r="3.5" fill="#F2F2F2"/>
+  <text id="deg" fill="#F2F2F2" font-family="P" font-weight="500" font-size="20" letter-spacing="-0.5"></text>
+  <g id="waves" fill="none" stroke="#F2F2F2" stroke-linecap="round"></g>
+</svg>
+<div id="stamp"></div>
+<div id="hook">옆에서 보면 보이는데,<br>정작 본인은 모르는 고개</div>
+<div id="cap"></div>
+<div id="end"><div class="in"><img src="../../../assets/icon.png"><div class="name">Plumb</div>
+  <div class="tag">고개가 기울면, 귀로 알려주는 앱</div><div class="rule"></div>
+  <div class="a">프로필 링크에서 받기</div><div class="b">App Store에서 'Plumb' 검색 · 무료</div></div></div>
+<script>
+// Footage: A 0–3.4 writing, tilted, camera drifting in · B 3.4–5.0 phone, tilted · C 5.0–8.29 close-up
+// (chime 5.25, straightens 6.5–7.25) · D 8.29–9.5 writing upright · end card 9.5–13.
+const CHIME = 5.25, SIT = 6.5, UP = 7.25, END = 9.5;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+const lerp = (a, b, k) => a + (b - a) * k;
+const fade = (t, a, b, f = 0.25) => clamp(Math.min((t - a) / f, (b - t) / f));
+const $ = (id) => document.getElementById(id);
+
+// Head centre (x, y) and size r per shot, in the 540×960 frame.
+function head(t) {
+  if (t < 3.4) { const k = t / 3.4; return [lerp(300, 290, k), lerp(325, 330, k), lerp(92, 100, k)]; }
+  if (t < 5.0) return [266, 318, 62];
+  if (t < 8.29) return [lerp(225, 262, ease((t - SIT) / 0.75)), lerp(395, 360, ease((t - SIT) / 0.75)), 120];
+  return [275, 330, 72];
+}
+function angleAt(t) {
+  if (t < 3.4) return 10;
+  if (t < 5.0) return 12;
+  if (t < SIT) return 10;
+  if (t < UP) return 10 * (1 - ease((t - SIT) / (UP - SIT)));
+  return 0;
+}
+const EAR = [285, 349];
+const STAMPS = [[0, 3.4, '23:41'], [3.4, 5.0, '00:12'], [5.0, UP, '00:13'], [UP, END, '00:13']];
+const CAPS = [[3.4, 5.0, '쉬는 시간에도'], [5.0, UP, '띵.<br>기운 쪽 귀에서'], [UP, END, '고개를 세우면,<br>조용해집니다']];
+
+function render(t) {
+  const on = t < END;
+  $('g').style.opacity = on ? 1 : 0;
+  $('shadeTop').style.opacity = $('shadeBot').style.opacity = on ? 1 : 0;
+
+  // The gauge stands beside the head (not over the face), at head height.
+  const [hx, y, r] = head(t), a = angleAt(t), rad = a * Math.PI / 180;
+  const x = hx + r * 1.25, L = Math.max(70, r * 0.9);
+  // True vertical (dashed) and head axis (solid, leaning toward screen left as a grows).
+  $('vert').setAttribute('x1', x); $('vert').setAttribute('y1', y - L);
+  $('vert').setAttribute('x2', x); $('vert').setAttribute('y2', y + L * 0.55);
+  const tx = x - Math.sin(rad) * L, ty = y - Math.cos(rad) * L;
+  const bx = x + Math.sin(rad) * L * 0.55, by = y + Math.cos(rad) * L * 0.55;
+  $('axis').setAttribute('x1', tx); $('axis').setAttribute('y1', ty);
+  $('axis').setAttribute('x2', bx); $('axis').setAttribute('y2', by);
+  $('pivot').setAttribute('cx', x); $('pivot').setAttribute('cy', y);
+  const ar = L * 0.62;
+  const ax = x - Math.sin(rad) * ar, ay = y - Math.cos(rad) * ar;
+  $('arc').setAttribute('d', a > 0.5 ? `M ${x} ${y - ar} A ${ar} ${ar} 0 0 0 ${ax} ${ay}` : '');
+  $('deg').setAttribute('x', x + 10); $('deg').setAttribute('y', y - L + 6);
+  $('deg').textContent = `${Math.round(a)}°`;
+
+  // Chime: three arcs opening outward from the ear.
+  let w = '';
+  for (let i = 0; i < 3; i++) {
+    const p = (t - CHIME - i * 0.12) / 0.9;
+    if (p > 0 && p < 1) {
+      const rr = 16 + i * 13 + p * 10, o = (1 - p) * 0.95;
+      w += `<path d="M ${EAR[0] + rr * 0.5} ${EAR[1] - rr * 0.87} A ${rr} ${rr} 0 0 1 ${EAR[0] + rr * 0.5} ${EAR[1] + rr * 0.87}" stroke-width="2.2" opacity="${o}"/>`;
+    }
+  }
+  $('waves').innerHTML = w;
+
+  const s = STAMPS.find(([a0, b0]) => t >= a0 && t < b0);
+  $('stamp').textContent = s ? s[2] : '';
+  $('stamp').style.opacity = s ? 1 : 0;
+  $('hook').style.opacity = fade(t, -1, 3.4, 0.2);
+  const c = CAPS.find(([a0, b0]) => t >= a0 && t < b0);
+  $('cap').innerHTML = c ? c[2] : '';
+  $('cap').style.opacity = c ? fade(t, c[0], c[1], 0.2) : 0;
+
+  $('end').style.opacity = clamp((t - END) / 0.3);
+  const k = $('end').querySelector('.in');
+  k.style.opacity = clamp((t - END - 0.25) / 0.45);
+  k.style.transform = `translateY(${(1 - ease((t - END - 0.25) / 0.6)) * 18}px)`;
+}
+window.render = render;
+render(0);
+</script>
+</body></html>
