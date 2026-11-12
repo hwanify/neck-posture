@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Line, Path, Rect } from 'react-native-svg';
+import Svg, { Rect } from 'react-native-svg';
 
-import { HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
+import type { HabitReport, SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
@@ -25,7 +25,10 @@ export function HabitReportSheet() {
   );
 }
 
-/** Report page; also opened again from History for a past session. */
+/**
+ * Report page, also opened again from History. Three answers, top to bottom: where the head
+ * usually sits, how the time split between left / upright / right, and when it tilted.
+ */
 export function ReportBody({
   summary,
   report,
@@ -35,162 +38,127 @@ export function ReportBody({
   report: HabitReport;
   threshold: number;
 }) {
-  const pct = (x: number) => Math.round(x * 100);
-  const side =
-    report.side === null
-      ? t('report.noSide')
-      : t(report.side === 'left' ? 'report.left' : 'report.right', { pct: pct(report.sideShare) });
-  const typical = report.typicalAngle;
+  const usual = report.usualAngle;
   return (
     <View style={styles.body}>
-      <Text style={styles.label}>{t('report.typicalLabel')}</Text>
-      {typical === null ? (
-        <Text style={styles.none}>{t('report.typicalNone')}</Text>
-      ) : (
-        <>
-          <Text style={styles.big}>
-            {`${t(typical < 0 ? 'common.left' : 'common.right')} ${Math.abs(typical)}°`}
-          </Text>
-          <Text style={styles.sub}>{t('report.typicalHint')}</Text>
-        </>
-      )}
-      <Text style={styles.summary}>{t(`report.trend.${report.trend}`)}</Text>
+      <Text style={styles.label}>{t('report.usualLabel')}</Text>
+      <Text style={styles.big}>
+        {usual === null
+          ? '–'
+          : usual === 0
+            ? `${t('report.straight')} 0°`
+            : `${t(usual < 0 ? 'common.left' : 'common.right')} ${Math.abs(usual)}°`}
+      </Text>
+      <Text style={styles.sub}>{t('report.usualHint')}</Text>
 
-      <Distribution histogram={report.histogram} threshold={threshold} typical={typical} />
-      <Timeline summary={summary} threshold={threshold} />
+      <Text style={[styles.label, styles.section]}>{t('report.during', { time: formatDuration(report.measuredSec) })}</Text>
+      <SplitBar report={report} />
 
-      <View style={styles.grid}>
-        <Item
-          label={t('report.tiltShareLabel')}
-          value={`${pct(report.tiltShare)}%`}
-          hint={t('report.of', { time: formatDuration(report.measuredSec) })}
-        />
-        <Item label={t('report.side')} value={side} />
+      <When summary={summary} threshold={threshold} />
+
+      <View style={styles.pair}>
         <Item label={t('report.episodes')} value={t('report.episodesValue', { n: report.episodes })} />
-        <Item
-          label={t('report.episodeAvg')}
-          value={report.episodes > 0 ? formatDuration(report.avgEpisodeSec) : '–'}
-        />
         <Item label={t('report.longest')} value={report.longestTiltSec > 0 ? formatDuration(report.longestTiltSec) : '–'} />
-        <Item
-          label={t('report.firstTilt')}
-          value={
-            report.firstTiltAfterSec === null
-              ? t('report.never')
-              : t('report.firstTiltValue', { time: formatDuration(report.firstTiltAfterSec) })
-          }
-        />
-        <Item label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
       </View>
       <Text style={styles.note}>{t('report.note', { deg: threshold })}</Text>
     </View>
   );
 }
 
-const BAR_W = 320;
-const BAR_H = 72;
-
-/**
- * Bars of how often each angle came up, left tilt on the left, right on the right; tilted bins are
- * bright, the usual angle brightest, and dashed lines mark the alert angle on both sides.
- */
-function Distribution({
-  histogram,
-  threshold,
-  typical,
-}: {
-  histogram: number[];
-  threshold: number;
-  typical: number | null;
-}) {
-  const max = Math.max(...histogram);
-  if (max === 0) return null;
-  const n = histogram.length;
-  const slot = BAR_W / n;
-  // Edges of the tilted range: left of the +threshold bin, right of the -threshold bin.
-  const edges = [(HIST_MAX + threshold) * slot, (HIST_MAX - threshold + 1) * slot];
+/** One bar split left-tilted | upright | right-tilted, laid out in that order so the side reads from position. */
+function SplitBar({ report }: { report: HabitReport }) {
+  const parts = [
+    { share: report.leftShare, label: t('report.leftShare'), tilted: true, align: 'flex-start' as const },
+    { share: report.goodShare, label: t('report.upright'), tilted: false, align: 'center' as const },
+    { share: report.rightShare, label: t('report.rightShare'), tilted: true, align: 'flex-end' as const },
+  ];
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
   return (
-    <View style={styles.chart}>
-      <Text style={styles.chartLabel}>{t('report.distribution')}</Text>
-      <Svg width="100%" height={BAR_H} viewBox={`0 0 ${BAR_W} ${BAR_H}`} preserveAspectRatio="none">
-        {histogram.map((count, i) => {
-          if (count === 0) return null;
-          const deg = i - HIST_MAX;
-          const h = Math.max(2, (count / max) * (BAR_H - 4));
-          const fill = deg === typical ? colors.text : Math.abs(deg) >= threshold ? colors.warning : colors.muted;
-          return <Rect key={i} x={i * slot + 1} y={BAR_H - h} width={slot - 2} height={h} rx={1} fill={fill} />;
-        })}
-        {edges.map((x) => (
-          <Line key={x} x1={x} x2={x} y1={0} y2={BAR_H} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
+    <View>
+      <View style={styles.bar}>
+        {parts.map((p, i) =>
+          p.share > 0 ? (
+            <View
+              key={i}
+              style={{ flex: p.share, backgroundColor: p.tilted ? colors.text : colors.tertiary, minWidth: 3 }}
+            />
+          ) : null,
+        )}
+      </View>
+      <View style={styles.barLabels}>
+        {parts.map((p, i) => (
+          <View key={i} style={[styles.barLabel, { alignItems: p.align }]}>
+            <Text style={[styles.pct, !p.tilted && styles.pctDim]}>{pct(p.share)}</Text>
+            <Text style={styles.small}>{p.label}</Text>
+          </View>
         ))}
-      </Svg>
-      <View style={styles.axis}>
-        <Text style={styles.time}>{`${t('common.left')} ${HIST_MAX}°`}</Text>
-        <Text style={styles.time}>0°</Text>
-        <Text style={styles.time}>{`${t('common.right')} ${HIST_MAX}°`}</Text>
       </View>
     </View>
   );
 }
 
-function Item({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <View style={styles.item}>
-      <Text style={styles.itemLabel}>{label}</Text>
-      <Text style={styles.itemValue}>{value}</Text>
-      {hint ? <Text style={styles.itemHint}>{hint}</Text> : null}
-    </View>
-  );
-}
-
-const CHART_W = 320;
-const CHART_H = 132;
-const HALF = CHART_H / 2;
-const CHART_MAX_DEG = 20;
+const W = 300;
+const ROW_H = 16;
+const ROW_GAP = 6;
 
 /**
- * Signed angle over time: right tilt above the middle line, left tilt below; dashed lines are the
- * alert angle on each side. Labels name the sides and the start/end clock times.
+ * Time runs left to right; a block in the top row is a stretch tilted right, in the bottom row a
+ * stretch tilted left (5-second steps past the alert angle).
  */
-function Timeline({ summary, threshold }: { summary: SessionSummary; threshold: number }) {
+function When({ summary, threshold }: { summary: SessionSummary; threshold: number }) {
   const { timeline } = summary;
   const n = timeline.length;
   if (n < 2) return null;
-  const x = (i: number) => (i / (n - 1)) * CHART_W;
-  const y = (deg: number) => HALF - (Math.max(-CHART_MAX_DEG, Math.min(CHART_MAX_DEG, deg)) / CHART_MAX_DEG) * HALF;
-  let d = '';
-  let pen = false;
-  timeline.forEach((a, i) => {
-    if (a === null) {
-      pen = false;
-      return;
-    }
-    d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)} ${y(a).toFixed(1)} `;
-    pen = true;
-  });
-  const dash = { stroke: colors.tertiary, strokeWidth: 1, strokeDasharray: '4 5' };
+  const runs = (side: 1 | -1) => {
+    const out: [number, number][] = [];
+    let start = -1;
+    timeline.forEach((a, i) => {
+      const on = a !== null && a * side >= threshold;
+      if (on && start < 0) start = i;
+      if (!on && start >= 0) {
+        out.push([start, i]);
+        start = -1;
+      }
+    });
+    if (start >= 0) out.push([start, n]);
+    return out;
+  };
+  const row = (side: 1 | -1, y: number) => (
+    <>
+      <Rect x={0} y={y} width={W} height={ROW_H} rx={3} fill={colors.separator} />
+      {runs(side).map(([a, b]) => (
+        <Rect key={a} x={(a / n) * W} y={y} width={Math.max(2, ((b - a) / n) * W)} height={ROW_H} rx={2} fill={colors.text} />
+      ))}
+    </>
+  );
   return (
-    <View style={styles.chart}>
-      <Text style={styles.chartLabel}>{t('report.timeline')}</Text>
-      <View style={styles.chartRow}>
-        <View style={styles.chartSides}>
-          <Text style={styles.side}>{t('common.right')}</Text>
-          <Text style={styles.sideZero}>0°</Text>
-          <Text style={styles.side}>{t('common.left')}</Text>
+    <View style={styles.section}>
+      <Text style={styles.label}>{t('report.when')}</Text>
+      <View style={styles.whenRow}>
+        <View style={styles.whenSides}>
+          <Text style={styles.small}>{t('common.right')}</Text>
+          <Text style={styles.small}>{t('common.left')}</Text>
         </View>
-        <View style={styles.chartPlot}>
-          <Svg width="100%" height={CHART_H + 2} viewBox={`0 -1 ${CHART_W} ${CHART_H + 2}`} preserveAspectRatio="none">
-            <Line x1={0} x2={CHART_W} y1={HALF} y2={HALF} stroke={colors.separator} strokeWidth={1} />
-            <Line x1={0} x2={CHART_W} y1={y(threshold)} y2={y(threshold)} {...dash} />
-            <Line x1={0} x2={CHART_W} y1={y(-threshold)} y2={y(-threshold)} {...dash} />
-            <Path d={d} stroke={colors.text} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
+        <View style={styles.whenPlot}>
+          <Svg width="100%" height={ROW_H * 2 + ROW_GAP} viewBox={`0 0 ${W} ${ROW_H * 2 + ROW_GAP}`} preserveAspectRatio="none">
+            {row(1, 0)}
+            {row(-1, ROW_H + ROW_GAP)}
           </Svg>
-          <View style={styles.chartTimes}>
+          <View style={styles.times}>
             <Text style={styles.time}>{clock(summary.startedAt)}</Text>
             <Text style={styles.time}>{clock(summary.endedAt)}</Text>
           </View>
         </View>
       </View>
+    </View>
+  );
+}
+
+function Item({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.item}>
+      <Text style={styles.small}>{label}</Text>
+      <Text style={styles.itemValue}>{value}</Text>
     </View>
   );
 }
@@ -210,23 +178,21 @@ const styles = StyleSheet.create({
   label: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 8 },
   big: { ...type.display, fontSize: 48, lineHeight: 58, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
-  none: { ...type.heading, fontSize: 22, color: colors.text, marginTop: 8 },
-  axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  itemHint: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 2 },
-  summary: { ...type.heading, fontSize: 17, color: colors.text, marginTop: 18 },
-  chart: { marginTop: 24 },
-  chartLabel: { ...type.label, fontSize: 12, color: colors.subtext, marginBottom: 8 },
-  chartRow: { flexDirection: 'row' },
-  /** Same height as the plot so the labels sit at the top, middle and bottom of it. */
-  chartSides: { height: CHART_H + 2, justifyContent: 'space-between', marginRight: 8 },
-  side: { ...type.label, fontSize: 11, color: colors.subtext },
-  sideZero: { ...type.label, fontSize: 11, color: colors.muted },
-  chartPlot: { flex: 1 },
-  chartTimes: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  section: { marginTop: 36 },
+  bar: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', gap: 2, marginTop: 12 },
+  barLabels: { flexDirection: 'row', marginTop: 10 },
+  barLabel: { flex: 1 },
+  pct: { ...type.numeral, fontSize: 20, color: colors.text, fontVariant: ['tabular-nums'] },
+  pctDim: { color: colors.subtext },
+  small: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 2 },
+  whenRow: { flexDirection: 'row', marginTop: 12 },
+  /** Same height as the two rows so each label sits beside its row. */
+  whenSides: { height: ROW_H * 2 + ROW_GAP, justifyContent: 'space-between', marginRight: 10 },
+  whenPlot: { flex: 1 },
+  times: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
   time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 24 },
-  item: { width: '50%', paddingVertical: 12 },
-  itemLabel: { ...type.label, fontSize: 12, color: colors.subtext },
-  itemValue: { ...type.numeral, fontSize: 17, color: colors.text, marginTop: 4 },
-  note: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 16, lineHeight: 16 },
+  pair: { flexDirection: 'row', marginTop: 32 },
+  item: { flex: 1 },
+  itemValue: { ...type.numeral, fontSize: 20, color: colors.text, marginTop: 4 },
+  note: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 28, lineHeight: 16 },
 });
