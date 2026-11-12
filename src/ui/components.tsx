@@ -33,19 +33,33 @@ export function Sheet({
   title,
   doneLabel,
   onClose,
+  onBack,
   children,
 }: {
   visible: boolean;
   title: string;
   doneLabel: string;
   onClose: () => void;
+  /** Shows a back chevron on the left (for a detail page inside the sheet). */
+  onBack?: () => void;
   children: ReactNode;
 }) {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={styles.sheet}>
         <View style={styles.sheetBar}>
-          <View style={styles.sheetSide} />
+          {onBack ? (
+            <Pressable
+              style={[styles.sheetSide, styles.sheetSideLeft]}
+              onPress={onBack}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Back">
+              <Text style={styles.sheetBack}>‹</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.sheetSide} />
+          )}
           <Text style={styles.sheetTitle} numberOfLines={1}>
             {title}
           </Text>
@@ -274,7 +288,9 @@ const styles = StyleSheet.create({
   sheetBar: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 20 },
   sheetSide: { width: 64, alignItems: 'flex-end' },
   sheetTitle: { ...type.bodyStrong, flex: 1, textAlign: 'center', color: colors.text },
+  sheetSideLeft: { alignItems: 'flex-start' },
   sheetDone: { ...type.bodyStrong, color: colors.tint },
+  sheetBack: { ...type.bodyStrong, fontSize: 30, lineHeight: 32, color: colors.tint },
   sheetContent: { paddingBottom: 40 },
   sectionHeader: {
     ...type.label,

@@ -179,6 +179,7 @@ export const ja: Strings = {
   'habit.measuring': '通知なしで計測中',
   'habit.measuringHint': '画面を消しても計測を続けます',
   'report.title': '首の傾き習慣レポート',
+  'history.habitTag': 'クセ測定',
   'report.tiltShareLabel': '傾いていた時間',
   'report.of': '計測 {time} のうち',
   'report.trend.later': '時間が経つほど傾きました',

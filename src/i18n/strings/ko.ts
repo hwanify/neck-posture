@@ -176,6 +176,7 @@ export const ko: Strings = {
   'habit.measuring': '알림 없이 측정 중',
   'habit.measuringHint': '화면을 꺼도 계속 잽니다',
   'report.title': '고개 습관 리포트',
+  'history.habitTag': '습관 측정',
   'report.tiltShareLabel': '기운 채 보낸 시간',
   'report.of': '측정 {time} 중',
   'report.trend.later': '시간이 지날수록 더 기울었어요',

@@ -174,6 +174,7 @@ export const zhHans: Strings = {
   'habit.measuring': '正在静默测量',
   'habit.measuringHint': '不提醒，熄屏也会继续测量',
   'report.title': '头部倾斜习惯报告',
+  'history.habitTag': '习惯测量',
   'report.tiltShareLabel': '倾斜的时间',
   'report.of': '共测量 {time}',
   'report.trend.later': '时间越长，倾斜越多',

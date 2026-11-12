@@ -181,6 +181,7 @@ export const pt: Strings = {
   'habit.measuring': 'Medindo em silêncio',
   'habit.measuringHint': 'Sem alertas. Continua com a tela desligada.',
   'report.title': 'Seu hábito de inclinar a cabeça',
+  'history.habitTag': 'Medição de hábito',
   'report.tiltShareLabel': 'Tempo inclinado',
   'report.of': 'de {time} medidos',
   'report.trend.later': 'Quanto mais tempo passou, mais você inclinou.',

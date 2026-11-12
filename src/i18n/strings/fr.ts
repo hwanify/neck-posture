@@ -184,6 +184,7 @@ export const fr: Strings = {
   'habit.measuring': 'Mesure silencieuse',
   'habit.measuringHint': 'Aucune alerte. Continue écran éteint.',
   'report.title': 'Votre habitude d’inclinaison',
+  'history.habitTag': 'Mesure d’habitude',
   'report.tiltShareLabel': 'Temps incliné',
   'report.of': 'sur {time} mesurés',
   'report.trend.later': 'Plus le temps passait, plus vous penchiez.',

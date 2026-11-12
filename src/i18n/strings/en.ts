@@ -182,6 +182,7 @@ export const en = {
   'habit.measuring': 'Measuring quietly',
   'habit.measuringHint': 'No cues. Keeps going with the screen off.',
   'report.title': 'Your head tilt habit',
+  'history.habitTag': 'Habit check',
   'report.tiltShareLabel': 'Time spent tilted',
   'report.of': 'of {time} measured',
   'report.trend.later': 'The longer you went, the more you tilted.',

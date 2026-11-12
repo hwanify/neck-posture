@@ -83,6 +83,21 @@ export function HomeScreen() {
           <ConnectionStatus />
         </View>
 
+        {/* Mode picker, top centre; while a session runs it stays as a dimmed label of the running mode. */}
+        <View style={styles.modeSlot}>
+          {s.calibration && !check ? (
+            <Segmented
+              options={[
+                { value: 'alert', label: t('home.modeAlert') },
+                { value: 'habit', label: t('home.modeHabit') },
+              ]}
+              value={s.session ? s.session.mode : mode}
+              onChange={setMode}
+              disabled={s.session !== null}
+            />
+          ) : null}
+        </View>
+
         {notice && (
           <Text style={styles.notice} onPress={s.authorization === 'denied' ? () => Linking.openSettings() : undefined}>
             {notice}
@@ -122,19 +137,6 @@ export function HomeScreen() {
             </Pressable>
           ) : null}
         </View>
-
-        {!check && !s.session && s.calibration ? (
-          <View style={styles.modeSlot}>
-            <Segmented
-              options={[
-                { value: 'alert', label: t('home.modeAlert') },
-                { value: 'habit', label: t('home.modeHabit') },
-              ]}
-              value={mode}
-              onChange={setMode}
-            />
-          </View>
-        ) : null}
 
         {check ? (
           largeShift ? (
@@ -379,7 +381,7 @@ const styles = StyleSheet.create({
   label: { ...type.label, fontSize: 13, color: colors.text },
   hint: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 6 },
   statsSlot: { marginBottom: 28, justifyContent: 'center' },
-  modeSlot: { marginBottom: 16 },
+  modeSlot: { height: 36, marginTop: 12, alignItems: 'center', justifyContent: 'center' },
   stats: { flexDirection: 'row' },
   linkSlot: {
     position: 'absolute',

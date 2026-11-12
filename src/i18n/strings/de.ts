@@ -182,6 +182,7 @@ export const de: Strings = {
   'habit.measuring': 'Misst still',
   'habit.measuringHint': 'Keine Hinweise. Läuft auch bei ausgeschaltetem Bildschirm.',
   'report.title': 'Deine Kopfneigung',
+  'history.habitTag': 'Gewohnheitscheck',
   'report.tiltShareLabel': 'Zeit geneigt',
   'report.of': 'von {time} gemessen',
   'report.trend.later': 'Je länger, desto mehr hast du dich geneigt.',

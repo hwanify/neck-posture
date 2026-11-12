@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 
-import type { HabitReport } from '../engine';
-import { t } from '../i18n';
+import type { HabitReport, SessionSummary } from '../engine';
+import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
 import { type } from '../ui/fonts';
@@ -20,18 +20,19 @@ export function HabitReportSheet() {
       title={t('report.title')}
       doneLabel={t('common.done')}
       onClose={() => monitor.dismissReport()}>
-      {data ? <ReportBody report={data.report} timeline={data.summary.timeline} threshold={threshold} /> : null}
+      {data ? <ReportBody summary={data.summary} report={data.report} threshold={threshold} /> : null}
     </Sheet>
   );
 }
 
-function ReportBody({
+/** Report page; also opened again from History for a past session. */
+export function ReportBody({
+  summary,
   report,
-  timeline,
   threshold,
 }: {
+  summary: SessionSummary;
   report: HabitReport;
-  timeline: (number | null)[];
   threshold: number;
 }) {
   const pct = (x: number) => Math.round(x * 100);
@@ -46,7 +47,7 @@ function ReportBody({
       <Text style={styles.sub}>{t('report.of', { time: formatDuration(report.measuredSec) })}</Text>
       <Text style={styles.summary}>{t(`report.trend.${report.trend}`)}</Text>
 
-      <Timeline timeline={timeline} threshold={threshold} />
+      <Timeline summary={summary} threshold={threshold} />
 
       <View style={styles.grid}>
         <Item label={t('report.side')} value={side} />
@@ -76,15 +77,20 @@ function Item({ label, value }: { label: string; value: string }) {
 }
 
 const CHART_W = 320;
-const CHART_H = 96;
+const CHART_H = 132;
+const HALF = CHART_H / 2;
 const CHART_MAX_DEG = 20;
 
-/** |angle| over time; the dashed line is the alert angle. */
-function Timeline({ timeline, threshold }: { timeline: (number | null)[]; threshold: number }) {
+/**
+ * Signed angle over time: right tilt above the middle line, left tilt below; dashed lines are the
+ * alert angle on each side. Labels name the sides and the start/end clock times.
+ */
+function Timeline({ summary, threshold }: { summary: SessionSummary; threshold: number }) {
+  const { timeline } = summary;
   const n = timeline.length;
   if (n < 2) return null;
   const x = (i: number) => (i / (n - 1)) * CHART_W;
-  const y = (deg: number) => CHART_H - (Math.min(Math.abs(deg), CHART_MAX_DEG) / CHART_MAX_DEG) * CHART_H;
+  const y = (deg: number) => HALF - (Math.max(-CHART_MAX_DEG, Math.min(CHART_MAX_DEG, deg)) / CHART_MAX_DEG) * HALF;
   let d = '';
   let pen = false;
   timeline.forEach((a, i) => {
@@ -95,17 +101,34 @@ function Timeline({ timeline, threshold }: { timeline: (number | null)[]; thresh
     d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)} ${y(a).toFixed(1)} `;
     pen = true;
   });
+  const dash = { stroke: colors.tertiary, strokeWidth: 1, strokeDasharray: '4 5' };
   return (
     <View style={styles.chart}>
       <Text style={styles.chartLabel}>{t('report.timeline')}</Text>
-      <Svg width="100%" height={CHART_H + 2} viewBox={`0 -1 ${CHART_W} ${CHART_H + 2}`} preserveAspectRatio="none">
-        <Line x1={0} x2={CHART_W} y1={CHART_H} y2={CHART_H} stroke={colors.separator} strokeWidth={1} />
-        <Line x1={0} x2={CHART_W} y1={y(threshold)} y2={y(threshold)} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="4 5" />
-        <Path d={d} stroke={colors.text} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
-      </Svg>
+      <View style={styles.chartRow}>
+        <View style={styles.chartSides}>
+          <Text style={styles.side}>{t('common.right')}</Text>
+          <Text style={styles.sideZero}>0°</Text>
+          <Text style={styles.side}>{t('common.left')}</Text>
+        </View>
+        <View style={styles.chartPlot}>
+          <Svg width="100%" height={CHART_H + 2} viewBox={`0 -1 ${CHART_W} ${CHART_H + 2}`} preserveAspectRatio="none">
+            <Line x1={0} x2={CHART_W} y1={HALF} y2={HALF} stroke={colors.separator} strokeWidth={1} />
+            <Line x1={0} x2={CHART_W} y1={y(threshold)} y2={y(threshold)} {...dash} />
+            <Line x1={0} x2={CHART_W} y1={y(-threshold)} y2={y(-threshold)} {...dash} />
+            <Path d={d} stroke={colors.text} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
+          </Svg>
+          <View style={styles.chartTimes}>
+            <Text style={styles.time}>{clock(summary.startedAt)}</Text>
+            <Text style={styles.time}>{clock(summary.endedAt)}</Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
+
+const clock = (ms: number) => new Date(ms).toLocaleTimeString(localeTag(), { hour: 'numeric', minute: '2-digit' });
 
 function formatDuration(sec: number): string {
   const s = Math.round(sec);
@@ -116,13 +139,21 @@ function formatDuration(sec: number): string {
 }
 
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: 4, paddingBottom: 24 },
+  body: { paddingHorizontal: 24, paddingBottom: 24 },
   label: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 8 },
   big: { ...type.display, fontSize: 56, lineHeight: 64, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
   summary: { ...type.heading, fontSize: 17, color: colors.text, marginTop: 18 },
   chart: { marginTop: 24 },
   chartLabel: { ...type.label, fontSize: 12, color: colors.subtext, marginBottom: 8 },
+  chartRow: { flexDirection: 'row' },
+  /** Same height as the plot so the labels sit at the top, middle and bottom of it. */
+  chartSides: { height: CHART_H + 2, justifyContent: 'space-between', marginRight: 8 },
+  side: { ...type.label, fontSize: 11, color: colors.subtext },
+  sideZero: { ...type.label, fontSize: 11, color: colors.muted },
+  chartPlot: { flex: 1 },
+  chartTimes: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 24 },
   item: { width: '50%', paddingVertical: 12 },
   itemLabel: { ...type.label, fontSize: 12, color: colors.subtext },
