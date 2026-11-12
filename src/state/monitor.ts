@@ -9,6 +9,8 @@ import {
   DEMO_CALIBRATION,
   type CalibratorStatus,
   flipCalibration,
+  type HabitReport,
+  habitReport,
   PostureCheck,
   type PostureCheckStatus,
   PostureEngine,
@@ -22,6 +24,7 @@ import { setLanguage, t } from '../i18n';
 import {
   clearAlertNotification,
   deliverFeedback,
+  playTestCue,
   requestNotificationPermission,
   setBackgroundKeepAlive,
 } from '../services/feedback';
@@ -50,8 +53,12 @@ export type CheckState = {
   starting: boolean;
 };
 
+/** 'alert' plays cues when the head tilts; 'habit' only measures and shows a report at the end. */
+export type SessionMode = 'alert' | 'habit';
+
 export type LiveSession = {
   id: string;
+  mode: SessionMode;
   startedAt: number;
   alertCount: number;
   goodRatio: number;
@@ -79,6 +86,8 @@ export type MonitorState = {
   session: LiveSession | null;
   settings: AppSettings;
   sessions: SessionSummary[];
+  /** Report of the habit session that just ended, until dismissed. */
+  report: { summary: SessionSummary; report: HabitReport } | null;
 };
 
 class MonitorController {
@@ -96,6 +105,8 @@ class MonitorController {
   private rateWindow: number[] = [];
   private watchdog: ReturnType<typeof setInterval> | null = null;
   private initialized = false;
+  /** Mode chosen at Start, applied once the posture check passes. */
+  private pendingMode: SessionMode = 'alert';
 
   state: MonitorState = {
     loaded: false,
@@ -116,6 +127,7 @@ class MonitorController {
     session: null,
     settings: storage.DEFAULT_SETTINGS,
     sessions: [],
+    report: null,
   };
 
   subscribe = (listener: () => void) => {
@@ -205,7 +217,8 @@ class MonitorController {
       void this.startStreaming();
     } else if (status === 'background') {
       // Without a session (or background mode) there is nothing to watch for — save battery.
-      const keepRunning = this.state.session && this.state.settings.feedback.backgroundMode;
+      const keepRunning =
+        this.state.session && (this.state.session.mode === 'habit' || this.state.settings.feedback.backgroundMode);
       if (!keepRunning) void this.stopStreaming();
     }
   };
@@ -275,8 +288,10 @@ class MonitorController {
         goodRatio: this.stats.goodRatio,
         lastAlert: alert?.type === 'alert' ? { direction: alert.direction, at: Date.now() } : session.lastAlert,
       };
-      for (const event of snapshot.events) {
-        void deliverFeedback(event, this.state.settings.feedback);
+      if (session.mode === 'alert') {
+        for (const event of snapshot.events) {
+          void deliverFeedback(event, this.state.settings.feedback);
+        }
       }
     }
     this.set({ ...patch, snapshot, session });
@@ -423,12 +438,14 @@ class MonitorController {
   // MARK: - Session
 
   /** Starts with the posture check; the session itself begins once it passes. */
-  async startSession(): Promise<void> {
+  async startSession(mode: SessionMode = 'alert'): Promise<void> {
     if (this.state.session || this.state.checking || !this.state.calibration) return;
+    this.pendingMode = mode;
     const { feedback } = this.state.settings;
-    if (feedback.notification) await requestNotificationPermission().catch(() => false);
+    if (mode === 'alert' && feedback.notification) await requestNotificationPermission().catch(() => false);
     await this.startStreaming();
-    if (feedback.backgroundMode) await setBackgroundKeepAlive(true).catch(() => {});
+    // Habit sessions always keep measuring with the screen off.
+    if (mode === 'habit' || feedback.backgroundMode) await setBackgroundKeepAlive(true).catch(() => {});
     if (feedback.keepAwake) await activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
     this.beginCheck(false);
   }
@@ -437,13 +454,19 @@ class MonitorController {
     const startedAt = Date.now();
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
-    this.set({ session: { id, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
+    const mode = this.pendingMode;
+    this.set({ session: { id, mode, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
+    if (mode === 'habit') void playTestCue('good', 0, this.state.settings.feedback.volume * 0.7).catch(() => {});
     if (this.state.settings.feedback.liveActivity) void startLiveActivity(startedAt);
   }
 
   async endSession(): Promise<SessionSummary | null> {
     if (!this.state.session || !this.stats) return null;
-    const summary = this.stats.summary(Date.now());
+    const mode = this.state.session.mode;
+    const summary: SessionSummary = {
+      ...this.stats.summary(Date.now()),
+      ...(mode === 'habit' ? { mode } : {}),
+    };
     this.stats = null;
     this.check = null;
     this.pendingCheck = null;
@@ -452,10 +475,16 @@ class MonitorController {
     await Promise.all([endLiveActivity(), clearAlertNotification()]);
     await this.releaseSessionResources();
 
+    if (mode === 'habit') void playTestCue('good', 0, this.state.settings.feedback.volume * 0.7).catch(() => {});
+
     // Very short sessions aren't worth keeping.
     if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
     this.set({ sessions });
+    if (mode === 'habit') {
+      this.set({ report: { summary, report: habitReport(summary, this.state.settings.posture.enterDeg) } });
+      return summary;
+    }
     void maybeAskForReview(summary, sessions);
     return summary;
   }
@@ -464,6 +493,10 @@ class MonitorController {
     await setBackgroundKeepAlive(false).catch(() => {});
     await deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
     if (AppState.currentState !== 'active') await this.stopStreaming();
+  }
+
+  dismissReport(): void {
+    this.set({ report: null });
   }
 
   async removeSession(id: string): Promise<void> {
@@ -480,7 +513,7 @@ class MonitorController {
     this.set({ settings });
     const session = this.state.session;
     if (session) {
-      await setBackgroundKeepAlive(settings.feedback.backgroundMode).catch(() => {});
+      await setBackgroundKeepAlive(session.mode === 'habit' || settings.feedback.backgroundMode).catch(() => {});
       if (settings.feedback.liveActivity !== previous.feedback.liveActivity) {
         await (settings.feedback.liveActivity ? startLiveActivity(session.startedAt) : endLiveActivity());
       }

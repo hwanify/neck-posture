@@ -6,7 +6,9 @@ import { Text } from '../ui/Text';
 
 import { POSTURE_CHECK_SEC, type PostureState } from '../engine';
 import { localeTag, t } from '../i18n';
-import { monitor, useMonitor } from '../state/monitor';
+import { monitor, type SessionMode, useMonitor } from '../state/monitor';
+import { Segmented } from '../ui/components';
+import { HabitReportSheet } from './HabitReportSheet';
 import { colors } from '../ui/theme';
 
 const LINE_WIDTH = 180;
@@ -36,6 +38,8 @@ export function HomeScreen() {
         ? t(`pause.${pauseReason}`)
         : null;
   const now = useNow(s.session !== null);
+  const [mode, setMode] = useState<SessionMode>('alert');
+  const habit = s.session?.mode === 'habit';
   const today = useTodaySummary();
 
   const notice =
@@ -94,13 +98,22 @@ export function HomeScreen() {
               <Text style={styles.angle}>{number}</Text>
             )}
           </Animated.View>
-          <View style={styles.captionBox}>{check ? <CheckCaption /> : null}</View>
+          <View style={styles.captionBox}>
+            {check ? (
+              <CheckCaption />
+            ) : habit ? (
+              <>
+                <Text style={styles.label}>{t('habit.measuring')}</Text>
+                <Text style={styles.hint}>{t('habit.measuringHint')}</Text>
+              </>
+            ) : null}
+          </View>
         </View>
 
         <View style={styles.statsSlot}>
           <Animated.View style={[styles.stats, { opacity: statsOpacity }]} pointerEvents={check ? 'none' : 'auto'}>
             <Stat value={ratio === null ? '–' : `${Math.round(ratio * 100)}%`} label={t('home.good')} />
-            <Stat value={`${alerts}`} label={t('home.alerts')} />
+            <Stat value={`${alerts}`} label={habit ? t('home.tilts') : t('home.alerts')} />
             <Stat value={time} label={s.session ? t('home.elapsed') : t('home.today')} />
           </Animated.View>
           {largeShift ? (
@@ -109,6 +122,19 @@ export function HomeScreen() {
             </Pressable>
           ) : null}
         </View>
+
+        {!check && !s.session && s.calibration ? (
+          <View style={styles.modeSlot}>
+            <Segmented
+              options={[
+                { value: 'alert', label: t('home.modeAlert') },
+                { value: 'habit', label: t('home.modeHabit') },
+              ]}
+              value={mode}
+              onChange={setMode}
+            />
+          </View>
+        ) : null}
 
         {check ? (
           largeShift ? (
@@ -128,11 +154,12 @@ export function HomeScreen() {
                 ? monitor.startCalibration()
                 : s.session
                   ? void monitor.endSession()
-                  : void monitor.startSession()
+                  : void monitor.startSession(mode)
             }
           />
         )}
       </View>
+      <HabitReportSheet />
     </View>
   );
 }
@@ -352,6 +379,7 @@ const styles = StyleSheet.create({
   label: { ...type.label, fontSize: 13, color: colors.text },
   hint: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 6 },
   statsSlot: { marginBottom: 28, justifyContent: 'center' },
+  modeSlot: { marginBottom: 16 },
   stats: { flexDirection: 'row' },
   linkSlot: {
     position: 'absolute',

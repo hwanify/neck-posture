@@ -20,6 +20,8 @@ export type SessionSummary = {
   avgAngle?: number;
   /** Mean signed angle per 5-second bucket; null where the whole bucket was paused. */
   timeline: (number | null)[];
+  /** 'habit' for silent measuring (no cues); missing on alert sessions. */
+  mode?: 'habit';
 };
 
 export class SessionStats {
