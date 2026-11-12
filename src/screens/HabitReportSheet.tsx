@@ -51,7 +51,7 @@ export function ReportBody({
             : `${t(usual < 0 ? 'common.left' : 'common.right')} ${Math.abs(usual)}°`}
       </Text>
       <Text style={styles.sub}>{t('report.usualHint')}</Text>
-      <HeadGauge report={report} threshold={threshold} />
+      <TiltGauge report={report} threshold={threshold} />
 
       <Text style={[styles.label, styles.section]}>{t('report.during', { time: formatDuration(report.measuredSec) })}</Text>
       <SplitBar report={report} />
@@ -73,6 +73,9 @@ const GW = 300;
 const PX = GW / 2;
 const PY = 196;
 const R = 138;
+/** Centre of the level line, and the drawing's height (cut just below it). */
+const LY = PY - 60;
+const GH = PY - 36;
 const TICKS = [-20, -10, -5, 0, 5, 10, 20];
 
 const polar = (deg: number, r: number) => {
@@ -86,19 +89,18 @@ const arc = (from: number, to: number, r: number) => {
 };
 
 /**
- * A head (seen from behind) tilted to the usual angle under a fan-shaped scale; the band on the
- * scale is darker where the head spent more time. Right tilt leans to the screen's right.
+ * Fan-shaped scale whose band is brighter where the head spent more time, a dot at the usual angle,
+ * and the app icon's level line tilted to it. Right tilt dips the line's right end, as the head does.
  */
-function HeadGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
+function TiltGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
   const usual = report.usualAngle;
   if (usual === null) return null;
   const hist = report.angleHist;
   const max = Math.max(...hist);
   const tip = polar(usual, R - 14);
-  const top = polar(usual, 104); // just above the head
   return (
     <View style={styles.gauge}>
-      <Svg width="100%" height={PY + 22} viewBox={`0 0 ${GW} ${PY + 22}`}>
+      <Svg width="100%" height={GH} viewBox={`0 0 ${GW} ${GH}`}>
         <Path d={arc(-ANGLE_HIST_MAX - 0.5, ANGLE_HIST_MAX + 0.5, R)} stroke={colors.separator} strokeWidth={16} fill="none" />
         {hist.map((v, i) =>
           v > 0 ? (
@@ -125,14 +127,12 @@ function HeadGauge({ report, threshold }: { report: HabitReport; threshold: numb
             </SvgText>
           );
         })}
-        {/* True vertical, for reference. */}
-        <Line x1={PX} y1={PY} x2={PX} y2={PY - R + 10} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
-        <Path d={`M${PX - 66} ${PY + 22} Q${PX} ${PY - 12} ${PX + 66} ${PY + 22}`} stroke={colors.subtext} strokeWidth={2} fill="none" />
-        <G rotation={usual * VIS} origin={`${PX}, ${PY}`}>
-          <Line x1={PX} y1={PY} x2={PX} y2={PY - 30} stroke={colors.subtext} strokeWidth={2} />
-          <Circle cx={PX} cy={PY - 64} r={34} fill={colors.card} stroke={colors.text} strokeWidth={2} />
+        {/* Level line as in the app icon: grey horizon, white line at the usual angle. */}
+        <Line x1={PX - 90} y1={LY} x2={PX + 90} y2={LY} stroke={colors.tertiary} strokeWidth={2} />
+        <G rotation={usual * VIS} origin={`${PX}, ${LY}`}>
+          <Line x1={PX - 75} y1={LY} x2={PX + 75} y2={LY} stroke={colors.text} strokeWidth={5} strokeLinecap="round" />
         </G>
-        <Line x1={top.x} y1={top.y} x2={tip.x} y2={tip.y} stroke={colors.text} strokeWidth={1.5} strokeOpacity={0.6} />
+        <Circle cx={PX} cy={LY} r={9} fill={colors.text} />
         <Circle cx={tip.x} cy={tip.y} r={4} fill={colors.text} />
       </Svg>
       <View style={styles.gaugeSides}>
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   readout: { ...type.label, fontSize: 12, color: colors.muted, marginTop: 6, height: 18 },
   readoutOn: { color: colors.text, fontVariant: ['tabular-nums'] },
   gauge: { marginTop: 20 },
-  gaugeSides: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -16 },
+  gaugeSides: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -14 },
   /** Same height as the two rows so each label sits beside its row. */
   whenSides: { height: ROW_H * 2 + ROW_GAP, justifyContent: 'space-between', marginRight: 10 },
   whenPlot: { flex: 1 },
