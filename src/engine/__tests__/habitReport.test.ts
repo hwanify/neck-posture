@@ -52,4 +52,25 @@ describe('habitReport', () => {
     expect(habitReport(summary(Array(40).fill(6)), 5).trend).toBe('steady');
     expect(habitReport(summary(Array(40).fill(1)), 5).firstTiltAfterSec).toBeNull();
   });
+
+  it('finds the usual tilt angle with its side', () => {
+    const r = habitReport(summary([1, 7, 7.2, 6.8, 7, 12, 1, -6, 0, 8, 7]), 5);
+    expect(r.typicalAngle).toBe(7);
+    expect(habitReport(summary([-9, -9.4, -8.6, 6, 0]), 5).typicalAngle).toBe(-9);
+    expect(habitReport(summary([1, 2, -1]), 5).typicalAngle).toBeNull();
+  });
+
+  it('counts tilts and their mean length', () => {
+    const r = habitReport(summary([0, 6, 6, 0, 7, null, 8, 8, 8, 0]), 5);
+    expect(r.episodes).toBe(3);
+    expect(r.avgEpisodeSec).toBeCloseTo((6 * 5) / 3);
+  });
+
+  it('bins the distribution and clamps the ends', () => {
+    const r = habitReport(summary([0, 0, 30, -25, null]), 5);
+    expect(r.histogram).toHaveLength(41);
+    expect(r.histogram[20]).toBe(2);
+    expect(r.histogram[40]).toBe(1);
+    expect(r.histogram[0]).toBe(1);
+  });
 });

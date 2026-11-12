@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Line, Path, Rect } from 'react-native-svg';
 
-import type { HabitReport, SessionSummary } from '../engine';
+import { HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
@@ -40,18 +40,37 @@ export function ReportBody({
     report.side === null
       ? t('report.noSide')
       : t(report.side === 'left' ? 'report.left' : 'report.right', { pct: pct(report.sideShare) });
+  const typical = report.typicalAngle;
   return (
     <View style={styles.body}>
-      <Text style={styles.label}>{t('report.tiltShareLabel')}</Text>
-      <Text style={styles.big}>{`${pct(report.tiltShare)}%`}</Text>
-      <Text style={styles.sub}>{t('report.of', { time: formatDuration(report.measuredSec) })}</Text>
+      <Text style={styles.label}>{t('report.typicalLabel')}</Text>
+      {typical === null ? (
+        <Text style={styles.none}>{t('report.typicalNone')}</Text>
+      ) : (
+        <>
+          <Text style={styles.big}>
+            {`${t(typical < 0 ? 'common.left' : 'common.right')} ${Math.abs(typical)}°`}
+          </Text>
+          <Text style={styles.sub}>{t('report.typicalHint')}</Text>
+        </>
+      )}
       <Text style={styles.summary}>{t(`report.trend.${report.trend}`)}</Text>
 
+      <Distribution histogram={report.histogram} threshold={threshold} typical={typical} />
       <Timeline summary={summary} threshold={threshold} />
 
       <View style={styles.grid}>
+        <Item
+          label={t('report.tiltShareLabel')}
+          value={`${pct(report.tiltShare)}%`}
+          hint={t('report.of', { time: formatDuration(report.measuredSec) })}
+        />
         <Item label={t('report.side')} value={side} />
-        <Item label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
+        <Item label={t('report.episodes')} value={t('report.episodesValue', { n: report.episodes })} />
+        <Item
+          label={t('report.episodeAvg')}
+          value={report.episodes > 0 ? formatDuration(report.avgEpisodeSec) : '–'}
+        />
         <Item label={t('report.longest')} value={report.longestTiltSec > 0 ? formatDuration(report.longestTiltSec) : '–'} />
         <Item
           label={t('report.firstTilt')}
@@ -61,17 +80,65 @@ export function ReportBody({
               : t('report.firstTiltValue', { time: formatDuration(report.firstTiltAfterSec) })
           }
         />
+        <Item label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
       </View>
       <Text style={styles.note}>{t('report.note', { deg: threshold })}</Text>
     </View>
   );
 }
 
-function Item({ label, value }: { label: string; value: string }) {
+const BAR_W = 320;
+const BAR_H = 72;
+
+/**
+ * Bars of how often each angle came up, left tilt on the left, right on the right; tilted bins are
+ * bright, the usual angle brightest, and dashed lines mark the alert angle on both sides.
+ */
+function Distribution({
+  histogram,
+  threshold,
+  typical,
+}: {
+  histogram: number[];
+  threshold: number;
+  typical: number | null;
+}) {
+  const max = Math.max(...histogram);
+  if (max === 0) return null;
+  const n = histogram.length;
+  const slot = BAR_W / n;
+  // Edges of the tilted range: left of the +threshold bin, right of the -threshold bin.
+  const edges = [(HIST_MAX + threshold) * slot, (HIST_MAX - threshold + 1) * slot];
+  return (
+    <View style={styles.chart}>
+      <Text style={styles.chartLabel}>{t('report.distribution')}</Text>
+      <Svg width="100%" height={BAR_H} viewBox={`0 0 ${BAR_W} ${BAR_H}`} preserveAspectRatio="none">
+        {histogram.map((count, i) => {
+          if (count === 0) return null;
+          const deg = i - HIST_MAX;
+          const h = Math.max(2, (count / max) * (BAR_H - 4));
+          const fill = deg === typical ? colors.text : Math.abs(deg) >= threshold ? colors.warning : colors.muted;
+          return <Rect key={i} x={i * slot + 1} y={BAR_H - h} width={slot - 2} height={h} rx={1} fill={fill} />;
+        })}
+        {edges.map((x) => (
+          <Line key={x} x1={x} x2={x} y1={0} y2={BAR_H} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
+        ))}
+      </Svg>
+      <View style={styles.axis}>
+        <Text style={styles.time}>{`${t('common.left')} ${HIST_MAX}°`}</Text>
+        <Text style={styles.time}>0°</Text>
+        <Text style={styles.time}>{`${t('common.right')} ${HIST_MAX}°`}</Text>
+      </View>
+    </View>
+  );
+}
+
+function Item({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <View style={styles.item}>
       <Text style={styles.itemLabel}>{label}</Text>
       <Text style={styles.itemValue}>{value}</Text>
+      {hint ? <Text style={styles.itemHint}>{hint}</Text> : null}
     </View>
   );
 }
@@ -141,8 +208,11 @@ function formatDuration(sec: number): string {
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingBottom: 24 },
   label: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 8 },
-  big: { ...type.display, fontSize: 56, lineHeight: 64, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
+  big: { ...type.display, fontSize: 48, lineHeight: 58, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
+  none: { ...type.heading, fontSize: 22, color: colors.text, marginTop: 8 },
+  axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  itemHint: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 2 },
   summary: { ...type.heading, fontSize: 17, color: colors.text, marginTop: 18 },
   chart: { marginTop: 24 },
   chartLabel: { ...type.label, fontSize: 12, color: colors.subtext, marginBottom: 8 },
