@@ -174,6 +174,8 @@ export const zhHans: Strings = {
   'habit.measuring': '正在静默测量',
   'habit.measuringHint': '不提醒，熄屏也会继续测量',
   'report.title': '头部倾斜习惯报告',
+  'report.scrubHint': '按住条形并滑动，查看当时的角度',
+  'report.paused': '暂停',
   'report.usualLabel': '头平时的位置',
   'report.usualHint': '测量中停留最久的角度',
   'report.straight': '正',

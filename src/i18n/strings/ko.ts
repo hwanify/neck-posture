@@ -176,6 +176,8 @@ export const ko: Strings = {
   'habit.measuring': '알림 없이 측정 중',
   'habit.measuringHint': '화면을 꺼도 계속 잽니다',
   'report.title': '고개 습관 리포트',
+  'report.scrubHint': '막대를 누른 채 움직이면 그때 각도가 보여요',
+  'report.paused': '측정 쉼',
   'report.usualLabel': '평소 고개 위치',
   'report.usualHint': '측정하는 동안 가장 오래 머문 각도예요',
   'report.straight': '똑바로',

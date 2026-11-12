@@ -182,6 +182,8 @@ export const en = {
   'habit.measuring': 'Measuring quietly',
   'habit.measuringHint': 'No cues. Keeps going with the screen off.',
   'report.title': 'Your head tilt habit',
+  'report.scrubHint': 'Touch and slide along the bars to see the angle',
+  'report.paused': 'Paused',
   'report.usualLabel': 'Where your head usually sits',
   'report.usualHint': 'The angle it spent the most time at',
   'report.straight': 'Straight',

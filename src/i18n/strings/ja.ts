@@ -179,6 +179,8 @@ export const ja: Strings = {
   'habit.measuring': '通知なしで計測中',
   'habit.measuringHint': '画面を消しても計測を続けます',
   'report.title': '首の傾き習慣レポート',
+  'report.scrubHint': 'バーを押したまま動かすと、その時の角度が見られます',
+  'report.paused': '休止中',
   'report.usualLabel': 'ふだんの頭の位置',
   'report.usualHint': '計測中にいちばん長くいた角度です',
   'report.straight': 'まっすぐ',

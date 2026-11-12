@@ -184,6 +184,8 @@ export const fr: Strings = {
   'habit.measuring': 'Mesure silencieuse',
   'habit.measuringHint': 'Aucune alerte. Continue écran éteint.',
   'report.title': 'Votre habitude d’inclinaison',
+  'report.scrubHint': 'Touche et glisse le long des barres pour voir l’angle',
+  'report.paused': 'En pause',
   'report.usualLabel': 'Où se tient ta tête d’habitude',
   'report.usualHint': 'L’angle où elle est restée le plus longtemps',
   'report.straight': 'Droite',

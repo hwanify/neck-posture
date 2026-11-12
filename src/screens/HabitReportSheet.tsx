@@ -1,7 +1,8 @@
-import { StyleSheet, View } from 'react-native';
-import Svg, { Rect } from 'react-native-svg';
+import { useState } from 'react';
+import { type GestureResponderEvent, StyleSheet, View } from 'react-native';
+import Svg, { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
-import type { HabitReport, SessionSummary } from '../engine';
+import { ANGLE_HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
@@ -50,6 +51,7 @@ export function ReportBody({
             : `${t(usual < 0 ? 'common.left' : 'common.right')} ${Math.abs(usual)}°`}
       </Text>
       <Text style={styles.sub}>{t('report.usualHint')}</Text>
+      <HeadGauge report={report} threshold={threshold} />
 
       <Text style={[styles.label, styles.section]}>{t('report.during', { time: formatDuration(report.measuredSec) })}</Text>
       <SplitBar report={report} />
@@ -61,6 +63,82 @@ export function ReportBody({
         <Item label={t('report.longest')} value={report.longestTiltSec > 0 ? formatDuration(report.longestTiltSec) : '–'} />
       </View>
       <Text style={styles.note}>{t('report.note', { deg: threshold })}</Text>
+    </View>
+  );
+}
+
+/** Gauge degrees are drawn this many times wider so a 2° habit is visible; labels show real degrees. */
+const VIS = 3;
+const GW = 300;
+const PX = GW / 2;
+const PY = 196;
+const R = 138;
+const TICKS = [-20, -10, -5, 0, 5, 10, 20];
+
+const polar = (deg: number, r: number) => {
+  const a = (deg * VIS * Math.PI) / 180;
+  return { x: PX + r * Math.sin(a), y: PY - r * Math.cos(a) };
+};
+const arc = (from: number, to: number, r: number) => {
+  const a = polar(from, r);
+  const b = polar(to, r);
+  return `M${a.x.toFixed(1)} ${a.y.toFixed(1)} A${r} ${r} 0 0 1 ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
+};
+
+/**
+ * A head (seen from behind) tilted to the usual angle under a fan-shaped scale; the band on the
+ * scale is darker where the head spent more time. Right tilt leans to the screen's right.
+ */
+function HeadGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
+  const usual = report.usualAngle;
+  if (usual === null) return null;
+  const hist = report.angleHist;
+  const max = Math.max(...hist);
+  const tip = polar(usual, R - 14);
+  const top = polar(usual, 104); // just above the head
+  return (
+    <View style={styles.gauge}>
+      <Svg width="100%" height={PY + 22} viewBox={`0 0 ${GW} ${PY + 22}`}>
+        <Path d={arc(-ANGLE_HIST_MAX - 0.5, ANGLE_HIST_MAX + 0.5, R)} stroke={colors.separator} strokeWidth={16} fill="none" />
+        {hist.map((v, i) =>
+          v > 0 ? (
+            <Path
+              key={i}
+              d={arc(i - ANGLE_HIST_MAX - 0.5, i - ANGLE_HIST_MAX + 0.5, R)}
+              stroke={colors.text}
+              strokeOpacity={0.15 + 0.85 * Math.pow(v / max, 0.6)}
+              strokeWidth={16}
+              fill="none"
+            />
+          ) : null,
+        )}
+        {[-threshold, threshold].map((d) => {
+          const a = polar(d, R - 12);
+          const b = polar(d, R + 12);
+          return <Line key={d} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={colors.subtext} strokeWidth={1} strokeDasharray="2 2" />;
+        })}
+        {TICKS.map((d) => {
+          const p = polar(d, R + 22);
+          return (
+            <SvgText key={d} x={p.x} y={p.y + 4} fontSize={11} fill={colors.muted} textAnchor="middle">
+              {`${Math.abs(d)}°`}
+            </SvgText>
+          );
+        })}
+        {/* True vertical, for reference. */}
+        <Line x1={PX} y1={PY} x2={PX} y2={PY - R + 10} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
+        <Path d={`M${PX - 66} ${PY + 22} Q${PX} ${PY - 12} ${PX + 66} ${PY + 22}`} stroke={colors.subtext} strokeWidth={2} fill="none" />
+        <G rotation={usual * VIS} origin={`${PX}, ${PY}`}>
+          <Line x1={PX} y1={PY} x2={PX} y2={PY - 30} stroke={colors.subtext} strokeWidth={2} />
+          <Circle cx={PX} cy={PY - 64} r={34} fill={colors.card} stroke={colors.text} strokeWidth={2} />
+        </G>
+        <Line x1={top.x} y1={top.y} x2={tip.x} y2={tip.y} stroke={colors.text} strokeWidth={1.5} strokeOpacity={0.6} />
+        <Circle cx={tip.x} cy={tip.y} r={4} fill={colors.text} />
+      </Svg>
+      <View style={styles.gaugeSides}>
+        <Text style={styles.small}>{t('common.left')}</Text>
+        <Text style={styles.small}>{t('common.right')}</Text>
+      </View>
     </View>
   );
 }
@@ -103,12 +181,16 @@ const ROW_GAP = 6;
 
 /**
  * Time runs left to right; a block in the top row is a stretch tilted right, in the bottom row a
- * stretch tilted left (5-second steps past the alert angle).
+ * stretch tilted left (5-second steps past the alert angle). Touch and slide to read the time and
+ * angle at that point.
  */
 function When({ summary, threshold }: { summary: SessionSummary; threshold: number }) {
   const { timeline } = summary;
   const n = timeline.length;
+  const [width, setWidth] = useState(0);
+  const [index, setIndex] = useState<number | null>(null);
   if (n < 2) return null;
+
   const runs = (side: 1 | -1) => {
     const out: [number, number][] = [];
     let start = -1;
@@ -131,19 +213,57 @@ function When({ summary, threshold }: { summary: SessionSummary; threshold: numb
       ))}
     </>
   );
+
+  const pick = (e: GestureResponderEvent) => {
+    if (width <= 0) return;
+    setIndex(Math.max(0, Math.min(n - 1, Math.floor((e.nativeEvent.locationX / width) * n))));
+  };
+  const a = index === null ? null : timeline[index];
+  const readout =
+    index === null
+      ? t('report.scrubHint')
+      : `${clock(summary.startedAt + index * BUCKET_MS)} · ${
+          a === null
+            ? t('report.paused')
+            : Math.round(a) === 0
+              ? '0°'
+              : `${t(a < 0 ? 'common.left' : 'common.right')} ${Math.abs(Math.round(a))}°`
+        }`;
+
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{t('report.when')}</Text>
+      <Text style={[styles.readout, index !== null && styles.readoutOn]} numberOfLines={1}>
+        {readout}
+      </Text>
       <View style={styles.whenRow}>
         <View style={styles.whenSides}>
           <Text style={styles.small}>{t('common.right')}</Text>
           <Text style={styles.small}>{t('common.left')}</Text>
         </View>
         <View style={styles.whenPlot}>
-          <Svg width="100%" height={ROW_H * 2 + ROW_GAP} viewBox={`0 0 ${W} ${ROW_H * 2 + ROW_GAP}`} preserveAspectRatio="none">
-            {row(1, 0)}
-            {row(-1, ROW_H + ROW_GAP)}
-          </Svg>
+          <View
+            onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+            onResponderTerminationRequest={() => false}
+            onResponderGrant={pick}
+            onResponderMove={pick}
+            onResponderRelease={() => setIndex(null)}
+            onResponderTerminate={() => setIndex(null)}>
+            <Svg
+              width="100%"
+              height={ROW_H * 2 + ROW_GAP}
+              viewBox={`0 0 ${W} ${ROW_H * 2 + ROW_GAP}`}
+              preserveAspectRatio="none"
+              pointerEvents="none">
+              {row(1, 0)}
+              {row(-1, ROW_H + ROW_GAP)}
+              {index !== null ? (
+                <Rect x={((index + 0.5) / n) * W - 0.75} y={0} width={1.5} height={ROW_H * 2 + ROW_GAP} fill={colors.tint} />
+              ) : null}
+            </Svg>
+          </View>
           <View style={styles.times}>
             <Text style={styles.time}>{clock(summary.startedAt)}</Text>
             <Text style={styles.time}>{clock(summary.endedAt)}</Text>
@@ -153,6 +273,9 @@ function When({ summary, threshold }: { summary: SessionSummary; threshold: numb
     </View>
   );
 }
+
+/** Timeline step (see SessionStats). */
+const BUCKET_MS = 5000;
 
 function Item({ label, value }: { label: string; value: string }) {
   return (
@@ -185,7 +308,11 @@ const styles = StyleSheet.create({
   pct: { ...type.numeral, fontSize: 20, color: colors.text, fontVariant: ['tabular-nums'] },
   pctDim: { color: colors.subtext },
   small: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 2 },
-  whenRow: { flexDirection: 'row', marginTop: 12 },
+  whenRow: { flexDirection: 'row', marginTop: 8 },
+  readout: { ...type.label, fontSize: 12, color: colors.muted, marginTop: 6, height: 18 },
+  readoutOn: { color: colors.text, fontVariant: ['tabular-nums'] },
+  gauge: { marginTop: 20 },
+  gaugeSides: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -16 },
   /** Same height as the two rows so each label sits beside its row. */
   whenSides: { height: ROW_H * 2 + ROW_GAP, justifyContent: 'space-between', marginRight: 10 },
   whenPlot: { flex: 1 },

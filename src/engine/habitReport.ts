@@ -11,6 +11,8 @@ export type HabitReport = {
    * left), lightly smoothed so one noisy bin can't win. Null when nothing was measured.
    */
   usualAngle: number | null;
+  /** Time per 1° bin (index 0 = -ANGLE_HIST_MAX°): seconds, or 5-second steps on older sessions. */
+  angleHist: number[];
   /** Shares of judged time: tilted left, upright, tilted right (sum to 1, or all 0). */
   leftShare: number;
   goodShare: number;
@@ -32,6 +34,7 @@ export function habitReport(s: SessionSummary, thresholdDeg: number): HabitRepor
 
   return {
     measuredSec,
+    angleHist: hist,
     usualAngle: hist.some((x) => x > 0) ? modeBin(hist) - ANGLE_HIST_MAX : null,
     leftShare: share(s.leftTiltSec),
     goodShare: share(s.goodSec),

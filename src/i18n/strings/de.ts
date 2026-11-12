@@ -182,6 +182,8 @@ export const de: Strings = {
   'habit.measuring': 'Misst still',
   'habit.measuringHint': 'Keine Hinweise. Läuft auch bei ausgeschaltetem Bildschirm.',
   'report.title': 'Deine Kopfneigung',
+  'report.scrubHint': 'Auf den Balken tippen und ziehen, um den Winkel zu sehen',
+  'report.paused': 'Pausiert',
   'report.usualLabel': 'Wo dein Kopf meistens steht',
   'report.usualHint': 'Der Winkel, in dem er am längsten war',
   'report.straight': 'Gerade',

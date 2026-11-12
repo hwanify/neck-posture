@@ -179,6 +179,8 @@ export const hi: Strings = {
   'habit.measuring': 'चुपचाप माप रहा है',
   'habit.measuringHint': 'कोई अलर्ट नहीं। स्क्रीन बंद होने पर भी चलता है।',
   'report.title': 'आपकी सिर झुकाने की आदत',
+  'report.scrubHint': 'कोण देखने के लिए पट्टियों पर छूकर खिसकाएँ',
+  'report.paused': 'रुका हुआ',
   'report.usualLabel': 'सिर आम तौर पर कहाँ रहता है',
   'report.usualHint': 'वह कोण जिस पर सबसे ज़्यादा समय रहा',
   'report.straight': 'सीधा',

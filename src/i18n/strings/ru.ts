@@ -181,6 +181,8 @@ export const ru: Strings = {
   'habit.measuring': 'Тихое измерение',
   'habit.measuringHint': 'Без сигналов. Продолжает с выключенным экраном.',
   'report.title': 'Ваша привычка наклонять голову',
+  'report.scrubHint': 'Коснитесь полос и ведите пальцем, чтобы увидеть угол',
+  'report.paused': 'Пауза',
   'report.usualLabel': 'Обычное положение головы',
   'report.usualHint': 'Угол, в котором она была дольше всего',
   'report.straight': 'Прямо',
