@@ -27,9 +27,6 @@ import {
 } from '../services/feedback';
 import { endLiveActivity, startLiveActivity } from '../services/liveActivity';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
-import { setAnalyticsEnabled, track } from '../services/analytics';
-import { countBucket, durationBucket } from '../services/analyticsBuckets';
-import { maybeAskHelpful } from '../services/helpfulPrompt';
 import { maybeAskForReview } from '../services/reviewPrompt';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
@@ -142,7 +139,6 @@ class MonitorController {
       storage.loadOnboarded(),
     ]);
     setLanguage(settings.language);
-    setAnalyticsEnabled(settings.analytics);
     this.source = createMotionSource(settings.source);
     const calibration = await storage.loadCalibration(this.source.kind);
     this.engine = new PostureEngine(calibration, settings.posture);
@@ -157,14 +153,6 @@ class MonitorController {
       authorization: this.source.getAuthorizationStatus(),
     });
 
-    track('App.launched', {
-      onboarded: String(onboarded),
-      calibrated: String(!!calibration),
-      headphones: this.source.isAvailable() ? 'available' : 'unavailable',
-      authorization: this.source.getAuthorizationStatus(),
-      sessions: countBucket(sessions.length),
-    });
-
     // A card left behind by a run that was killed mid-session.
     void endLiveActivity();
     AppState.addEventListener('change', this.handleAppState);
@@ -174,7 +162,6 @@ class MonitorController {
   async completeOnboarding(): Promise<void> {
     await storage.saveOnboarded();
     this.set({ onboarded: true });
-    track('Onboarding.completed');
     await this.startStreaming();
   }
 
@@ -324,7 +311,6 @@ class MonitorController {
   private async applyCalibration(calibration: Calibration) {
     this.engine.setCalibration(calibration);
     this.set({ calibration, calibrationMismatch: false });
-    track('Calibration.saved');
     await storage.saveCalibration(this.source.kind, calibration);
   }
 
@@ -452,7 +438,6 @@ class MonitorController {
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
     this.set({ session: { id, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
-    track('Session.started', { background: String(this.state.settings.feedback.backgroundMode) });
     if (this.state.settings.feedback.liveActivity) void startLiveActivity(startedAt);
   }
 
@@ -467,20 +452,11 @@ class MonitorController {
     await Promise.all([endLiveActivity(), clearAlertNotification()]);
     await this.releaseSessionResources();
 
-    const measured = summary.goodSec + summary.tiltSec;
-    track('Session.ended', {
-      duration: durationBucket(measured),
-      alerts: countBucket(summary.alertCount),
-      goodShare: measured > 0 ? `${Math.round((summary.goodSec / measured) * 10) * 10}%` : 'n/a',
-    });
     // Very short sessions aren't worth keeping.
-    if (measured < 10) return summary;
+    if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
     this.set({ sessions });
-    // At most one prompt per session end: the one-time 👍/👎 question comes first.
-    void maybeAskHelpful(summary, sessions).then((asked) => {
-      if (!asked) void maybeAskForReview(summary, sessions);
-    });
+    void maybeAskForReview(summary, sessions);
     return summary;
   }
 
@@ -502,8 +478,6 @@ class MonitorController {
     setLanguage(settings.language);
     this.engine.setSettings(settings.posture);
     this.set({ settings });
-    for (const key of changedSettings(previous, settings)) track('Settings.changed', { key });
-    setAnalyticsEnabled(settings.analytics);
     const session = this.state.session;
     if (session) {
       await setBackgroundKeepAlive(settings.feedback.backgroundMode).catch(() => {});
@@ -513,19 +487,6 @@ class MonitorController {
     }
     await storage.saveSettings(settings);
   }
-}
-
-/** Names of the settings that differ, e.g. 'posture.enterDeg' (names only, never values). */
-function changedSettings(a: AppSettings, b: AppSettings): string[] {
-  const keys: string[] = [];
-  for (const group of ['posture', 'feedback'] as const) {
-    for (const k of Object.keys(b[group]) as (keyof AppSettings[typeof group])[]) {
-      if (a[group][k] !== b[group][k]) keys.push(`${group}.${String(k)}`);
-    }
-  }
-  if (a.language !== b.language) keys.push('language');
-  if (a.source !== b.source) keys.push('source');
-  return keys;
 }
 
 export const monitor = new MonitorController();

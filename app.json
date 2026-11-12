@@ -2,7 +2,7 @@
   "expo": {
     "name": "Plumb",
     "slug": "baromok",
-    "version": "1.0.4",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -36,9 +36,7 @@
       "@bacons/apple-targets"
     ],
     "extra": {
-      "eas": {},
-      "telemetryDeckAppID": "",
-      "supportEmail": ""
+      "eas": {}
     },
     "locales": {
       "ko": "./locales/ko.json",
