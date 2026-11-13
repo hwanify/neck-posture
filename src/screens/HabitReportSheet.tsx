@@ -81,9 +81,9 @@ const GW = 300;
 const PX = GW / 2;
 const PY = 196;
 const R = 138;
-/** Width of the scale's band; lines match the app's level line (1–1.5 pt). */
-const BAND = 6;
-/** Inner end of the 0° and usual-angle lines. */
+/** Width of the scale's band; lines match the app's level line (1 pt). */
+const BAND = 10;
+/** Inner end of the 0° line. */
 const R0 = 58;
 /** Drawing height: cut just below the ends of the arc. */
 const GH = PY - 52;
@@ -100,19 +100,14 @@ const arc = (from: number, to: number, r: number) => {
 };
 
 /**
- * Fan-shaped scale whose band is brighter where the head spent more time, a dashed 0° line and a
- * solid line at the usual angle. Right tilt is on the right.
+ * Fan-shaped scale whose band is brighter where the head spent more time, with a dashed 0° line
+ * for reference. Right tilt is on the right.
  */
 function TiltGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
-  const usual = report.usualAngle;
-  if (usual === null) return null;
+  if (report.usualAngle === null) return null;
   const hist = report.angleHist;
   const max = Math.max(...hist);
-  // Two lines from the centre to the scale: dashed upright (0°) and solid usual angle, with the gap
-  // between them marked so the amount of tilt reads at a glance.
-  const ray = (deg: number) => ({ a: polar(deg, R0), b: polar(deg, R + 6) });
-  const zero = ray(0);
-  const at = ray(usual);
+  const zero = { a: polar(0, R0), b: polar(0, R + 8) };
   return (
     <View style={styles.gauge}>
       <Svg width="100%" height={GH} viewBox={`0 0 ${GW} ${GH}`}>
@@ -130,12 +125,12 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
           ) : null,
         )}
         {[-threshold, threshold].map((d) => {
-          const a = polar(d, R - 8);
-          const b = polar(d, R + 8);
+          const a = polar(d, R - 10);
+          const b = polar(d, R + 10);
           return <Line key={d} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={colors.subtext} strokeWidth={1} strokeDasharray="2 2" />;
         })}
         {TICKS.map((d) => {
-          const p = polar(d, R + 18);
+          const p = polar(d, R + 20);
           return (
             <SvgText key={d} x={p.x} y={p.y + 4} fontSize={10} fill={colors.muted} textAnchor="middle">
               {`${Math.abs(d)}°`}
@@ -143,10 +138,6 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
           );
         })}
         <Line x1={zero.a.x} y1={zero.a.y} x2={zero.b.x} y2={zero.b.y} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
-        {usual !== 0 ? (
-          <Path d={arc(Math.min(0, usual), Math.max(0, usual), R0 + 18)} stroke={colors.subtext} strokeWidth={1} fill="none" />
-        ) : null}
-        <Line x1={at.a.x} y1={at.a.y} x2={at.b.x} y2={at.b.y} stroke={colors.text} strokeWidth={1.5} strokeLinecap="round" />
       </Svg>
       <View style={styles.gaugeSides}>
         <Text style={styles.small}>{t('common.left')}</Text>
