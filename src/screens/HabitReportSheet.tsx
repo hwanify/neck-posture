@@ -88,6 +88,8 @@ const GW = 300;
 const PX = GW / 2;
 const PY = 196;
 const R = 138;
+/** Width of the scale's band; lines match the app's level line (1–1.5 pt). */
+const BAND = 6;
 /** Inner end of the 0° and usual-angle lines. */
 const R0 = 58;
 /** Drawing height: cut just below the ends of the arc. */
@@ -115,13 +117,13 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
   const max = Math.max(...hist);
   // Two lines from the centre to the scale: dashed upright (0°) and solid usual angle, with the gap
   // between them marked so the amount of tilt reads at a glance.
-  const ray = (deg: number) => ({ a: polar(deg, R0), b: polar(deg, R + 10) });
+  const ray = (deg: number) => ({ a: polar(deg, R0), b: polar(deg, R + 6) });
   const zero = ray(0);
   const at = ray(usual);
   return (
     <View style={styles.gauge}>
       <Svg width="100%" height={GH} viewBox={`0 0 ${GW} ${GH}`}>
-        <Path d={arc(-ANGLE_HIST_MAX - 0.5, ANGLE_HIST_MAX + 0.5, R)} stroke={colors.separator} strokeWidth={16} fill="none" />
+        <Path d={arc(-ANGLE_HIST_MAX - 0.5, ANGLE_HIST_MAX + 0.5, R)} stroke={colors.separator} strokeWidth={BAND} fill="none" />
         {hist.map((v, i) =>
           v > 0 ? (
             <Path
@@ -129,29 +131,29 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
               d={arc(i - ANGLE_HIST_MAX - 0.5, i - ANGLE_HIST_MAX + 0.5, R)}
               stroke={colors.text}
               strokeOpacity={0.15 + 0.85 * Math.pow(v / max, 0.6)}
-              strokeWidth={16}
+              strokeWidth={BAND}
               fill="none"
             />
           ) : null,
         )}
         {[-threshold, threshold].map((d) => {
-          const a = polar(d, R - 12);
-          const b = polar(d, R + 12);
+          const a = polar(d, R - 8);
+          const b = polar(d, R + 8);
           return <Line key={d} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={colors.subtext} strokeWidth={1} strokeDasharray="2 2" />;
         })}
         {TICKS.map((d) => {
-          const p = polar(d, R + 22);
+          const p = polar(d, R + 18);
           return (
             <SvgText key={d} x={p.x} y={p.y + 4} fontSize={11} fill={colors.muted} textAnchor="middle">
               {`${Math.abs(d)}°`}
             </SvgText>
           );
         })}
-        <Line x1={zero.a.x} y1={zero.a.y} x2={zero.b.x} y2={zero.b.y} stroke={colors.subtext} strokeWidth={1.5} strokeDasharray="4 4" />
+        <Line x1={zero.a.x} y1={zero.a.y} x2={zero.b.x} y2={zero.b.y} stroke={colors.tertiary} strokeWidth={1} strokeDasharray="3 4" />
         {usual !== 0 ? (
-          <Path d={arc(Math.min(0, usual), Math.max(0, usual), R0 + 18)} stroke={colors.text} strokeWidth={1.5} fill="none" />
+          <Path d={arc(Math.min(0, usual), Math.max(0, usual), R0 + 18)} stroke={colors.subtext} strokeWidth={1} fill="none" />
         ) : null}
-        <Line x1={at.a.x} y1={at.a.y} x2={at.b.x} y2={at.b.y} stroke={colors.text} strokeWidth={2.5} strokeLinecap="round" />
+        <Line x1={at.a.x} y1={at.a.y} x2={at.b.x} y2={at.b.y} stroke={colors.text} strokeWidth={1.5} strokeLinecap="round" />
       </Svg>
       <View style={styles.gaugeSides}>
         <Text style={styles.small}>{t('common.left')}</Text>
@@ -194,8 +196,11 @@ function SplitBar({ report }: { report: HabitReport }) {
 }
 
 const W = 300;
-const ROW_H = 16;
-const ROW_GAP = 6;
+/** Thin rows (like History's bar) centred on their 13-pt side labels; STRIP_H is the whole strip. */
+const ROW_H = 3;
+const LABEL_LINE = 13;
+const STRIP_H = 30;
+const ROW_Y = [LABEL_LINE / 2 - ROW_H / 2, STRIP_H - LABEL_LINE / 2 - ROW_H / 2];
 
 /**
  * Time runs left to right; a block in the top row is a stretch tilted right, in the bottom row a
@@ -233,9 +238,9 @@ function When({
   };
   const row = (side: 1 | -1, y: number) => (
     <>
-      <Rect x={0} y={y} width={W} height={ROW_H} rx={3} fill={colors.separator} />
+      <Rect x={0} y={y} width={W} height={ROW_H} rx={ROW_H / 2} fill={colors.separator} />
       {runs(side).map(([a, b]) => (
-        <Rect key={a} x={(a / n) * W} y={y} width={Math.max(2, ((b - a) / n) * W)} height={ROW_H} rx={2} fill={colors.text} />
+        <Rect key={a} x={(a / n) * W} y={y} width={Math.max(2, ((b - a) / n) * W)} height={ROW_H} rx={ROW_H / 2} fill={colors.text} />
       ))}
     </>
   );
@@ -266,8 +271,8 @@ function When({
       </Text>
       <View style={styles.whenRow}>
         <View style={styles.whenSides}>
-          <Text style={styles.small}>{t('common.right')}</Text>
-          <Text style={styles.small}>{t('common.left')}</Text>
+          <Text style={styles.sideLabel}>{t('common.right')}</Text>
+          <Text style={styles.sideLabel}>{t('common.left')}</Text>
         </View>
         <View style={styles.whenPlot}>
           <View
@@ -284,14 +289,14 @@ function When({
             onResponderTerminate={end}>
             <Svg
               width="100%"
-              height={ROW_H * 2 + ROW_GAP}
-              viewBox={`0 0 ${W} ${ROW_H * 2 + ROW_GAP}`}
+              height={STRIP_H}
+              viewBox={`0 0 ${W} ${STRIP_H}`}
               preserveAspectRatio="none"
               pointerEvents="none">
-              {row(1, 0)}
-              {row(-1, ROW_H + ROW_GAP)}
+              {row(1, ROW_Y[0])}
+              {row(-1, ROW_Y[1])}
               {index !== null ? (
-                <Rect x={((index + 0.5) / n) * W - 0.75} y={0} width={1.5} height={ROW_H * 2 + ROW_GAP} fill={colors.tint} />
+                <Rect x={((index + 0.5) / n) * W - 0.5} y={0} width={1} height={STRIP_H} fill={colors.tint} />
               ) : null}
             </Svg>
           </View>
@@ -372,7 +377,8 @@ const styles = StyleSheet.create({
   big: { ...type.display, fontSize: 38, lineHeight: 46, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
   section: { marginTop: 32 },
-  bar: { flexDirection: 'row', height: 5, borderRadius: 2.5, overflow: 'hidden', gap: 2, marginTop: 12 },
+  /** Same weight as History's left/right bar. */
+  bar: { flexDirection: 'row', height: 3, borderRadius: 1.5, overflow: 'hidden', gap: 2, marginTop: 12 },
   barLabels: { flexDirection: 'row', marginTop: 10 },
   barLabel: { flex: 1 },
   pct: { ...type.numeral, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
@@ -384,7 +390,8 @@ const styles = StyleSheet.create({
   gauge: { marginTop: 20 },
   gaugeSides: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -14 },
   /** Same height as the two rows so each label sits beside its row. */
-  whenSides: { height: ROW_H * 2 + ROW_GAP, justifyContent: 'space-between', marginRight: 10 },
+  whenSides: { height: STRIP_H, justifyContent: 'space-between', marginRight: 10 },
+  sideLabel: { ...type.label, fontSize: 11, lineHeight: LABEL_LINE, color: colors.subtext },
   whenPlot: { flex: 1 },
   times: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
   time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
