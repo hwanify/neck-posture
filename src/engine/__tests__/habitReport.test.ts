@@ -54,14 +54,10 @@ describe('habitReport', () => {
   });
 });
 
-describe('habitReport halves', () => {
-  it('compares the usual angle early and late in the session', () => {
-    const r = habitReport(summary([...Array(20).fill(1), ...Array(20).fill(4)]), 5);
-    expect(r.halves).toEqual({ first: 1, second: 4 });
-  });
-
-  it('skips the comparison for short sessions', () => {
-    expect(habitReport(summary([1, 1, 4, 4]), 5).halves).toBeNull();
+describe('habitReport extremes', () => {
+  it('reports the furthest 5-second tilt with its side', () => {
+    expect(habitReport(summary([1, 3, -7.4, 6, null]), 5).maxAngle).toBe(-7);
+    expect(habitReport(summary([null]), 5).maxAngle).toBeNull();
   });
 });
 

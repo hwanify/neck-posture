@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { type GestureResponderEvent, StyleSheet, View } from 'react-native';
 import Svg, { Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
-import { ANGLE_HIST_MAX, habitReport, type HabitReport, type SessionSummary } from '../engine';
+import { ANGLE_HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
@@ -28,7 +28,6 @@ export function HabitReportSheet() {
           summary={data.summary}
           report={data.report}
           threshold={threshold}
-          previous={previousOf(s.sessions, data.summary.id)}
           onScrub={setScrubbing}
         />
       ) : null}
@@ -36,29 +35,19 @@ export function HabitReportSheet() {
   );
 }
 
-/** The session recorded just before `id` (sessions are stored newest first). */
-export function previousOf(sessions: SessionSummary[], id: string): SessionSummary | undefined {
-  const i = sessions.findIndex((x) => x.id === id);
-  return i >= 0 ? sessions[i + 1] : undefined;
-}
-
 /**
  * Report page, also opened again from History. Top to bottom: where the head usually sits, how the
- * time split between left / upright / right, when it tilted, and how this compares (later in the
- * session, and with the previous one).
+ * time split between left / upright / right, when it tilted, and three plain numbers.
  */
 export function ReportBody({
   summary,
   report,
   threshold,
-  previous,
   onScrub,
 }: {
   summary: SessionSummary;
   report: HabitReport;
   threshold: number;
-  /** The session measured before this one, to compare with. */
-  previous?: SessionSummary;
   /** Called with true while a finger slides along the tilt strip, so the sheet can stop scrolling. */
   onScrub?: (active: boolean) => void;
 }) {
@@ -77,7 +66,11 @@ export function ReportBody({
 
       <When summary={summary} threshold={threshold} onScrub={onScrub} />
 
-      <Changes report={report} previous={previous ? habitReport(previous, threshold) : null} />
+      <View style={[styles.section, styles.stats]}>
+        <Stat label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
+        <Stat label={t('report.max')} value={report.maxAngle === null ? '–' : sideAngle(report.maxAngle)} />
+        <Stat label={t('report.measured')} value={formatDuration(report.measuredSec)} />
+      </View>
     </View>
   );
 }
@@ -144,7 +137,7 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
         {TICKS.map((d) => {
           const p = polar(d, R + 18);
           return (
-            <SvgText key={d} x={p.x} y={p.y + 4} fontSize={11} fill={colors.muted} textAnchor="middle">
+            <SvgText key={d} x={p.x} y={p.y + 4} fontSize={10} fill={colors.muted} textAnchor="middle">
               {`${Math.abs(d)}°`}
             </SvgText>
           );
@@ -316,47 +309,11 @@ const BUCKET_MS = 5000;
 const sideAngle = (deg: number) =>
   deg === 0 ? `${t('report.straight')} 0°` : `${t(deg < 0 ? 'common.left' : 'common.right')} ${Math.abs(deg)}°`;
 
-/** "N° more / less tilted" from one usual angle to another, by how far from upright each is. */
-function verdict(from: number, to: number) {
-  const d = Math.abs(to) - Math.abs(from);
-  if (Math.abs(d) < 1) return t('report.same');
-  return t(d > 0 ? 'report.more' : 'report.less', { n: Math.abs(d) });
-}
-
-function Changes({ report, previous }: { report: HabitReport; previous: HabitReport | null }) {
-  const now = report.usualAngle;
-  const share = (r: HabitReport) => `${Math.round((r.leftShare + r.rightShare) * 100)}%`;
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.label}>{t('report.changes')}</Text>
-      {report.halves ? (
-        <Change
-          label={t('report.within')}
-          value={`${sideAngle(report.halves.first)} → ${sideAngle(report.halves.second)}`}
-          verdict={verdict(report.halves.first, report.halves.second)}
-        />
-      ) : null}
-      {previous && previous.usualAngle !== null && now !== null ? (
-        <Change
-          label={t('report.vsLast')}
-          value={`${sideAngle(previous.usualAngle)} → ${sideAngle(now)}`}
-          verdict={verdict(previous.usualAngle, now)}
-          hint={t('report.tiltTime', { a: share(previous), b: share(report) })}
-        />
-      ) : (
-        <Text style={styles.empty}>{t('report.firstTime')}</Text>
-      )}
-    </View>
-  );
-}
-
-function Change({ label, value, verdict, hint }: { label: string; value: string; verdict: string; hint?: string }) {
-  return (
-    <View style={styles.change}>
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.small}>{label}</Text>
-      <Text style={styles.changeValue}>{value}</Text>
-      <Text style={styles.verdict}>{verdict}</Text>
-      {hint ? <Text style={styles.small}>{hint}</Text> : null}
     </View>
   );
 }
@@ -372,31 +329,31 @@ function formatDuration(sec: number): string {
 }
 
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: 24, paddingBottom: 24 },
-  label: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 8 },
-  big: { ...type.display, fontSize: 38, lineHeight: 46, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
-  sub: { ...type.label, fontSize: 13, color: colors.subtext },
-  section: { marginTop: 32 },
+  body: { paddingHorizontal: 24, paddingBottom: 32 },
+  label: { ...type.label, color: colors.subtext, marginTop: 8 },
+  big: { ...type.display, fontSize: 30, lineHeight: 38, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
+  sub: { ...type.label, color: colors.subtext },
+  section: { marginTop: 44 },
   /** Same weight as History's left/right bar. */
-  bar: { flexDirection: 'row', height: 3, borderRadius: 1.5, overflow: 'hidden', gap: 2, marginTop: 12 },
+  bar: { flexDirection: 'row', height: 3, borderRadius: 1.5, overflow: 'hidden', gap: 2, marginTop: 14 },
   barLabels: { flexDirection: 'row', marginTop: 10 },
   barLabel: { flex: 1 },
-  pct: { ...type.numeral, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
+  pct: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
   pctDim: { color: colors.subtext },
-  small: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 2 },
-  whenRow: { flexDirection: 'row', marginTop: 8 },
-  readout: { ...type.label, fontSize: 12, color: colors.muted, marginTop: 6, height: 18 },
+  small: { ...type.label, fontSize: 11, color: colors.subtext, marginTop: 3 },
+  whenRow: { flexDirection: 'row', marginTop: 10 },
+  readout: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 6, height: 16 },
   readoutOn: { color: colors.text, fontVariant: ['tabular-nums'] },
-  gauge: { marginTop: 20 },
+  gauge: { marginTop: 28 },
   gaugeSides: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -14 },
   /** Same height as the two rows so each label sits beside its row. */
   whenSides: { height: STRIP_H, justifyContent: 'space-between', marginRight: 10 },
-  sideLabel: { ...type.label, fontSize: 11, lineHeight: LABEL_LINE, color: colors.subtext },
+  sideLabel: { ...type.label, fontSize: 10, lineHeight: LABEL_LINE, color: colors.subtext },
   whenPlot: { flex: 1 },
   times: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
-  change: { marginTop: 14 },
-  changeValue: { ...type.numeral, fontSize: 17, color: colors.text, marginTop: 4 },
-  verdict: { ...type.label, fontSize: 13, color: colors.text, marginTop: 2 },
-  empty: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 10 },
+  time: { ...type.label, fontSize: 10, color: colors.muted, fontVariant: ['tabular-nums'] },
+  /** Like the three stats on Home. */
+  stats: { flexDirection: 'row' },
+  stat: { flex: 1 },
+  statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
 });

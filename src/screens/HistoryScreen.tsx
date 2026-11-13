@@ -8,7 +8,7 @@ import { habitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Row, Screen, Section, Sheet } from '../ui/components';
-import { previousOf, ReportBody } from './HabitReportSheet';
+import { ReportBody } from './HabitReportSheet';
 import { colors, formatAngle, formatDuration } from '../ui/theme';
 
 /**
@@ -81,7 +81,6 @@ export function HistoryScreen() {
             summary={opened}
             report={habitReport(opened, threshold)}
             threshold={threshold}
-            previous={previousOf(sessions, opened.id)}
             onScrub={setScrubbing}
           />
         ) : selected ? (

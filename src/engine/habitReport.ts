@@ -21,12 +21,14 @@ export type HabitReport = {
   episodes: number;
   /** Longest single tilt, in seconds. */
   longestTiltSec: number;
-  /** Usual angle in the first and second half of the session; null when it was too short (< 2 min). */
-  halves: { first: number; second: number } | null;
+  /** Mean |angle| over judged time. */
+  avgAbsAngle: number;
+  /**
+   * Furthest tilt, signed (negative = left), from the 5-second averages so a quick head turn
+   * doesn't count. Null when nothing was measured.
+   */
+  maxAngle: number | null;
 };
-
-/** Judged 5-second steps needed before the halves are compared. */
-const MIN_HALVES_STEPS = 24;
 
 /** Summary of a session for the report, judged against the alert angle `thresholdDeg`. */
 export function habitReport(s: SessionSummary, thresholdDeg: number): HabitReport {
@@ -37,15 +39,15 @@ export function habitReport(s: SessionSummary, thresholdDeg: number): HabitRepor
   const hist = s.angleHist ?? timelineHist(s.timeline);
   const runs = s.tiltEpisodes === undefined ? timelineRuns(s.timeline, thresholdDeg) : null;
 
-  const judged = s.timeline.filter((a) => a !== null).length;
-  const mid = Math.floor(s.timeline.length / 2);
-  const first = usualOf(timelineHist(s.timeline.slice(0, mid)));
-  const second = usualOf(timelineHist(s.timeline.slice(mid)));
-  const halves = judged >= MIN_HALVES_STEPS && first !== null && second !== null ? { first, second } : null;
+  let maxAngle: number | null = null;
+  for (const a of s.timeline) {
+    if (a !== null && (maxAngle === null || Math.abs(a) > Math.abs(maxAngle))) maxAngle = a;
+  }
 
   return {
     measuredSec,
-    halves,
+    avgAbsAngle: s.avgAbsAngle,
+    maxAngle: maxAngle === null ? null : Math.round(maxAngle),
     angleHist: hist,
     usualAngle: usualOf(hist),
     leftShare: share(s.leftTiltSec),
