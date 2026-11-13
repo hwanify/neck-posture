@@ -185,7 +185,6 @@ export const fr: Strings = {
   'habit.measuringHint': 'Aucune alerte. Continue écran éteint.',
   'report.title': 'Votre habitude d’inclinaison',
   'report.avg': 'Inclinaison moyenne',
-  'report.max': 'Inclinaison maximale',
   'report.measured': 'Mesuré',
   'report.scrubHint': 'Touche et glisse le long des barres pour voir l’angle',
   'report.paused': 'En pause',

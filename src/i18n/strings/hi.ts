@@ -180,7 +180,6 @@ export const hi: Strings = {
   'habit.measuringHint': 'कोई अलर्ट नहीं। स्क्रीन बंद होने पर भी चलता है।',
   'report.title': 'आपकी सिर झुकाने की आदत',
   'report.avg': 'औसत झुकाव',
-  'report.max': 'सबसे ज़्यादा झुकाव',
   'report.measured': 'मापा गया समय',
   'report.scrubHint': 'कोण देखने के लिए पट्टियों पर छूकर खिसकाएँ',
   'report.paused': 'रुका हुआ',

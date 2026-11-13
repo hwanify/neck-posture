@@ -183,7 +183,6 @@ export const en = {
   'habit.measuringHint': 'No cues. Keeps going with the screen off.',
   'report.title': 'Your head tilt habit',
   'report.avg': 'Average tilt',
-  'report.max': 'Furthest tilt',
   'report.measured': 'Measured',
   'report.scrubHint': 'Tap the bars to see the angle at that time',
   'report.paused': 'Paused',

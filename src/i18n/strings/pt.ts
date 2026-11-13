@@ -182,7 +182,6 @@ export const pt: Strings = {
   'habit.measuringHint': 'Sem alertas. Continua com a tela desligada.',
   'report.title': 'Seu hábito de inclinar a cabeça',
   'report.avg': 'Inclinação média',
-  'report.max': 'Inclinação máxima',
   'report.measured': 'Medido',
   'report.scrubHint': 'Toque e deslize pelas barras para ver o ângulo',
   'report.paused': 'Pausado',

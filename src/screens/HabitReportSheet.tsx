@@ -37,7 +37,7 @@ export function HabitReportSheet() {
 
 /**
  * Report page, also opened again from History. Top to bottom: where the head usually sits (gauge and
- * three numbers), how the time split between left / upright / right, and when it tilted.
+ * two numbers), how the time split between left / upright / right, and when it tilted.
  */
 export function ReportBody({
   summary,
@@ -62,8 +62,12 @@ export function ReportBody({
       <TiltGauge report={report} threshold={threshold} />
       {/* Plain numbers that read off the gauge, centred under it. */}
       <View style={styles.stats}>
-        <Stat label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
-        <Stat label={t('report.max')} value={report.maxAngle === null ? '–' : sideAngle(report.maxAngle)} />
+        <Stat
+          label={t('report.avg')}
+          value={
+            report.avgAngle === null ? `${Math.round(report.avgAbsAngle)}°` : sideAngle(Math.round(report.avgAngle))
+          }
+        />
         <Stat label={t('report.measured')} value={formatDuration(report.measuredSec)} />
       </View>
 

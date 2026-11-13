@@ -183,7 +183,6 @@ export const de: Strings = {
   'habit.measuringHint': 'Keine Hinweise. Läuft auch bei ausgeschaltetem Bildschirm.',
   'report.title': 'Deine Kopfneigung',
   'report.avg': 'Durchschnittliche Neigung',
-  'report.max': 'Stärkste Neigung',
   'report.measured': 'Gemessen',
   'report.scrubHint': 'Auf den Balken tippen und ziehen, um den Winkel zu sehen',
   'report.paused': 'Pausiert',

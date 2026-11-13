@@ -180,7 +180,6 @@ export const ja: Strings = {
   'habit.measuringHint': '画面を消しても計測を続けます',
   'report.title': '首の傾き習慣レポート',
   'report.avg': '平均の傾き',
-  'report.max': '最大の傾き',
   'report.measured': '計測時間',
   'report.scrubHint': 'バーを押したまま動かすと、その時の角度が見られます',
   'report.paused': '休止中',

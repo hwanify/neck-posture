@@ -182,7 +182,6 @@ export const ru: Strings = {
   'habit.measuringHint': 'Без сигналов. Продолжает с выключенным экраном.',
   'report.title': 'Ваша привычка наклонять голову',
   'report.avg': 'Средний наклон',
-  'report.max': 'Самый сильный наклон',
   'report.measured': 'Измерено',
   'report.scrubHint': 'Коснитесь полос и ведите пальцем, чтобы увидеть угол',
   'report.paused': 'Пауза',

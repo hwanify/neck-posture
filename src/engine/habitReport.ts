@@ -23,11 +23,8 @@ export type HabitReport = {
   longestTiltSec: number;
   /** Mean |angle| over judged time. */
   avgAbsAngle: number;
-  /**
-   * Furthest tilt, signed (negative = left), from the 5-second averages so a quick head turn
-   * doesn't count. Null when nothing was measured.
-   */
-  maxAngle: number | null;
+  /** Mean signed angle over judged time (negative = left); null on old sessions that didn't store it. */
+  avgAngle: number | null;
 };
 
 /** Summary of a session for the report, judged against the alert angle `thresholdDeg`. */
@@ -39,15 +36,11 @@ export function habitReport(s: SessionSummary, thresholdDeg: number): HabitRepor
   const hist = s.angleHist ?? timelineHist(s.timeline);
   const runs = s.tiltEpisodes === undefined ? timelineRuns(s.timeline, thresholdDeg) : null;
 
-  let maxAngle: number | null = null;
-  for (const a of s.timeline) {
-    if (a !== null && (maxAngle === null || Math.abs(a) > Math.abs(maxAngle))) maxAngle = a;
-  }
 
   return {
     measuredSec,
     avgAbsAngle: s.avgAbsAngle,
-    maxAngle: maxAngle === null ? null : Math.round(maxAngle),
+    avgAngle: s.avgAngle ?? null,
     angleHist: hist,
     usualAngle: usualOf(hist),
     leftShare: share(s.leftTiltSec),

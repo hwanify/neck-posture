@@ -54,10 +54,10 @@ describe('habitReport', () => {
   });
 });
 
-describe('habitReport extremes', () => {
-  it('reports the furthest 5-second tilt with its side', () => {
-    expect(habitReport(summary([1, 3, -7.4, 6, null]), 5).maxAngle).toBe(-7);
-    expect(habitReport(summary([null]), 5).maxAngle).toBeNull();
+describe('habitReport average', () => {
+  it('keeps the signed average, or null for old sessions', () => {
+    expect(habitReport(summary([], { avgAngle: -2.6 }), 5).avgAngle).toBe(-2.6);
+    expect(habitReport(summary([]), 5).avgAngle).toBeNull();
   });
 });
 

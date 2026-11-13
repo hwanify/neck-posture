@@ -175,7 +175,6 @@ export const zhHans: Strings = {
   'habit.measuringHint': '不提醒，熄屏也会继续测量',
   'report.title': '头部倾斜习惯报告',
   'report.avg': '平均倾斜',
-  'report.max': '最大倾斜',
   'report.measured': '测量时长',
   'report.scrubHint': '按住条形并滑动，查看当时的角度',
   'report.paused': '暂停',
