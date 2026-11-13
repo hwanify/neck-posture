@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { type GestureResponderEvent, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
-import { ANGLE_HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
+import { ANGLE_HIST_MAX, habitReport, type HabitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { Sheet } from '../ui/components';
@@ -24,25 +24,41 @@ export function HabitReportSheet() {
       scrollEnabled={!scrubbing}
       onClose={() => monitor.dismissReport()}>
       {data ? (
-        <ReportBody summary={data.summary} report={data.report} threshold={threshold} onScrub={setScrubbing} />
+        <ReportBody
+          summary={data.summary}
+          report={data.report}
+          threshold={threshold}
+          previous={previousOf(s.sessions, data.summary.id)}
+          onScrub={setScrubbing}
+        />
       ) : null}
     </Sheet>
   );
 }
 
+/** The session recorded just before `id` (sessions are stored newest first). */
+export function previousOf(sessions: SessionSummary[], id: string): SessionSummary | undefined {
+  const i = sessions.findIndex((x) => x.id === id);
+  return i >= 0 ? sessions[i + 1] : undefined;
+}
+
 /**
- * Report page, also opened again from History. Three answers, top to bottom: where the head
- * usually sits, how the time split between left / upright / right, and when it tilted.
+ * Report page, also opened again from History. Top to bottom: where the head usually sits, how the
+ * time split between left / upright / right, when it tilted, and how this compares (later in the
+ * session, and with the previous one).
  */
 export function ReportBody({
   summary,
   report,
   threshold,
+  previous,
   onScrub,
 }: {
   summary: SessionSummary;
   report: HabitReport;
   threshold: number;
+  /** The session measured before this one, to compare with. */
+  previous?: SessionSummary;
   /** Called with true while a finger slides along the tilt strip, so the sheet can stop scrolling. */
   onScrub?: (active: boolean) => void;
 }) {
@@ -51,11 +67,7 @@ export function ReportBody({
     <View style={styles.body}>
       <Text style={styles.label}>{t('report.usualLabel')}</Text>
       <Text style={styles.big}>
-        {usual === null
-          ? '–'
-          : usual === 0
-            ? `${t('report.straight')} 0°`
-            : `${t(usual < 0 ? 'common.left' : 'common.right')} ${Math.abs(usual)}°`}
+        {usual === null ? '–' : sideAngle(usual)}
       </Text>
       <Text style={styles.sub}>{t('report.usualHint')}</Text>
       <TiltGauge report={report} threshold={threshold} />
@@ -65,10 +77,7 @@ export function ReportBody({
 
       <When summary={summary} threshold={threshold} onScrub={onScrub} />
 
-      <View style={styles.pair}>
-        <Item label={t('report.episodes')} value={t('report.episodesValue', { n: report.episodes })} />
-        <Item label={t('report.longest')} value={report.longestTiltSec > 0 ? formatDuration(report.longestTiltSec) : '–'} />
-      </View>
+      <Changes report={report} previous={previous ? habitReport(previous, threshold) : null} />
     </View>
   );
 }
@@ -79,6 +88,8 @@ const GW = 300;
 const PX = GW / 2;
 const PY = 196;
 const R = 138;
+/** Inner end of the 0° and usual-angle lines. */
+const R0 = 58;
 /** Drawing height: cut just below the ends of the arc. */
 const GH = PY - 52;
 const TICKS = [-20, -10, -5, 0, 5, 10, 20];
@@ -94,15 +105,19 @@ const arc = (from: number, to: number, r: number) => {
 };
 
 /**
- * Fan-shaped scale whose band is brighter where the head spent more time, with a dot at the usual
- * angle. Right tilt is on the right.
+ * Fan-shaped scale whose band is brighter where the head spent more time, a dashed 0° line and a
+ * solid line at the usual angle. Right tilt is on the right.
  */
 function TiltGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
   const usual = report.usualAngle;
   if (usual === null) return null;
   const hist = report.angleHist;
   const max = Math.max(...hist);
-  const tip = polar(usual, R - 14);
+  // Two lines from the centre to the scale: dashed upright (0°) and solid usual angle, with the gap
+  // between them marked so the amount of tilt reads at a glance.
+  const ray = (deg: number) => ({ a: polar(deg, R0), b: polar(deg, R + 10) });
+  const zero = ray(0);
+  const at = ray(usual);
   return (
     <View style={styles.gauge}>
       <Svg width="100%" height={GH} viewBox={`0 0 ${GW} ${GH}`}>
@@ -132,7 +147,11 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
             </SvgText>
           );
         })}
-        <Circle cx={tip.x} cy={tip.y} r={4} fill={colors.text} />
+        <Line x1={zero.a.x} y1={zero.a.y} x2={zero.b.x} y2={zero.b.y} stroke={colors.subtext} strokeWidth={1.5} strokeDasharray="4 4" />
+        {usual !== 0 ? (
+          <Path d={arc(Math.min(0, usual), Math.max(0, usual), R0 + 18)} stroke={colors.text} strokeWidth={1.5} fill="none" />
+        ) : null}
+        <Line x1={at.a.x} y1={at.a.y} x2={at.b.x} y2={at.b.y} stroke={colors.text} strokeWidth={2.5} strokeLinecap="round" />
       </Svg>
       <View style={styles.gaugeSides}>
         <Text style={styles.small}>{t('common.left')}</Text>
@@ -180,8 +199,8 @@ const ROW_GAP = 6;
 
 /**
  * Time runs left to right; a block in the top row is a stretch tilted right, in the bottom row a
- * stretch tilted left (5-second steps past the alert angle). Touch and slide to read the time and
- * angle at that point.
+ * stretch tilted left (5-second steps past the alert angle). Tap or slide to read the time and angle
+ * at that point; the sheet stops scrolling while the finger is down.
  */
 function When({
   summary,
@@ -225,10 +244,8 @@ function When({
     if (width <= 0) return;
     setIndex(Math.max(0, Math.min(n - 1, Math.floor((e.nativeEvent.locationX / width) * n))));
   };
-  const end = () => {
-    setIndex(null);
-    onScrub?.(false);
-  };
+  // The picked point stays shown after the finger lifts, so a plain tap also works.
+  const end = () => onScrub?.(false);
   const a = index === null ? null : timeline[index];
   const readout =
     index === null
@@ -291,11 +308,50 @@ function When({
 /** Timeline step (see SessionStats). */
 const BUCKET_MS = 5000;
 
-function Item({ label, value }: { label: string; value: string }) {
+const sideAngle = (deg: number) =>
+  deg === 0 ? `${t('report.straight')} 0°` : `${t(deg < 0 ? 'common.left' : 'common.right')} ${Math.abs(deg)}°`;
+
+/** "N° more / less tilted" from one usual angle to another, by how far from upright each is. */
+function verdict(from: number, to: number) {
+  const d = Math.abs(to) - Math.abs(from);
+  if (Math.abs(d) < 1) return t('report.same');
+  return t(d > 0 ? 'report.more' : 'report.less', { n: Math.abs(d) });
+}
+
+function Changes({ report, previous }: { report: HabitReport; previous: HabitReport | null }) {
+  const now = report.usualAngle;
+  const share = (r: HabitReport) => `${Math.round((r.leftShare + r.rightShare) * 100)}%`;
   return (
-    <View style={styles.item}>
+    <View style={styles.section}>
+      <Text style={styles.label}>{t('report.changes')}</Text>
+      {report.halves ? (
+        <Change
+          label={t('report.within')}
+          value={`${sideAngle(report.halves.first)} → ${sideAngle(report.halves.second)}`}
+          verdict={verdict(report.halves.first, report.halves.second)}
+        />
+      ) : null}
+      {previous && previous.usualAngle !== null && now !== null ? (
+        <Change
+          label={t('report.vsLast')}
+          value={`${sideAngle(previous.usualAngle)} → ${sideAngle(now)}`}
+          verdict={verdict(previous.usualAngle, now)}
+          hint={t('report.tiltTime', { a: share(previous), b: share(report) })}
+        />
+      ) : (
+        <Text style={styles.empty}>{t('report.firstTime')}</Text>
+      )}
+    </View>
+  );
+}
+
+function Change({ label, value, verdict, hint }: { label: string; value: string; verdict: string; hint?: string }) {
+  return (
+    <View style={styles.change}>
       <Text style={styles.small}>{label}</Text>
-      <Text style={styles.itemValue}>{value}</Text>
+      <Text style={styles.changeValue}>{value}</Text>
+      <Text style={styles.verdict}>{verdict}</Text>
+      {hint ? <Text style={styles.small}>{hint}</Text> : null}
     </View>
   );
 }
@@ -316,7 +372,7 @@ const styles = StyleSheet.create({
   big: { ...type.display, fontSize: 38, lineHeight: 46, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
   section: { marginTop: 32 },
-  bar: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', gap: 2, marginTop: 12 },
+  bar: { flexDirection: 'row', height: 5, borderRadius: 2.5, overflow: 'hidden', gap: 2, marginTop: 12 },
   barLabels: { flexDirection: 'row', marginTop: 10 },
   barLabel: { flex: 1 },
   pct: { ...type.numeral, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
@@ -332,7 +388,8 @@ const styles = StyleSheet.create({
   whenPlot: { flex: 1 },
   times: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
   time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
-  pair: { flexDirection: 'row', marginTop: 32 },
-  item: { flex: 1 },
-  itemValue: { ...type.numeral, fontSize: 17, color: colors.text, marginTop: 4 },
+  change: { marginTop: 14 },
+  changeValue: { ...type.numeral, fontSize: 17, color: colors.text, marginTop: 4 },
+  verdict: { ...type.label, fontSize: 13, color: colors.text, marginTop: 2 },
+  empty: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 10 },
 });

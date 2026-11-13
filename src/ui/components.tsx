@@ -70,7 +70,10 @@ export function Sheet({
             <Text style={styles.sheetDone}>{doneLabel}</Text>
           </Pressable>
         </View>
-        <ScrollView contentContainerStyle={styles.sheetContent} scrollEnabled={scrollEnabled}>
+        <ScrollView
+          contentContainerStyle={styles.sheetContent}
+          scrollEnabled={scrollEnabled}
+          canCancelContentTouches={scrollEnabled}>
           {children}
         </ScrollView>
       </View>
