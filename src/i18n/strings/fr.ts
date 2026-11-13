@@ -198,7 +198,6 @@ export const fr: Strings = {
   'report.episodesValue': '{n}',
   'history.habitTag': 'Mesure d’habitude',
   'report.longest': 'Plus longue inclinaison',
-  'report.note': 'Incliné signifie au-delà de votre angle d’alerte ({deg}°). Ce n’est pas un avis médical.',
   'report.sec': '{n} s',
   'report.min': '{n} min',
   'report.hm': '{h} h {m} min',

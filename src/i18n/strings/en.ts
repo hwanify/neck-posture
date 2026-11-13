@@ -196,7 +196,6 @@ export const en = {
   'report.episodesValue': '{n}',
   'history.habitTag': 'Habit check',
   'report.longest': 'Longest tilt',
-  'report.note': 'Tilted means past your alert angle ({deg}°). Not a medical assessment.',
   'report.sec': '{n} s',
   'report.min': '{n} min',
   'report.hm': '{h} h {m} min',

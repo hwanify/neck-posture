@@ -196,7 +196,6 @@ export const de: Strings = {
   'report.episodesValue': '{n}×',
   'history.habitTag': 'Gewohnheitscheck',
   'report.longest': 'Längste Neigung',
-  'report.note': 'Geneigt heißt über deinem Hinweiswinkel ({deg}°). Keine medizinische Bewertung.',
   'report.sec': '{n} s',
   'report.min': '{n} Min.',
   'report.hm': '{h} Std. {m} Min.',

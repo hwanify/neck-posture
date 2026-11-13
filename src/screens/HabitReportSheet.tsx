@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type GestureResponderEvent, StyleSheet, View } from 'react-native';
-import Svg, { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { ANGLE_HIST_MAX, type HabitReport, type SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
@@ -15,13 +15,17 @@ export function HabitReportSheet() {
   const s = useMonitor();
   const data = s.report;
   const threshold = s.settings.posture.enterDeg;
+  const [scrubbing, setScrubbing] = useState(false);
   return (
     <Sheet
       visible={data !== null}
       title={t('report.title')}
       doneLabel={t('common.done')}
+      scrollEnabled={!scrubbing}
       onClose={() => monitor.dismissReport()}>
-      {data ? <ReportBody summary={data.summary} report={data.report} threshold={threshold} /> : null}
+      {data ? (
+        <ReportBody summary={data.summary} report={data.report} threshold={threshold} onScrub={setScrubbing} />
+      ) : null}
     </Sheet>
   );
 }
@@ -34,10 +38,13 @@ export function ReportBody({
   summary,
   report,
   threshold,
+  onScrub,
 }: {
   summary: SessionSummary;
   report: HabitReport;
   threshold: number;
+  /** Called with true while a finger slides along the tilt strip, so the sheet can stop scrolling. */
+  onScrub?: (active: boolean) => void;
 }) {
   const usual = report.usualAngle;
   return (
@@ -56,13 +63,12 @@ export function ReportBody({
       <Text style={[styles.label, styles.section]}>{t('report.during', { time: formatDuration(report.measuredSec) })}</Text>
       <SplitBar report={report} />
 
-      <When summary={summary} threshold={threshold} />
+      <When summary={summary} threshold={threshold} onScrub={onScrub} />
 
       <View style={styles.pair}>
         <Item label={t('report.episodes')} value={t('report.episodesValue', { n: report.episodes })} />
         <Item label={t('report.longest')} value={report.longestTiltSec > 0 ? formatDuration(report.longestTiltSec) : '–'} />
       </View>
-      <Text style={styles.note}>{t('report.note', { deg: threshold })}</Text>
     </View>
   );
 }
@@ -73,9 +79,8 @@ const GW = 300;
 const PX = GW / 2;
 const PY = 196;
 const R = 138;
-/** Centre of the level line, and the drawing's height (cut just below it). */
-const LY = PY - 60;
-const GH = PY - 36;
+/** Drawing height: cut just below the ends of the arc. */
+const GH = PY - 52;
 const TICKS = [-20, -10, -5, 0, 5, 10, 20];
 
 const polar = (deg: number, r: number) => {
@@ -89,8 +94,8 @@ const arc = (from: number, to: number, r: number) => {
 };
 
 /**
- * Fan-shaped scale whose band is brighter where the head spent more time, a dot at the usual angle,
- * and the app icon's level line tilted to it. Right tilt dips the line's right end, as the head does.
+ * Fan-shaped scale whose band is brighter where the head spent more time, with a dot at the usual
+ * angle. Right tilt is on the right.
  */
 function TiltGauge({ report, threshold }: { report: HabitReport; threshold: number }) {
   const usual = report.usualAngle;
@@ -127,12 +132,6 @@ function TiltGauge({ report, threshold }: { report: HabitReport; threshold: numb
             </SvgText>
           );
         })}
-        {/* Level line as in the app icon: grey horizon, white line at the usual angle. */}
-        <Line x1={PX - 90} y1={LY} x2={PX + 90} y2={LY} stroke={colors.tertiary} strokeWidth={2} />
-        <G rotation={usual * VIS} origin={`${PX}, ${LY}`}>
-          <Line x1={PX - 75} y1={LY} x2={PX + 75} y2={LY} stroke={colors.text} strokeWidth={5} strokeLinecap="round" />
-        </G>
-        <Circle cx={PX} cy={LY} r={9} fill={colors.text} />
         <Circle cx={tip.x} cy={tip.y} r={4} fill={colors.text} />
       </Svg>
       <View style={styles.gaugeSides}>
@@ -184,7 +183,15 @@ const ROW_GAP = 6;
  * stretch tilted left (5-second steps past the alert angle). Touch and slide to read the time and
  * angle at that point.
  */
-function When({ summary, threshold }: { summary: SessionSummary; threshold: number }) {
+function When({
+  summary,
+  threshold,
+  onScrub,
+}: {
+  summary: SessionSummary;
+  threshold: number;
+  onScrub?: (active: boolean) => void;
+}) {
   const { timeline } = summary;
   const n = timeline.length;
   const [width, setWidth] = useState(0);
@@ -218,6 +225,10 @@ function When({ summary, threshold }: { summary: SessionSummary; threshold: numb
     if (width <= 0) return;
     setIndex(Math.max(0, Math.min(n - 1, Math.floor((e.nativeEvent.locationX / width) * n))));
   };
+  const end = () => {
+    setIndex(null);
+    onScrub?.(false);
+  };
   const a = index === null ? null : timeline[index];
   const readout =
     index === null
@@ -247,10 +258,13 @@ function When({ summary, threshold }: { summary: SessionSummary; threshold: numb
             onStartShouldSetResponder={() => true}
             onMoveShouldSetResponder={() => true}
             onResponderTerminationRequest={() => false}
-            onResponderGrant={pick}
+            onResponderGrant={(e) => {
+              onScrub?.(true);
+              pick(e);
+            }}
             onResponderMove={pick}
-            onResponderRelease={() => setIndex(null)}
-            onResponderTerminate={() => setIndex(null)}>
+            onResponderRelease={end}
+            onResponderTerminate={end}>
             <Svg
               width="100%"
               height={ROW_H * 2 + ROW_GAP}
@@ -299,13 +313,13 @@ function formatDuration(sec: number): string {
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingBottom: 24 },
   label: { ...type.label, fontSize: 13, color: colors.subtext, marginTop: 8 },
-  big: { ...type.display, fontSize: 48, lineHeight: 58, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
+  big: { ...type.display, fontSize: 38, lineHeight: 46, color: colors.text, fontVariant: ['tabular-nums'], marginTop: 4 },
   sub: { ...type.label, fontSize: 13, color: colors.subtext },
-  section: { marginTop: 36 },
+  section: { marginTop: 32 },
   bar: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', gap: 2, marginTop: 12 },
   barLabels: { flexDirection: 'row', marginTop: 10 },
   barLabel: { flex: 1 },
-  pct: { ...type.numeral, fontSize: 20, color: colors.text, fontVariant: ['tabular-nums'] },
+  pct: { ...type.numeral, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
   pctDim: { color: colors.subtext },
   small: { ...type.label, fontSize: 12, color: colors.subtext, marginTop: 2 },
   whenRow: { flexDirection: 'row', marginTop: 8 },
@@ -320,6 +334,5 @@ const styles = StyleSheet.create({
   time: { ...type.label, fontSize: 11, color: colors.muted, fontVariant: ['tabular-nums'] },
   pair: { flexDirection: 'row', marginTop: 32 },
   item: { flex: 1 },
-  itemValue: { ...type.numeral, fontSize: 20, color: colors.text, marginTop: 4 },
-  note: { ...type.label, fontSize: 11, color: colors.muted, marginTop: 28, lineHeight: 16 },
+  itemValue: { ...type.numeral, fontSize: 17, color: colors.text, marginTop: 4 },
 });

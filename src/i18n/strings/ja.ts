@@ -193,7 +193,6 @@ export const ja: Strings = {
   'report.episodesValue': '{n}回',
   'history.habitTag': 'クセ測定',
   'report.longest': '最も長く傾いた時間',
-  'report.note': '傾きの基準は通知角度（{deg}°）です。医療的な判断ではありません。',
   'report.sec': '{n}秒',
   'report.min': '{n}分',
   'report.hm': '{h}時間{m}分',

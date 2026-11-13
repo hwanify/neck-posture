@@ -188,7 +188,6 @@ export const zhHans: Strings = {
   'report.episodesValue': '{n}次',
   'history.habitTag': '习惯测量',
   'report.longest': '最长倾斜时间',
-  'report.note': '“倾斜”指超过提醒角度（{deg}°）。并非医学判断。',
   'report.sec': '{n} 秒',
   'report.min': '{n} 分钟',
   'report.hm': '{h} 小时 {m} 分钟',

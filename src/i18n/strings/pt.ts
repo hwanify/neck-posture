@@ -195,7 +195,6 @@ export const pt: Strings = {
   'report.episodesValue': '{n}',
   'history.habitTag': 'Medição de hábito',
   'report.longest': 'Inclinação mais longa',
-  'report.note': 'Inclinado significa passar do seu ângulo de alerta ({deg}°). Não é uma avaliação médica.',
   'report.sec': '{n} s',
   'report.min': '{n} min',
   'report.hm': '{h} h {m} min',

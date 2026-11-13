@@ -195,7 +195,6 @@ export const ru: Strings = {
   'report.episodesValue': '{n}',
   'history.habitTag': 'Замер привычки',
   'report.longest': 'Самый долгий наклон',
-  'report.note': 'Наклон — это больше вашего угла сигнала ({deg}°). Это не медицинская оценка.',
   'report.sec': '{n} с',
   'report.min': '{n} мин',
   'report.hm': '{h} ч {m} мин',

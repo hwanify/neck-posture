@@ -190,7 +190,6 @@ export const ko: Strings = {
   'report.episodesValue': '{n}번',
   'history.habitTag': '습관 측정',
   'report.longest': '가장 오래 기운 시간',
-  'report.note': '기울었다는 기준은 알림 각도({deg}°)입니다. 의료적 판단이 아닙니다.',
   'report.sec': '{n}초',
   'report.min': '{n}분',
   'report.hm': '{h}시간 {m}분',

@@ -193,7 +193,6 @@ export const hi: Strings = {
   'report.episodesValue': '{n} बार',
   'history.habitTag': 'आदत जाँच',
   'report.longest': 'सबसे लंबा झुकाव',
-  'report.note': 'झुका हुआ यानी आपके अलर्ट कोण ({deg}°) से ज़्यादा। यह चिकित्सीय आकलन नहीं है।',
   'report.sec': '{n} सेकंड',
   'report.min': '{n} मिनट',
   'report.hm': '{h} घंटे {m} मिनट',

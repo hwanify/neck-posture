@@ -34,6 +34,7 @@ export function Sheet({
   doneLabel,
   onClose,
   onBack,
+  scrollEnabled = true,
   children,
 }: {
   visible: boolean;
@@ -42,6 +43,8 @@ export function Sheet({
   onClose: () => void;
   /** Shows a back chevron on the left (for a detail page inside the sheet). */
   onBack?: () => void;
+  /** Turned off while a gesture inside the sheet (e.g. scrubbing a chart) owns the finger. */
+  scrollEnabled?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -67,7 +70,9 @@ export function Sheet({
             <Text style={styles.sheetDone}>{doneLabel}</Text>
           </Pressable>
         </View>
-        <ScrollView contentContainerStyle={styles.sheetContent}>{children}</ScrollView>
+        <ScrollView contentContainerStyle={styles.sheetContent} scrollEnabled={scrollEnabled}>
+          {children}
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -287,9 +292,9 @@ const styles = StyleSheet.create({
   sheet: { flex: 1, backgroundColor: colors.card },
   sheetBar: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 20 },
   sheetSide: { width: 64, alignItems: 'flex-end' },
-  sheetTitle: { ...type.bodyStrong, flex: 1, textAlign: 'center', color: colors.text },
+  sheetTitle: { ...type.bodyStrong, fontSize: 15, flex: 1, textAlign: 'center', color: colors.text },
   sheetSideLeft: { alignItems: 'flex-start' },
-  sheetDone: { ...type.bodyStrong, color: colors.tint },
+  sheetDone: { ...type.bodyStrong, fontSize: 15, color: colors.tint },
   sheetBack: { ...type.bodyStrong, fontSize: 30, lineHeight: 32, color: colors.tint },
   sheetContent: { paddingBottom: 40 },
   sectionHeader: {

@@ -19,6 +19,7 @@ export function HistoryScreen() {
   const { sessions, settings } = useMonitor();
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [openSession, setOpenSession] = useState<string | null>(null);
+  const [scrubbing, setScrubbing] = useState(false);
   const days = groupByDay(sessions);
   const week = lastSevenDays(days);
   const weekTotal = summarize(week.flatMap((d) => d.sessions));
@@ -73,9 +74,15 @@ export function HistoryScreen() {
         title={opened ? t('report.title') : selected ? formatDay(selected.date) : ''}
         doneLabel={t('common.done')}
         onClose={closeDay}
+        scrollEnabled={!scrubbing}
         onBack={opened ? () => setOpenSession(null) : undefined}>
         {opened ? (
-          <ReportBody summary={opened} report={habitReport(opened, threshold)} threshold={threshold} />
+          <ReportBody
+            summary={opened}
+            report={habitReport(opened, threshold)}
+            threshold={threshold}
+            onScrub={setScrubbing}
+          />
         ) : selected ? (
           <Section footer={t('history.footer')}>
             {selected.sessions.map((session) => (
