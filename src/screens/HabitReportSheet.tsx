@@ -36,8 +36,9 @@ export function HabitReportSheet() {
 }
 
 /**
- * Report page, also opened again from History. Top to bottom: where the head usually sits, how the
- * time split between left / upright / right, when it tilted, and three plain numbers.
+ * Report page, also opened again from History. Top to bottom: where the head usually sits (gauge and
+ * three numbers), how the
+ * time split between left / upright / right, and when it tilted.
  */
 export function ReportBody({
   summary,
@@ -60,17 +61,18 @@ export function ReportBody({
       </Text>
       <Text style={styles.sub}>{t('report.usualHint')}</Text>
       <TiltGauge report={report} threshold={threshold} />
+      {/* Plain numbers that read off the gauge, centred under it. */}
+      <View style={styles.stats}>
+        <Stat label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
+        <Stat label={t('report.max')} value={report.maxAngle === null ? '–' : sideAngle(report.maxAngle)} />
+        <Stat label={t('report.measured')} value={formatDuration(report.measuredSec)} />
+      </View>
 
       <Text style={[styles.label, styles.section]}>{t('report.during', { time: formatDuration(report.measuredSec) })}</Text>
       <SplitBar report={report} />
 
       <When summary={summary} threshold={threshold} onScrub={onScrub} />
 
-      <View style={[styles.section, styles.stats]}>
-        <Stat label={t('report.avg')} value={`${Math.round(report.avgAbsAngle)}°`} />
-        <Stat label={t('report.max')} value={report.maxAngle === null ? '–' : sideAngle(report.maxAngle)} />
-        <Stat label={t('report.measured')} value={formatDuration(report.measuredSec)} />
-      </View>
     </View>
   );
 }
@@ -304,7 +306,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.small}>{label}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -344,7 +346,8 @@ const styles = StyleSheet.create({
   times: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
   time: { ...type.label, fontSize: 10, color: colors.muted, fontVariant: ['tabular-nums'] },
   /** Like the three stats on Home. */
-  stats: { flexDirection: 'row' },
-  stat: { flex: 1 },
+  stats: { flexDirection: 'row', marginTop: 24 },
+  stat: { flex: 1, alignItems: 'center' },
   statValue: { ...type.numeral, color: colors.text, fontVariant: ['tabular-nums'] },
+  statLabel: { ...type.label, fontSize: 11, color: colors.subtext, marginTop: 3, textAlign: 'center' },
 });
