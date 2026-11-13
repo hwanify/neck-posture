@@ -37,8 +37,7 @@ export function HabitReportSheet() {
 
 /**
  * Report page, also opened again from History. Top to bottom: where the head usually sits (gauge and
- * three numbers), how the
- * time split between left / upright / right, and when it tilted.
+ * three numbers), how the time split between left / upright / right, and when it tilted.
  */
 export function ReportBody({
   summary,
