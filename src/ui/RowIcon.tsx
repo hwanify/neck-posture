@@ -19,7 +19,8 @@ export type RowIconName =
   | 'info'
   | 'walk'
   | 'globe'
-  | 'lock';
+  | 'lock'
+  | 'mail';
 
 /** Small leading glyph for list rows. */
 export function RowIcon({ name }: { name: RowIconName }) {
@@ -39,6 +40,12 @@ export function RowIcon({ name }: { name: RowIconName }) {
             <Path d="M3 15 L15 15" {...s} />
             <Path d="M3 15 L13 5" {...s} />
             <Path d="M8 15 A5 5 0 0 0 6.5 11.5" {...s} />
+          </>
+        )}
+        {name === 'mail' && (
+          <>
+            <Rect x={2.5} y={4} width={13} height={10} rx={1.5} {...s} />
+            <Path d="M3 5 L9 9.5 L15 5" {...s} />
           </>
         )}
         {name === 'lock' && (

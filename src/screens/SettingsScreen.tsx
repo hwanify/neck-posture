@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
 import { playTestCue } from '../services/feedback';
@@ -209,6 +209,7 @@ export function SettingsScreen() {
       <Section header={t('settings.info')} iconInset>
         <Row icon="sensor" title={t('settings.sensor')} value={`${sourceLabel(s.sourceKind)} · ${s.sampleRateHz}Hz`} />
         <Row icon="info" title={t('settings.motionPermission')} value={t(`settings.auth.${s.authorization}`)} />
+        <Row icon="mail" title={t('settings.contact')} value="›" onPress={() => void contactUs()} />
       </Section>
 
       <Text style={styles.footer} onPress={onFooterTap} suppressHighlighting>
@@ -242,6 +243,23 @@ function Pill({
       </Text>
     </Pressable>
   );
+}
+
+const CONTACT_EMAIL = 'hwanify@gmail.com';
+
+/**
+ * Opens a new mail to the developer with the app and iOS version filled in (nothing else about the
+ * user); if no mail app can take it, shows the address instead.
+ */
+async function contactUs() {
+  const version = Constants.expoConfig?.version ?? '';
+  const body = `\n\n\n—\nPlumb ${version} (${updateLabel()}) · iOS ${Platform.Version}`;
+  const url = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t('settings.contactSubject'))}&body=${encodeURIComponent(body)}`;
+  try {
+    await Linking.openURL(url);
+  } catch {
+    Alert.alert(t('settings.contact'), t('settings.contactFailed', { email: CONTACT_EMAIL }));
+  }
 }
 
 /** Language row; tapping it opens a sheet listing System + every language. */
