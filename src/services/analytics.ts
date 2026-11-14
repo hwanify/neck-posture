@@ -79,4 +79,6 @@ export const analytics = {
   settingsChange: (setting: string) => track('settings_change', { setting }),
   reviewPrompt: () => track('review_prompt'),
   contactTap: () => track('contact_tap'),
+  /** The session report was shown: right after a session or reopened from History. */
+  reportOpen: (from: 'session_end' | 'history') => track('report_open', { from }),
 };

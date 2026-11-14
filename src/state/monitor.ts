@@ -9,6 +9,8 @@ import {
   DEMO_CALIBRATION,
   type CalibratorStatus,
   flipCalibration,
+  type HabitReport,
+  habitReport,
   PostureCheck,
   type PostureCheckStatus,
   PostureEngine,
@@ -62,6 +64,8 @@ export type LiveSession = {
 export type MonitorState = {
   loaded: boolean;
   onboarded: boolean;
+  /** The report for the session that just ended, until the user closes it. */
+  report: { summary: SessionSummary; report: HabitReport } | null;
   sourceKind: MotionSourceKind;
   available: boolean;
   authorization: AuthorizationStatus;
@@ -101,6 +105,7 @@ class MonitorController {
   state: MonitorState = {
     loaded: false,
     onboarded: false,
+    report: null,
     sourceKind: this.source.kind,
     available: this.source.isAvailable(),
     authorization: this.source.getAuthorizationStatus(),
@@ -467,9 +472,16 @@ class MonitorController {
     // Very short sessions aren't worth keeping.
     if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
-    this.set({ sessions });
-    void maybeAskForReview(summary, sessions);
+    this.set({ sessions, report: { summary, report: habitReport(summary, this.state.settings.posture.enterDeg) } });
+    analytics.reportOpen('session_end');
     return summary;
+  }
+
+  /** Close the end-of-session report; the rating prompt (if due) waits until now so they don't overlap. */
+  dismissReport(): void {
+    const ended = this.state.report?.summary;
+    this.set({ report: null });
+    if (ended) void maybeAskForReview(ended, this.state.sessions);
   }
 
   private async releaseSessionResources() {
