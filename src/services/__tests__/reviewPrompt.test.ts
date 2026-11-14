@@ -26,24 +26,35 @@ const session = (daysAgo: number, minutes: number): SessionSummary => ({
 
 describe('shouldAskForReview', () => {
   const regular = [session(5, 20), session(3, 15), session(0, 12)];
+  const ASKED = NOW - 40 * DAY;
 
-  it('asks after a long session once the user has a few long sessions over some days', () => {
-    expect(shouldAskForReview(regular[2], regular, null, NOW)).toBe(true);
+  it('asks the first time after a session of a minute or more', () => {
+    const first = session(0, 1);
+    expect(shouldAskForReview(first, [first], null, NOW)).toBe(true);
   });
 
-  it('does not ask after a short session', () => {
+  it('does not ask the first time after a quick try', () => {
+    const quick = session(0, 0.5);
+    expect(shouldAskForReview(quick, [quick], null, NOW)).toBe(false);
+  });
+
+  it('asks again after a long session once the user has a few long sessions over some days', () => {
+    expect(shouldAskForReview(regular[2], regular, ASKED, NOW)).toBe(true);
+  });
+
+  it('does not ask again after a short session', () => {
     const ended = session(0, 5);
-    expect(shouldAskForReview(ended, [...regular, ended], null, NOW)).toBe(false);
+    expect(shouldAskForReview(ended, [...regular, ended], ASKED, NOW)).toBe(false);
   });
 
-  it('waits for three long sessions', () => {
+  it('waits for three long sessions before asking again', () => {
     const sessions = [session(5, 20), session(4, 3), session(0, 12)];
-    expect(shouldAskForReview(sessions[2], sessions, null, NOW)).toBe(false);
+    expect(shouldAskForReview(sessions[2], sessions, ASKED, NOW)).toBe(false);
   });
 
-  it('waits until the first session is three days old', () => {
+  it('waits until the first session is three days old before asking again', () => {
     const sessions = [session(2, 20), session(1, 15), session(0, 12)];
-    expect(shouldAskForReview(sessions[2], sessions, null, NOW)).toBe(false);
+    expect(shouldAskForReview(sessions[2], sessions, ASKED, NOW)).toBe(false);
   });
 
   it('asks at most once a month', () => {

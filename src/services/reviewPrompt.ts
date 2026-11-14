@@ -7,7 +7,9 @@ import { analytics } from './analytics';
 const LAST_ASKED_KEY = 'baromok.reviewAskedAt';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Only sessions where the user really measured for a while count. */
+/** The first ask comes after the first session that measured at least this long (not a quick try). */
+export const REVIEW_FIRST_MIN_SEC = 60;
+/** Later asks: only sessions where the user really measured for a while count. */
 export const REVIEW_MIN_SESSION_SEC = 10 * 60;
 export const REVIEW_MIN_SESSIONS = 3;
 export const REVIEW_MIN_DAYS_SINCE_FIRST = 3;
@@ -16,10 +18,10 @@ export const REVIEW_MIN_DAYS_BETWEEN_ASKS = 30;
 const measuredSec = (s: SessionSummary) => s.goodSec + s.tiltSec;
 
 /**
- * Whether to ask for an App Store rating right after `ended` finished. iOS still decides whether the
- * prompt actually appears (at most three times a year), so this only keeps us from asking too early
- * or too often: a long session that just ended, a few long sessions behind it, some days of use, and
- * a month since the last ask.
+ * Whether to ask for an App Store rating as the report of `ended` closes. iOS still decides whether
+ * the prompt actually appears (at most three times a year). The first ask comes after the first real
+ * session (a minute or more); later ones need a long session, a few long sessions behind it, some days
+ * of use, and a month since the last ask.
  */
 export function shouldAskForReview(
   ended: SessionSummary,
@@ -27,6 +29,7 @@ export function shouldAskForReview(
   lastAskedAt: number | null,
   now: number,
 ): boolean {
+  if (lastAskedAt === null) return measuredSec(ended) >= REVIEW_FIRST_MIN_SEC;
   if (measuredSec(ended) < REVIEW_MIN_SESSION_SEC) return false;
   if (lastAskedAt !== null && now - lastAskedAt < REVIEW_MIN_DAYS_BETWEEN_ASKS * DAY_MS) return false;
   const long = sessions.filter((s) => measuredSec(s) >= REVIEW_MIN_SESSION_SEC);
@@ -47,7 +50,7 @@ function loadStoreReview(): typeof import('expo-store-review') | null {
   }
 }
 
-/** Called after a session is saved, from the stop button. Never throws. */
+/** Called when the end-of-session report closes. Never throws. */
 export async function maybeAskForReview(ended: SessionSummary, sessions: SessionSummary[]): Promise<void> {
   try {
     if (AppState.currentState !== 'active') return;
