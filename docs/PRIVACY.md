@@ -1,10 +1,16 @@
 # 개인정보 처리방침
 
-*Plumb · 시행일 2026년 10월 10일*
+*Plumb · 시행일 2026년 11월 14일*
 
 ## 수집하는 정보
 
-Plumb은 개인정보를 수집하지 않습니다. 계정이 없고, 광고나 분석 도구를 사용하지 않으며, 어떤 데이터도 외부 서버로 보내지 않습니다.
+Plumb은 계정이 없고 광고를 사용하지 않습니다. 앱을 개선하기 위해 Google Firebase 애널리틱스로 익명 사용 통계만 수집합니다.
+
+- **수집 항목**: 앱 실행, 첫 실행일, 사용 시간, 기기 모델, iOS 및 앱 버전, 국가·언어(대략적인 위치), 그리고 앱 안의 동작(안내·보정 완료, 측정 시작·종료, 측정 시간 범위, 바른 자세 비율 범위, 알림 횟수, 바꾼 설정의 이름, 문의하기 누름)
+- **수집하지 않는 것**: 이름, 이메일, 연락처, 정확한 위치, 광고 식별자(IDFA), 에어팟 움직임 원본이나 기울기 각도
+- **사용 목적**: 사용자가 어디서 불편을 겪는지 파악하고 앱을 개선하는 데에만 사용하며, 광고나 다른 회사와의 추적에 쓰지 않습니다.
+- **처리 위탁**: Google LLC(Firebase 애널리틱스). 데이터는 Google 서버(미국 등)에 저장되며 Google의 보관 기간 설정에 따라 삭제됩니다.
+- **끄기**: 설정 → 개인정보 → "사용 통계 보내기"를 끄면 더 이상 수집하지 않습니다.
 
 ## 기기 안에서만 처리하는 정보
 
@@ -20,17 +26,23 @@ Plumb은 개인정보를 수집하지 않습니다. 계정이 없고, 광고나 
 
 ## 문의
 
-[github.com/hwanify/neck-posture/issues](https://github.com/hwanify/neck-posture/issues)
+[hwanify@gmail.com](mailto:hwanify@gmail.com) · 앱 설정 → 문의하기
 
 ---
 
 # Privacy Policy
 
-*Plumb · Effective October 10, 2026*
+*Plumb · Effective November 14, 2026*
 
 ## Information we collect
 
-Plumb does not collect any personal information. There is no account, no advertising or analytics, and no data is sent to any server.
+Plumb has no account and no advertising. To improve the app, it collects anonymous usage statistics with Google Firebase Analytics.
+
+- **What is collected**: app opens, first open date, time in app, device model, iOS and app version, country and language (approximate location), and in-app actions (finishing the intro or calibration, starting and ending a session, session length range, upright-time range, number of alerts, names of settings changed, tapping Contact us).
+- **Not collected**: your name, email, contacts, precise location, advertising identifier (IDFA), raw AirPods motion or tilt angles.
+- **Purpose**: only to understand where people struggle and improve the app. It is not used for advertising or to track you across other companies’ apps.
+- **Processor**: Google LLC (Firebase Analytics). Data is stored on Google’s servers (including in the United States) and deleted according to Google’s retention settings.
+- **Turning it off**: Settings → Privacy → “Share usage statistics”. When it is off, nothing more is collected.
 
 ## Information processed only on your device
 
@@ -46,4 +58,4 @@ Plumb uses local notifications on your iPhone to show posture alerts while the s
 
 ## Contact
 
-[github.com/hwanify/neck-posture/issues](https://github.com/hwanify/neck-posture/issues)
+[hwanify@gmail.com](mailto:hwanify@gmail.com) · in the app: Settings → Contact us

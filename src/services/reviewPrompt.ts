@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState } from 'react-native';
 
 import type { SessionSummary } from '../engine';
+import { analytics } from './analytics';
 
 const LAST_ASKED_KEY = 'baromok.reviewAskedAt';
 
@@ -60,7 +61,9 @@ export async function maybeAskForReview(ended: SessionSummary, sessions: Session
     await AsyncStorage.setItem(LAST_ASKED_KEY, String(now));
     // Let the stop button's state change settle before the sheet appears.
     await new Promise((resolve) => setTimeout(resolve, 800));
-    if (AppState.currentState === 'active') await StoreReview.requestReview();
+    if (AppState.currentState !== 'active') return;
+    analytics.reviewPrompt();
+    await StoreReview.requestReview();
   } catch {
     // A rating prompt is never worth an error.
   }
