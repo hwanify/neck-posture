@@ -28,8 +28,6 @@ export type AppSettings = {
   source: MotionSourceKind;
   /** UI language; 'system' follows the iPhone (English when unsupported). */
   language: LanguageSetting;
-  /** Share anonymous usage statistics (Firebase Analytics). */
-  analytics: boolean;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -47,7 +45,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   source: selectableSourceKinds[0],
   language: 'system',
-  analytics: true,
 };
 
 const KEYS = {
@@ -125,7 +122,6 @@ function mergeSaved(saved: Partial<AppSettings> | null): AppSettings {
       saved?.language === 'system' || LANGUAGES.some((l) => l.code === saved?.language)
         ? saved!.language!
         : DEFAULT_SETTINGS.language,
-    analytics: typeof saved?.analytics === 'boolean' ? saved.analytics : DEFAULT_SETTINGS.analytics,
   };
 }
 

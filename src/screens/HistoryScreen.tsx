@@ -4,12 +4,10 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { type } from '../ui/fonts';
 import { Text } from '../ui/Text';
 
-import { habitReport, type SessionSummary } from '../engine';
+import type { SessionSummary } from '../engine';
 import { localeTag, t } from '../i18n';
-import { analytics } from '../services/analytics';
 import { monitor, useMonitor } from '../state/monitor';
 import { Row, Screen, Section, Sheet } from '../ui/components';
-import { ReportBody } from './ReportSheet';
 import { colors, formatAngle, formatDuration } from '../ui/theme';
 
 /**
@@ -17,20 +15,12 @@ import { colors, formatAngle, formatDuration } from '../ui/theme';
  * top, then one row per day; tapping a day opens its sessions in a sheet.
  */
 export function HistoryScreen() {
-  const { sessions, settings } = useMonitor();
+  const { sessions } = useMonitor();
   const [openDay, setOpenDay] = useState<string | null>(null);
-  const [openSession, setOpenSession] = useState<string | null>(null);
-  const [scrubbing, setScrubbing] = useState(false);
   const days = groupByDay(sessions);
   const week = lastSevenDays(days);
   const weekTotal = summarize(week.flatMap((d) => d.sessions));
   const selected = days.find((d) => d.key === openDay) ?? null;
-  const opened = selected?.sessions.find((x) => x.id === openSession) ?? null;
-  const threshold = settings.posture.enterDeg;
-  const closeDay = () => {
-    setOpenDay(null);
-    setOpenSession(null);
-  };
 
   return (
     <Screen title={t('history.title')}>
@@ -72,31 +62,18 @@ export function HistoryScreen() {
 
       <Sheet
         visible={selected !== null}
-        title={opened ? t('report.title') : selected ? formatDay(selected.date) : ''}
+        title={selected ? formatDay(selected.date) : ''}
         doneLabel={t('common.done')}
-        onClose={closeDay}
-        scrollEnabled={!scrubbing}
-        onBack={opened ? () => setOpenSession(null) : undefined}>
-        {opened ? (
-          <ReportBody
-            summary={opened}
-            report={habitReport(opened, threshold)}
-            threshold={threshold}
-            onScrub={setScrubbing}
-          />
-        ) : selected ? (
+        onClose={() => setOpenDay(null)}>
+        {selected ? (
           <Section footer={t('history.footer')}>
             {selected.sessions.map((session) => (
               <Row
                 key={session.id}
                 title={formatTime(session.startedAt)}
                 subtitle={summaryLine(summarize([session]))}
-                value={`${percent(summarize([session]))}  ›`}
+                value={percent(summarize([session]))}
                 valueColor={colors.text}
-                onPress={() => {
-                  setOpenSession(session.id);
-                  analytics.reportOpen('history');
-                }}
                 onLongPress={() =>
                   Alert.alert(t('history.deleteTitle'), t('history.deleteMessage'), [
                     { text: t('common.cancel'), style: 'cancel' },
@@ -104,7 +81,7 @@ export function HistoryScreen() {
                       text: t('common.delete'),
                       style: 'destructive',
                       onPress: () => {
-                        if (selected.sessions.length === 1) closeDay();
+                        if (selected.sessions.length === 1) setOpenDay(null);
                         void monitor.removeSession(session.id);
                       },
                     },

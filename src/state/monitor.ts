@@ -9,8 +9,6 @@ import {
   DEMO_CALIBRATION,
   type CalibratorStatus,
   flipCalibration,
-  type HabitReport,
-  habitReport,
   PostureCheck,
   type PostureCheckStatus,
   PostureEngine,
@@ -29,7 +27,6 @@ import {
 } from '../services/feedback';
 import { endLiveActivity, startLiveActivity } from '../services/liveActivity';
 import { createMotionSource, type MotionSourceKind } from '../services/motionSource';
-import { analytics, setAnalyticsEnabled } from '../services/analytics';
 import { maybeAskForReview } from '../services/reviewPrompt';
 import * as storage from '../services/storage';
 import type { AppSettings } from '../services/storage';
@@ -64,8 +61,6 @@ export type LiveSession = {
 export type MonitorState = {
   loaded: boolean;
   onboarded: boolean;
-  /** The report for the session that just ended, until the user closes it. */
-  report: { summary: SessionSummary; report: HabitReport } | null;
   sourceKind: MotionSourceKind;
   available: boolean;
   authorization: AuthorizationStatus;
@@ -105,7 +100,6 @@ class MonitorController {
   state: MonitorState = {
     loaded: false,
     onboarded: false,
-    report: null,
     sourceKind: this.source.kind,
     available: this.source.isAvailable(),
     authorization: this.source.getAuthorizationStatus(),
@@ -145,7 +139,6 @@ class MonitorController {
       storage.loadOnboarded(),
     ]);
     setLanguage(settings.language);
-    setAnalyticsEnabled(settings.analytics);
     this.source = createMotionSource(settings.source);
     const calibration = await storage.loadCalibration(this.source.kind);
     this.engine = new PostureEngine(calibration, settings.posture);
@@ -169,7 +162,6 @@ class MonitorController {
   async completeOnboarding(): Promise<void> {
     await storage.saveOnboarded();
     this.set({ onboarded: true });
-    analytics.onboardingComplete();
     await this.startStreaming();
   }
 
@@ -254,7 +246,6 @@ class MonitorController {
       const status = this.calibrator.feed(sample);
       if (status.result) {
         this.calibrator = null;
-        analytics.calibrationComplete(!this.state.calibration);
         this.applyCalibration(status.result);
       }
       this.set({ ...common, calibrating: status });
@@ -447,7 +438,6 @@ class MonitorController {
     const id = startedAt.toString(36);
     this.stats = new SessionStats(id, startedAt);
     this.set({ session: { id, startedAt, alertCount: 0, goodRatio: 1, lastAlert: null } });
-    analytics.sessionStart(this.source.kind);
     if (this.state.settings.feedback.liveActivity) void startLiveActivity(startedAt);
   }
 
@@ -461,27 +451,13 @@ class MonitorController {
     this.set({ session: null, checking: null });
     await Promise.all([endLiveActivity(), clearAlertNotification()]);
     await this.releaseSessionResources();
-    const judgedSec = summary.goodSec + summary.tiltSec;
-    analytics.sessionEnd({
-      judgedSec,
-      goodRatio: judgedSec > 0 ? summary.goodSec / judgedSec : 1,
-      alerts: summary.alertCount,
-      source: this.source.kind,
-    });
 
     // Very short sessions aren't worth keeping.
     if (summary.goodSec + summary.tiltSec < 10) return summary;
     const sessions = await storage.addSession(summary);
-    this.set({ sessions, report: { summary, report: habitReport(summary, this.state.settings.posture.enterDeg) } });
-    analytics.reportOpen('session_end');
+    this.set({ sessions });
+    void maybeAskForReview(summary, sessions);
     return summary;
-  }
-
-  /** Close the end-of-session report; the rating prompt (if due) waits until now so they don't overlap. */
-  dismissReport(): void {
-    const ended = this.state.report?.summary;
-    this.set({ report: null });
-    if (ended) void maybeAskForReview(ended, this.state.sessions);
   }
 
   private async releaseSessionResources() {
@@ -500,8 +476,6 @@ class MonitorController {
     const previous = this.state.settings;
     const settings = update(previous);
     setLanguage(settings.language);
-    if (settings.analytics !== previous.analytics) setAnalyticsEnabled(settings.analytics);
-    for (const name of changedSettings(previous, settings)) analytics.settingsChange(name);
     this.engine.setSettings(settings.posture);
     this.set({ settings });
     const session = this.state.session;
@@ -513,18 +487,6 @@ class MonitorController {
     }
     await storage.saveSettings(settings);
   }
-}
-
-/** Names (never values) of the settings that differ, e.g. "posture.enterDeg", "language". */
-function changedSettings(a: AppSettings, b: AppSettings): string[] {
-  const out: string[] = [];
-  for (const group of ['posture', 'feedback'] as const) {
-    const x = a[group] as Record<string, unknown>;
-    const y = b[group] as Record<string, unknown>;
-    for (const key of Object.keys(y)) if (x[key] !== y[key]) out.push(`${group}.${key}`);
-  }
-  for (const key of ['source', 'language', 'analytics'] as const) if (a[key] !== b[key]) out.push(key);
-  return out;
 }
 
 export const monitor = new MonitorController();

@@ -8,7 +8,6 @@ import { POSTURE_CHECK_SEC, type PostureState } from '../engine';
 import { localeTag, t } from '../i18n';
 import { monitor, useMonitor } from '../state/monitor';
 import { colors } from '../ui/theme';
-import { ReportSheet } from './ReportSheet';
 
 const LINE_WIDTH = 180;
 const MAX_LINE_DEG = 30;
@@ -134,7 +133,6 @@ export function HomeScreen() {
           />
         )}
       </View>
-      <ReportSheet />
     </View>
   );
 }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Plumb",
     "slug": "baromok",
-    "version": "1.0.5",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,7 +11,6 @@
     },
     "ios": {
       "bundleIdentifier": "com.hwanify.baromok",
-      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
@@ -34,24 +33,7 @@
           "imageWidth": 200
         }
       ],
-      "@bacons/apple-targets",
-      "@react-native-firebase/app",
-      [
-        "@react-native-firebase/analytics",
-        {
-          "ios": {
-            "withoutAdIdSupport": true
-          }
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "dynamic"
-          }
-        }
-      ]
+      "@bacons/apple-targets"
     ],
     "extra": {
       "eas": {}

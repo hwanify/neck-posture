@@ -4,7 +4,6 @@ import { useRef, useState } from 'react';
 import { Alert, Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import type { PostureSettings } from '../engine';
-import { analytics } from '../services/analytics';
 import { playTestCue } from '../services/feedback';
 import { type MotionSourceKind, selectableSourceKinds } from '../services/motionSource';
 import type { AppSettings, FeedbackSettings } from '../services/storage';
@@ -207,15 +206,6 @@ export function SettingsScreen() {
 
       <LanguageSection value={s.settings.language} />
 
-      <Section header={t('settings.privacy')} iconInset footer={t('settings.analyticsFooter')}>
-        <ToggleRow
-          icon="chart"
-          title={t('settings.analytics')}
-          value={s.settings.analytics}
-          onChange={(on) => void monitor.updateSettings((prev) => ({ ...prev, analytics: on }))}
-        />
-      </Section>
-
       <Section header={t('settings.info')} iconInset>
         <Row icon="sensor" title={t('settings.sensor')} value={`${sourceLabel(s.sourceKind)} · ${s.sampleRateHz}Hz`} />
         <Row icon="info" title={t('settings.motionPermission')} value={t(`settings.auth.${s.authorization}`)} />
@@ -262,7 +252,6 @@ const CONTACT_EMAIL = 'hwanify@gmail.com';
  * user); if no mail app can take it, shows the address instead.
  */
 async function contactUs() {
-  analytics.contactTap();
   const version = Constants.expoConfig?.version ?? '';
   const body = `\n\n\n—\nPlumb ${version} (${updateLabel()}) · iOS ${Platform.Version}`;
   const url = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t('settings.contactSubject'))}&body=${encodeURIComponent(body)}`;

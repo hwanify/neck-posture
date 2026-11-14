@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState } from 'react-native';
 
 import type { SessionSummary } from '../engine';
-import { analytics } from './analytics';
 
 const LAST_ASKED_KEY = 'baromok.reviewAskedAt';
 
@@ -18,10 +17,10 @@ export const REVIEW_MIN_DAYS_BETWEEN_ASKS = 30;
 const measuredSec = (s: SessionSummary) => s.goodSec + s.tiltSec;
 
 /**
- * Whether to ask for an App Store rating as the report of `ended` closes. iOS still decides whether
- * the prompt actually appears (at most three times a year). The first ask comes after the first real
- * session (a minute or more); later ones need a long session, a few long sessions behind it, some days
- * of use, and a month since the last ask.
+ * Whether to ask for an App Store rating right after `ended` finished. iOS still decides whether the
+ * prompt actually appears (at most three times a year). The first ask comes after the first real
+ * session (a minute or more); later ones need a long session, a few long sessions behind it, some
+ * days of use, and a month since the last ask.
  */
 export function shouldAskForReview(
   ended: SessionSummary,
@@ -50,7 +49,7 @@ function loadStoreReview(): typeof import('expo-store-review') | null {
   }
 }
 
-/** Called when the end-of-session report closes. Never throws. */
+/** Called after a session is saved, from the stop button. Never throws. */
 export async function maybeAskForReview(ended: SessionSummary, sessions: SessionSummary[]): Promise<void> {
   try {
     if (AppState.currentState !== 'active') return;
@@ -64,9 +63,7 @@ export async function maybeAskForReview(ended: SessionSummary, sessions: Session
     await AsyncStorage.setItem(LAST_ASKED_KEY, String(now));
     // Let the stop button's state change settle before the sheet appears.
     await new Promise((resolve) => setTimeout(resolve, 800));
-    if (AppState.currentState !== 'active') return;
-    analytics.reviewPrompt();
-    await StoreReview.requestReview();
+    if (AppState.currentState === 'active') await StoreReview.requestReview();
   } catch {
     // A rating prompt is never worth an error.
   }
