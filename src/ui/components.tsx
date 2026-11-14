@@ -33,19 +33,36 @@ export function Sheet({
   title,
   doneLabel,
   onClose,
+  onBack,
+  scrollEnabled = true,
   children,
 }: {
   visible: boolean;
   title: string;
   doneLabel: string;
   onClose: () => void;
+  /** Shows a back chevron on the left (for a detail page inside the sheet). */
+  onBack?: () => void;
+  /** Turned off while a gesture inside the sheet (e.g. scrubbing a chart) owns the finger. */
+  scrollEnabled?: boolean;
   children: ReactNode;
 }) {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={styles.sheet}>
         <View style={styles.sheetBar}>
-          <View style={styles.sheetSide} />
+          {onBack ? (
+            <Pressable
+              style={[styles.sheetSide, styles.sheetSideLeft]}
+              onPress={onBack}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Back">
+              <Text style={styles.sheetBack}>‹</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.sheetSide} />
+          )}
           <Text style={styles.sheetTitle} numberOfLines={1}>
             {title}
           </Text>
@@ -53,7 +70,12 @@ export function Sheet({
             <Text style={styles.sheetDone}>{doneLabel}</Text>
           </Pressable>
         </View>
-        <ScrollView contentContainerStyle={styles.sheetContent}>{children}</ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.sheetContent}
+          scrollEnabled={scrollEnabled}
+          canCancelContentTouches={scrollEnabled}>
+          {children}
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -273,8 +295,10 @@ const styles = StyleSheet.create({
   sheet: { flex: 1, backgroundColor: colors.card },
   sheetBar: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 20 },
   sheetSide: { width: 64, alignItems: 'flex-end' },
-  sheetTitle: { ...type.bodyStrong, flex: 1, textAlign: 'center', color: colors.text },
-  sheetDone: { ...type.bodyStrong, color: colors.tint },
+  sheetTitle: { ...type.bodyStrong, fontSize: 15, flex: 1, textAlign: 'center', color: colors.text },
+  sheetSideLeft: { alignItems: 'flex-start' },
+  sheetDone: { ...type.bodyStrong, fontSize: 15, color: colors.tint },
+  sheetBack: { ...type.bodyStrong, fontSize: 30, lineHeight: 32, color: colors.tint },
   sheetContent: { paddingBottom: 40 },
   sectionHeader: {
     ...type.label,
