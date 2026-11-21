@@ -68,9 +68,10 @@ export function percentBucket(ratio: number): string {
 export const analytics = {
   onboardingComplete: () => track('onboarding_complete'),
   calibrationComplete: (first: boolean) => track('calibration_complete', { first: first ? 1 : 0 }),
-  sessionStart: (source: string) => track('session_start', { source }),
+  // Not "session_start": Firebase reserves that name for its own app-session event and rejects it.
+  sessionStart: (source: string) => track('measure_start', { source }),
   sessionEnd: (s: { judgedSec: number; goodRatio: number; alerts: number; source: string }) =>
-    track('session_end', {
+    track('measure_end', {
       minutes: minutesBucket(s.judgedSec),
       good_pct: percentBucket(s.goodRatio),
       alerts: Math.min(s.alerts, 100),
